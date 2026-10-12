@@ -9,6 +9,7 @@ use NicheCleverInteractive\Core\Admin\SettingsPage;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Configuration\TransportMode;
 use NicheCleverInteractive\Core\Frontend\InteractivePanel;
 use NicheCleverInteractive\Core\AI\ChatService;
 use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
@@ -18,6 +19,7 @@ use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
+use NicheCleverInteractive\Core\AI\ConnectionTestService;
 
 final class Plugin
 {
@@ -32,10 +34,11 @@ final class Plugin
     {
         $this->extensions = new ExtensionRegistryV1();
         $this->secrets = new SecretResolver();
-        $this->settingsPage = new SettingsPage();
         $this->interactivePanel = new InteractivePanel();
         $transport = $this->transport();
-        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, null, new BudgetGate(new WordPressBucketStore())));
+        $budget = new BudgetGate(new WordPressBucketStore());
+        $this->settingsPage = new SettingsPage(null, new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current()));
+        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, null, $budget));
     }
 
     public static function register(string $pluginFile): void
@@ -106,11 +109,11 @@ final class Plugin
 
     private function transport(): ResponseTransport
     {
-        if (defined('NCLI_CORE_MOCK_TRANSPORT') && NCLI_CORE_MOCK_TRANSPORT === true) {
+        if (TransportMode::current() === TransportMode::MOCK) {
             return new DeterministicMockTransport();
         }
 
-        if (defined('NCLI_CORE_LIVE_TRANSPORT') && NCLI_CORE_LIVE_TRANSPORT === true) {
+        if (TransportMode::current() === TransportMode::LIVE) {
             return new OpenAiResponsesFileSearchTransport($this->secrets);
         }
 

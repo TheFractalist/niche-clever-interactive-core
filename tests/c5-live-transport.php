@@ -8,13 +8,19 @@ use NicheCleverInteractive\Core\AI\Transport\ResponsesHttpClient;
 use NicheCleverInteractive\Core\AI\Transport\ResponsesHttpResponse;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\ConnectionFingerprint;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Configuration\TransportMode;
+use NicheCleverInteractive\Core\Security\PromptPolicy;
 
 require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
 
 if (!defined('NCLI_TEST_PROVIDER_KEY')) {
     define('NCLI_TEST_PROVIDER_KEY', 'fixture-provider-key');
+}
+if (!defined('NCLI_CORE_LIVE_TRANSPORT')) {
+    define('NCLI_CORE_LIVE_TRANSPORT', true);
 }
 
 $failures = [];
@@ -89,6 +95,11 @@ $settings = CoreSettings::fromArray([
     'limits' => ['visitor_requests_per_day' => 10, 'provider_requests_per_day' => 100],
     'appearance' => ['panel_style' => 'classic'],
 ]);
+$settings = $settings->withConnectionTest(
+    'passed',
+    (string) ConnectionFingerprint::forSettings($settings, new SecretResolver('NCLI_TEST_PROVIDER_KEY'), new PromptPolicy(), TransportMode::LIVE),
+    '2026-10-12T12:00:00Z'
+);
 $outcome = (new ChatService($transport, new SecretResolver('NCLI_TEST_PROVIDER_KEY')))->handle(['question' => 'What is the fixture?'], $settings)->payload();
 $assert($outcome['ok'] === true, 'A completed File Search response with mapped evidence must be public-safe and accepted.');
 $assert(!str_contains(json_encode($outcome, JSON_THROW_ON_ERROR), $fileId), 'A public payload must not expose a provider file identifier.');

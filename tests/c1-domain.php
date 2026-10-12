@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\ConnectionFingerprint;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Configuration\TransportMode;
 use NicheCleverInteractive\Core\Plugin;
 use NicheCleverInteractive\Core\Profile\DefaultProfileResolverV1;
 use NicheCleverInteractive\Core\Security\PolicyFingerprint;
@@ -130,9 +132,13 @@ $assert($publicError === ['code' => 'provider_failure', 'message' => 'The intera
 if (!defined('NCLI_TEST_SERVER_SECRET')) {
     define('NCLI_TEST_SERVER_SECRET', 'test-only-server-secret');
 }
+if (!defined('NCLI_CORE_LIVE_TRANSPORT')) {
+    define('NCLI_CORE_LIVE_TRANSPORT', true);
+}
 $secretResolver = new SecretResolver('NCLI_TEST_SERVER_SECRET');
 $assert($secretResolver->isAvailable(), 'Server constant secret should be recognised.');
-$assert(Readiness::evaluate($valid, $secretResolver)->isReady(), 'Configured Core should be ready with a server secret.');
+$ready = $valid->withConnectionTest('passed', (string) ConnectionFingerprint::forSettings($valid, $secretResolver, new PromptPolicy(), TransportMode::LIVE), '2026-10-12T12:00:00Z');
+$assert(Readiness::evaluate($ready, $secretResolver)->isReady(), 'Configured Core should be ready only with a server secret and current connection test.');
 $assert(Readiness::evaluate($valid, new SecretResolver('NCLI_MISSING_SERVER_SECRET'))->state() === Readiness::MISSING_SECRET, 'Missing server secret should be unready.');
 
 $wpdb = (object) [

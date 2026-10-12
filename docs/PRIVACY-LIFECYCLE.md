@@ -8,6 +8,8 @@ Core's public route uses only a server-secret HMAC of the canonical client addre
 
 The `ncli_core_rate_buckets` table uses InnoDB transactions and a unique `(kind, scope_hash, period_start)` key. A reservation increments `reserved_count`; a settled request moves it to `committed_count`; a pre-dispatch cancellation releases it. UTC midnight creates a new period. Core does not auto-retry an ambiguous attempted provider request, and it retains that accounting outcome.
 
+The administrator-only connection test also reserves the global provider bucket, but it never creates a visitor bucket. It stores only a pass/fail/never state, UTC test time and opaque configuration fingerprint. The test deliberately discards its fixed verification prompt, answer, citation tokens, provider payload and retrieved text. Its diagnostic record is invalidated whenever the effective server key, transport mode, vector-store reference, corpus version, prompt policy or Core version changes.
+
 ## Evidence links
 
 Approved evidence links must be bounded, credential-free HTTPS URLs. Core rejects URL credentials, IP-literal hosts, `localhost`, `.local` and `.internal` hosts before a public response can include them. It does not fetch or probe those links.

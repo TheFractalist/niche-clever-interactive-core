@@ -1,6 +1,6 @@
 # Niche Clever Interactive Core
 
-This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only visual-correction candidate is `1.0.0-rc.2`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
+This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only Setup-workflow parity candidate is `1.0.0-rc.4`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
 
 ## Current scope
 
@@ -30,13 +30,14 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c3-retrieval.php
     & 'C:\xampp\php\php.exe' tests/c3-route.php
     & 'C:\xampp\php\php.exe' tests/c4-budget.php
+    & 'C:\xampp\php\php.exe' tests/c4-connection-test.php
     & 'C:\xampp\php\php.exe' tests/c5-live-transport.php
     & 'C:\xampp\php\php.exe' tests/c5-package.php
     node --check assets/js/public.js
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
-The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 remains technically accepted as a local-only technical candidate following a segregated live File Search canary. The separate `1.0.0-rc.2` visual-parity correction has passed local verification; public release, deployment and WordPress.org submission remain separate decisions.
+The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 remains technically accepted as a local-only technical candidate following a segregated live File Search canary. RC4 adds a separate local-only Setup-workflow correction: its administrator connection test must pass again in the updated candidate before this correction can be accepted. Public release, deployment and WordPress.org submission remain separate decisions.
 
 ## Licence
 

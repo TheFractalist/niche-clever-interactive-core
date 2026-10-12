@@ -35,4 +35,15 @@ final class BudgetGate
         }
         return new Reservation($this->store, $scopeHash, $period);
     }
+
+    public function reserveProviderTest(CoreSettings $settings): ?ProviderReservation
+    {
+        $period = gmdate('Y-m-d 00:00:00');
+        $providerHash = hash('sha256', 'provider:core');
+        if (!$this->store->reserve('provider', $providerHash, $period, $settings->providerRequestsPerDay())) {
+            return null;
+        }
+
+        return new ProviderReservation($this->store, $period);
+    }
 }

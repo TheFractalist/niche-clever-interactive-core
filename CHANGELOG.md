@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.4 — 12 October 2026
+
+Local-only Core Setup-workflow parity candidate. It reconstructs the four Core-safe setup steps: confirm the server-only key constant, save the vector-store reference and corpus version, run a nonce/capability-protected File Search connection test, then place the public panel. A passing test stores only a UTC time, pass/fail state and opaque configuration fingerprint; it stores no secret, vector-store value, provider payload, response, citation or retrieved text.
+
+An enabled profile is now unavailable for public chat until its current configuration has a passing test. Test calls reserve only the existing global provider budget and retain attempted-call accounting without retries. This candidate is not published, deployed, tagged or submitted to WordPress.org.
+
 ## 1.0.0-rc.3 — 12 October 2026
 
 Local-only Core administrator Dashboard-chrome parity correction candidate. It reconstructs the standalone banner framing, guided checklist, tabbed workspace, table-like form rows, notices and blue save treatment in new NCI code.

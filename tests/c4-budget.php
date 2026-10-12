@@ -81,6 +81,10 @@ $replacement?->commit();
 $second?->commit();
 $assert($gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']) === null, 'Committed requests must remain counted for the UTC day.');
 
+$providerOnly = $gate->reserveProviderTest($settings);
+$assert($providerOnly !== null, 'A connection test may reserve the global provider budget without a visitor scope.');
+$providerOnly?->release();
+
 foreach (['https://127.0.0.1/private', 'https://localhost/private', 'https://user:pass@example.test/private'] as $unsafe) {
     try {
         CoreSettings::fromArray([

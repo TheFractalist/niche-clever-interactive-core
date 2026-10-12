@@ -5,7 +5,10 @@ declare(strict_types=1);
 use NicheCleverInteractive\Core\AI\ChatService;
 use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\ConnectionFingerprint;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Configuration\TransportMode;
+use NicheCleverInteractive\Core\Security\PromptPolicy;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
 
 $ncliRouteOptions = [];
@@ -23,12 +26,12 @@ if (!defined('NCLI_CORE_MOCK_TRANSPORT')) {
     define('NCLI_CORE_MOCK_TRANSPORT', true);
 }
 
-$ncliRouteOptions[CoreSettings::OPTION_NAME] = [
+$configured = CoreSettings::fromArray([
     'enabled' => true,
     'profile' => [
         'id' => 'default',
         'corpus_version' => 'fixture-corpus-2026-10',
-        'vector_store_reference' => '',
+        'vector_store_reference' => 'vs_fixture_route',
         'approved_evidence' => [
             'fixture_source' => ['title' => 'Fixture source', 'url' => 'https://example.test/ncli-fixture-source'],
         ],
@@ -37,7 +40,12 @@ $ncliRouteOptions[CoreSettings::OPTION_NAME] = [
     'response_preset' => 'balanced',
     'limits' => ['visitor_requests_per_day' => 10, 'provider_requests_per_day' => 100],
     'appearance' => ['panel_style' => 'classic'],
-];
+]);
+$ncliRouteOptions[CoreSettings::OPTION_NAME] = $configured->withConnectionTest(
+    'passed',
+    (string) ConnectionFingerprint::forSettings($configured, new SecretResolver('NCLI_NOT_A_SECRET'), new PromptPolicy(), TransportMode::MOCK),
+    '2026-10-12T12:00:00Z'
+)->toArray();
 
 $request = new class {
     /** @return array{question: string} */

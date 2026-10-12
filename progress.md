@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — visual-parity correction accepted locally.** C5 technical acceptance at `716c28b` remains valid. The separate local-only `1.0.0-rc.2` candidate reconstructs the approved Core visual language and has passed its visual matrix, package and rollback checks. It is not published, deployed or submitted to WordPress.org.
+**12 October 2026 — RC4 Setup-workflow parity correction in validation.** C5 technical acceptance at `716c28b` remains historical evidence. The separate local-only `1.0.0-rc.4` candidate reconstructs the authenticated Free four-step setup workflow and makes a current administrator connection test a public-chat readiness condition. It is not published, deployed or submitted to WordPress.org.
 
 ## Implemented
 
@@ -34,6 +34,7 @@
 - Visual-parity validation: PASS — pure settings/render, JavaScript/session-state, provenance, source and package policy checks; PHP lint; PHPCS 3.13.6/WPCS 3.4.1 focused source scan; and Plugin Check 2.1.0 of the ZIP-derived candidate. Plugin Check retains only the previously reviewed fixture-directory text-domain, row-locked `$wpdb` and intentional Core-owned OpenAI direct-integration warnings.
 - Visual fixture validation: PASS — generated-data-only WordPress 6.5/PHP 8.1/MariaDB rendered the corrected Classic panel; current WordPress 7.1/PHP 8.3/MariaDB rendered Classic, Minimal and Dark, unready/disabled, mocked-answer/evidence, refusal and reset states. Desktop and 390px keyboard/focus checks passed. The C5 live transport was unchanged and its technical-acceptance evidence remains valid.
 - Administrator Dashboard-chrome correction: local-only `1.0.0-rc.3` replaces the RC.2 custom blue masthead and summary-card deviation with the actual authenticated Test-Site AskFolio workspace chrome: standalone approved banner, tabbed frame, single guided checklist, table-like field rows, safe notices and blue save bar. It retains all Core-only tabs, fields, request/security boundaries and the two authorised visual binaries. Desktop comparison, keyboard tab order and browser-console checks passed. A fresh authenticated tab rendered at 433px with no horizontal overflow and retained Setup-to-Profile focus order; the browser screenshot endpoint timed out, so that narrow result has no durable screenshot/hash artefact.
+- RC4 Setup-workflow correction: newly authored Core code adds four bounded steps — server-only key constant confirmation, vector-store/corpus guidance, an administrator-only completed-File-Search connection test, and published panel-placement detection. It stores only `never`/`passed`/`failed`, UTC test time and an opaque configuration fingerprint. The public route remains unchanged except that readiness requires a passing fingerprint-current test. The test uses the selected Core transport, has no REST route, retains no provider response/citation/payload and reserves only the global provider allowance.
 
 ## Requires verification
 
@@ -42,12 +43,14 @@
 - C5 candidate package, checksum, denylist/source audit and rollback rehearsal are complete. The toolchain, ZIP and fixture evidence are external to the repository and context pack; no vendor or third-party source is committed.
 - Visual comparison screenshots are redacted, fixture-only evidence. The protected reference screenshots remain reference-only and are not copied into Core, candidate packages or the canonical context pack.
 - RC.3 administrator evidence includes authenticated Test-Site desktop and fresh 433px responsive browser checks, plus deterministic markup coverage. The browser screenshot endpoint timed out for the narrow tab, so the responsive result must not be represented as having a durable screenshot/hash artefact.
+- RC4 deterministic implementation validation: PASS — pure connection-test/readiness/provider-budget/no-disclosure coverage, C1–C5 deterministic suites, PHP 8.1 lint, JavaScript checks, source/provenance audits and focused PHPCS/WPCS completed. The exact 68-file RC4 ZIP was rebuilt outside Git, checksum `449e82ba7caad87c55f80d51a1016b456eac58a8a12e9a7f6b0fbef69775862b`, installed into the disposable Test-Site fixture, scanned by Plugin Check with no errors and only the previously reviewed row-locking SQL/direct-provider warnings.
+- RC4 mock fixture validation: PASS — a temporary non-secret mock-only bootstrap enabled the authenticated Setup screen. The administrator-only action showed the pass notice after completed mock File Search; the public panel then returned only the bounded answer/evidence. Changing the generated vector-store reference made the panel unavailable until settings were reset and retested. The temporary bootstrap was moved out of Test-Site after the check. A recoverable RC3 activation rollback and RC4 restoration both passed; RC4 is active in Test-Site.
 
 ## Remaining conditions
 
-- C5 is technically accepted as a local-only release candidate. The RC.3 administrator Dashboard-chrome correction is desktop and live narrow-width verified locally; durable narrow screenshot/hash capture remains an evidence gap, not a reason to infer publication or release acceptance. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
+- C5 is technically accepted as a local-only release candidate. RC4’s deterministic, mock-fixture, package and rollback evidence is complete, but its required segregated live connection-test action is unavailable because the current fixture exposes neither an authorised live key nor a selected live transport. Durable screenshot/hash capture also remains unavailable through the current browser capture surface. RC4 is therefore a local-only candidate awaiting the live-test evidence, not visual/function accepted. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
 - Pro remains unstarted. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Do not publish or deploy Core. Pro P1 remains blocked until Jacob accepts the completed visual-parity matrix as the delivery acceptance record; any later authorised Pro P1 start must use a separate private checkout and retain Core API-v1 compatibility boundaries.
+Do not publish or deploy Core. Pro P1 remains blocked until Jacob accepts the completed RC4 visual/function-parity matrix as the delivery acceptance record; any later authorised Pro P1 start must use a separate private checkout and retain Core API-v1 compatibility boundaries.

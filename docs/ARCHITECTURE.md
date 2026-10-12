@@ -12,7 +12,7 @@ Core owns the sole public POST /ncli/v1/chat route, credential resolution, trans
 
 C1 registers an NCI-only activation/deactivation lifecycle. Activation creates fresh ncli_core_settings and a schema marker, then creates the prefixed ncli_core_rate_buckets table. Deactivation deliberately preserves NCI settings and rate data.
 
-The only supported API-key source is the server-side NCLI_OPENAI_API_KEY_DEFAULT constant. Core never reads a key from an option, settings request or API request. Readiness remains unready until the default profile is enabled, that constant is present, and the configured vector-store reference and corpus version are non-empty.
+The only supported API-key source is the server-side NCLI_OPENAI_API_KEY_DEFAULT constant. Core never reads a key from an option, settings request or API request. Readiness remains unready until the default profile is enabled, that constant is present, the configured vector-store reference and corpus version are non-empty, and the current effective configuration has a passing administrator connection test. The stored diagnostic contains only `never`, `passed` or `failed`, a UTC test time and an opaque HMAC fingerprint; it never stores a secret, provider payload, vector-store reference, response, citation or retrieved text.
 
 Public-safe error payloads are closed to six codes: profile unavailable, invalid request, policy refusal, allowance exceeded, provider-safe failure and evidence failure. They are deliberately generic.
 
@@ -25,6 +25,8 @@ C2 adds a one-profile administrator workspace: Setup, Profile, AI and Evidence, 
 Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/interactive block. It has Classic, Minimal and Dark panel styles. A historical `editorial` setting value is normalised to `dark` when settings are read or saved; it is not presented as a selectable style. The Core-only presentation fields are bounded title, headline, introduction, placeholder and footer labels, with a shortcode/block title taking precedence for one render. C3 sends a JSON request only to Core's route and keeps the browser transcript in page memory only; no transcript or turn is persisted.
 
 The administrator workspace is a top-level, one-profile Core screen with NCI-specific masthead, bounded setup/readiness guidance, Core-safe tabs and a sticky save action. It never adds profile switching, authored question collections, contextual placement, cache or archive controls: those remain Pro-only. The public frame supplies only a session reset and loading/disabled states around the existing Core route and evidence output; it does not alter request payloads, transport ordering or validation.
+
+The Setup tab reconstructs the bounded four-step Core workflow: server-only `NCLI_OPENAI_API_KEY_DEFAULT` confirmation, vector-store/corpus configuration guidance, an administrator-only nonce/capability-protected File Search connection test, and published shortcode/block placement guidance. The test has no REST route or visitor output; it uses the selected Core transport with a fixed internal request, discards its answer/citations and passes only on a completed File Search result. It reserves only the existing global provider allowance. A reservation is released only before dispatch; attempted failures and timeouts remain accounted for and are not automatically retried.
 
 ## C3 mock retrieval and evidence boundary
 

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\Admin;
 
+use NicheCleverInteractive\Core\AI\ConnectionTestService;
+use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
+use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
@@ -16,12 +20,15 @@ final class SettingsPage
 {
     private const PAGE_SLUG = 'ncli-core';
     private const SAVE_ACTION = 'ncli_save_settings';
+    private const CONNECTION_TEST_ACTION = 'ncli_test_connection';
 
     private AdminActionGuard $guard;
+    private ConnectionTestService $connectionTest;
 
-    public function __construct(?AdminActionGuard $guard = null)
+    public function __construct(?AdminActionGuard $guard = null, ?ConnectionTestService $connectionTest = null)
     {
         $this->guard = $guard ?? AdminActionGuard::forWordPress();
+        $this->connectionTest = $connectionTest ?? new ConnectionTestService(new UnavailableTransport(), new SecretResolver(), new BudgetGate(new WordPressBucketStore()));
     }
 
     public function register(): void
@@ -32,6 +39,7 @@ final class SettingsPage
 
         add_action('admin_menu', [$this, 'addMenu']);
         add_action('admin_post_' . self::SAVE_ACTION, [$this, 'save']);
+        add_action('admin_post_' . self::CONNECTION_TEST_ACTION, [$this, 'testConnection']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
     }
 
@@ -93,7 +101,14 @@ final class SettingsPage
 
         $notice = $this->currentNotice();
         if ($notice !== '') {
-            echo '<div class="notice ' . ($notice === 'saved' ? 'notice-success' : 'notice-error') . '"><p>' . $this->escapeHtml($notice === 'saved' ? 'Core settings saved.' : 'Core settings could not be saved. Review the bounded field values and try again.') . '</p></div>';
+            $messages = [
+                'saved' => 'Core settings saved.',
+                'invalid' => 'Core settings could not be saved. Review the bounded field values and try again.',
+                'connection-passed' => 'Connection test passed. Public chat can become ready when the other Core requirements are met.',
+                'connection-failed' => 'Connection test did not complete. Check server configuration and try again without exposing provider details here.',
+            ];
+            $success = in_array($notice, ['saved', 'connection-passed'], true);
+            echo '<div class="notice ' . ($success ? 'notice-success' : 'notice-error') . '"><p>' . $this->escapeHtml($messages[$notice]) . '</p></div>';
         }
 
         if ($tab === 'diagnostics') {
@@ -127,9 +142,36 @@ final class SettingsPage
         }
     }
 
+    public function testConnection(): void
+    {
+        $nonce = $_POST['_ncli_connection_nonce'] ?? null;
+        if (!$this->guard->allows(self::CONNECTION_TEST_ACTION, $nonce)) {
+            $this->deny();
+            return;
+        }
+
+        $settings = $this->load();
+        $result = $this->connectionTest->test($settings);
+        $updated = $settings->withConnectionTest($result->status(), $result->fingerprint(), gmdate('Y-m-d\\TH:i:s\\Z'));
+        update_option(CoreSettings::OPTION_NAME, $updated->toArray(), false);
+        $this->redirect([
+            'page' => self::PAGE_SLUG,
+            'tab' => 'setup',
+            'ncli_notice' => $result->passed() ? 'connection-passed' : 'connection-failed',
+        ]);
+    }
+
     private function renderForm(CoreSettings $settings, string $tab): void
     {
         $values = $settings->toArray();
+        if ($tab === 'setup') {
+            echo '<form id="ncli-connection-test" method="post" action="' . $this->escapeAttribute($this->postUrl()) . '">';
+            echo '<input type="hidden" name="action" value="' . self::CONNECTION_TEST_ACTION . '">';
+            if (function_exists('wp_nonce_field')) {
+                wp_nonce_field(self::CONNECTION_TEST_ACTION, '_ncli_connection_nonce');
+            }
+            echo '</form>';
+        }
         echo '<form id="ncli-core-save" class="ncli-admin__workspace" method="post" action="' . $this->escapeAttribute($this->postUrl()) . '">';
         echo '<input type="hidden" name="action" value="' . self::SAVE_ACTION . '">';
         echo '<input type="hidden" name="ncli_tab" value="' . $this->escapeAttribute($tab) . '">';
@@ -143,8 +185,12 @@ final class SettingsPage
 
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         if ($tab === 'setup' || $tab === 'profile') {
-            echo '<input type="hidden" name="enabled" value="0">';
-            $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled']);
+            if ($tab === 'setup') {
+                $this->select('enabled', 'Visitor availability', ['0' => 'Unavailable', '1' => 'Available after a current connection test'], (bool) $values['enabled'] ? '1' : '0');
+            } else {
+                echo '<input type="hidden" name="enabled" value="0">';
+                $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled']);
+            }
             $this->text('corpus_version', 'Corpus version', (string) $values['profile']['corpus_version']);
         }
 
@@ -186,7 +232,11 @@ final class SettingsPage
     {
         echo '<section class="ncli-admin__tab-panel"><h2>Diagnostics</h2>';
         echo '<p>Readiness: <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
-        echo '<p>No credential, provider payload, file identifier, vector-store identifier or retrieved content is shown in diagnostics.</p></section>';
+        $settings = $this->load();
+        $status = $settings->connectionTestStatus();
+        $time = $settings->connectionTestTime();
+        echo '<p>Connection test: <strong>' . $this->escapeHtml($status) . '</strong>' . ($time !== '' ? ' (UTC ' . $this->escapeHtml($time) . ')' : '') . '</p>';
+        echo '<p>No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.</p></section>';
     }
 
     private function renderHelp(): void
@@ -199,20 +249,70 @@ final class SettingsPage
     private function renderSetupChecklist(CoreSettings $settings): void
     {
         $readiness = Readiness::evaluate($settings, new SecretResolver());
-        $state = $readiness->isReady() ? 'Ready' : 'Needs configuration';
-        $detail = $readiness->isReady()
-            ? 'The bounded Core profile can accept verified public questions.'
-            : 'Complete the Core profile and server-side provider configuration before enabling public answers.';
+        $secrets = new SecretResolver();
+        $keyState = $secrets->isAvailable() ? 'The server-side constant is available.' : 'Add the constant to the server configuration before testing.';
+        $corpusState = $settings->vectorStoreReference() !== '' && $settings->corpusVersion() !== ''
+            ? 'A vector-store reference and corpus version are saved.'
+            : 'Save the vector-store reference and corpus version in AI & Evidence.';
+        $testState = $settings->connectionTestStatus() === 'passed' && $readiness->isReady()
+            ? 'The current configuration passed its File Search connection test.'
+            : 'Run a new test after changing the key, transport mode, vector store, corpus version or prompt policy.';
+        $placements = $this->publishedPlacements();
 
-        echo '<section class="ncli-admin__get-started"><h2><span>Get started</span><span class="ncli-admin__get-started-count">3 Core steps</span></h2>';
+        echo '<section class="ncli-admin__get-started"><h2><span>Get started</span><span class="ncli-admin__get-started-count">4 Core steps</span></h2>';
         echo '<p>Core serves one carefully bounded public profile. It does not expose provider details or add Pro-only workspace controls.</p>';
-        echo '<ol class="ncli-admin__checklist"><li><span class="ncli-admin__check">1</span><div><strong>Profile</strong><p>Record the current corpus version and public panel labels.</p></div></li><li><span class="ncli-admin__check">2</span><div><strong>Evidence</strong><p>Approve only the titles and HTTPS links that may appear publicly.</p></div></li><li><span class="ncli-admin__check">3</span><div><strong>Readiness</strong><p>' . $this->escapeHtml($detail) . '</p></div></li></ol></section>';
+        echo '<ol class="ncli-admin__checklist">';
+        echo '<li><span class="ncli-admin__check">1</span><div><strong>Add your API key</strong><p>' . $this->escapeHtml($keyState) . ' Configure <code>NCLI_OPENAI_API_KEY_DEFAULT</code> in server configuration only, for example <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">2</span><div><strong>Choose your vector store</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-evidence'])) . '">Open AI &amp; Evidence</a>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">3</span><div><strong>Test your connection</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">Test connection</button></div></li>';
+        echo '<li><span class="ncli-admin__check">4</span><div><strong>Place your conversation</strong><p>';
+        if ($placements === []) {
+            echo 'Add the NCI Interactive block or <code>[ncli_interactive]</code> shortcode to a published page.';
+        } else {
+            echo 'Detected placement: ' . implode(', ', $placements) . '.';
+        }
+        echo ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">Open placement guidance</a>.</p></div></li>';
+        echo '</ol></section>';
     }
 
     private function currentNotice(): string
     {
         $notice = $_GET['ncli_notice'] ?? '';
-        return is_string($notice) && in_array($notice, ['saved', 'invalid'], true) ? $notice : '';
+        return is_string($notice) && in_array($notice, ['saved', 'invalid', 'connection-passed', 'connection-failed'], true) ? $notice : '';
+    }
+
+    /** @return list<string> */
+    private function publishedPlacements(): array
+    {
+        if (!function_exists('get_posts')) {
+            return [];
+        }
+        $posts = get_posts([
+            'post_type' => ['page', 'post'],
+            'post_status' => 'publish',
+            'posts_per_page' => 100,
+            'orderby' => 'ID',
+            'order' => 'ASC',
+        ]);
+        if (!is_array($posts)) {
+            return [];
+        }
+        $placements = [];
+        foreach ($posts as $post) {
+            if (!is_object($post) || !isset($post->post_content, $post->ID, $post->post_title) || !is_string($post->post_content)) {
+                continue;
+            }
+            $content = $post->post_content;
+            $isPlaced = (function_exists('has_shortcode') && has_shortcode($content, 'ncli_interactive'))
+                || (function_exists('has_block') && has_block('ncli/interactive', $content));
+            if (!$isPlaced) {
+                continue;
+            }
+            $title = is_string($post->post_title) && $post->post_title !== '' ? $post->post_title : 'Published page';
+            $url = function_exists('get_edit_post_link') ? get_edit_post_link((int) $post->ID, 'raw') : false;
+            $placements[] = is_string($url) && $url !== '' ? '<a href="' . $this->escapeAttribute($url) . '">' . $this->escapeHtml($title) . '</a>' : $this->escapeHtml($title);
+        }
+        return $placements;
     }
 
     private function assetUrl(string $path): string
@@ -267,6 +367,7 @@ final class SettingsPage
                 'footer_left' => $this->stringPost('presentation_footer_left', $existing['presentation']['footer_left']),
                 'footer_right' => $this->stringPost('presentation_footer_right', $existing['presentation']['footer_right']),
             ],
+            'diagnostics' => $existing['diagnostics'],
         ];
     }
 
@@ -303,7 +404,8 @@ final class SettingsPage
     {
         echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><select id="ncli-' . $this->escapeAttribute($name) . '" name="' . $this->escapeAttribute($name) . '">';
         foreach ($options as $value => $text) {
-            echo '<option value="' . $this->escapeAttribute($value) . '"' . ($selected === $value ? ' selected' : '') . '>' . $this->escapeHtml($text) . '</option>';
+            $optionValue = (string) $value;
+            echo '<option value="' . $this->escapeAttribute($optionValue) . '"' . ($selected === $optionValue ? ' selected' : '') . '>' . $this->escapeHtml($text) . '</option>';
         }
         echo '</select></td></tr>';
     }

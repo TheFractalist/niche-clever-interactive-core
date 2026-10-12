@@ -60,6 +60,13 @@ final class CoreSettings
                 'footer_left' => 'Context is everything',
                 'footer_right' => 'Get better answers',
             ],
+            'diagnostics' => [
+                'connection_test' => [
+                    'status' => 'never',
+                    'tested_at' => '',
+                    'fingerprint' => '',
+                ],
+            ],
         ];
     }
 
@@ -73,6 +80,8 @@ final class CoreSettings
         $limits = is_array($input['limits'] ?? null) ? $input['limits'] : [];
         $appearance = is_array($input['appearance'] ?? null) ? $input['appearance'] : [];
         $presentation = is_array($input['presentation'] ?? null) ? $input['presentation'] : [];
+        $diagnostics = is_array($input['diagnostics'] ?? null) ? $input['diagnostics'] : [];
+        $connectionTest = is_array($diagnostics['connection_test'] ?? null) ? $diagnostics['connection_test'] : [];
 
         $id = self::boundedString($profile['id'] ?? self::DEFAULT_PROFILE_ID, 64);
         if ($id !== self::DEFAULT_PROFILE_ID) {
@@ -118,6 +127,9 @@ final class CoreSettings
                 'placeholder' => self::boundedString($presentation['placeholder'] ?? $defaults['presentation']['placeholder'], 160),
                 'footer_left' => self::boundedString($presentation['footer_left'] ?? $defaults['presentation']['footer_left'], 120),
                 'footer_right' => self::boundedString($presentation['footer_right'] ?? $defaults['presentation']['footer_right'], 120),
+            ],
+            'diagnostics' => [
+                'connection_test' => self::connectionTest($connectionTest),
             ],
         ]);
     }
@@ -171,6 +183,33 @@ final class CoreSettings
     public function instructions(): string
     {
         return $this->values['instructions'];
+    }
+
+    public function connectionTestStatus(): string
+    {
+        return $this->values['diagnostics']['connection_test']['status'];
+    }
+
+    public function connectionTestTime(): string
+    {
+        return $this->values['diagnostics']['connection_test']['tested_at'];
+    }
+
+    public function connectionTestFingerprint(): string
+    {
+        return $this->values['diagnostics']['connection_test']['fingerprint'];
+    }
+
+    public function withConnectionTest(string $status, string $fingerprint, string $testedAt): self
+    {
+        $values = $this->values;
+        $values['diagnostics']['connection_test'] = [
+            'status' => $status,
+            'tested_at' => $testedAt,
+            'fingerprint' => $fingerprint,
+        ];
+
+        return self::fromArray($values);
     }
 
     /**
@@ -249,6 +288,29 @@ final class CoreSettings
 
         ksort($normalised);
         return $normalised;
+    }
+
+    /**
+     * @param array<string, mixed> $connectionTest
+     * @return array{status: string, tested_at: string, fingerprint: string}
+     */
+    private static function connectionTest(array $connectionTest): array
+    {
+        $status = self::boundedString($connectionTest['status'] ?? 'never', 16);
+        if (!in_array($status, ['never', 'passed', 'failed'], true)) {
+            throw new InvalidArgumentException('The Core connection-test status is malformed.');
+        }
+
+        $testedAt = self::boundedString($connectionTest['tested_at'] ?? '', 32);
+        $fingerprint = self::boundedString($connectionTest['fingerprint'] ?? '', 64);
+        if ($status === 'never' && ($testedAt !== '' || $fingerprint !== '')) {
+            throw new InvalidArgumentException('The Core connection-test record is malformed.');
+        }
+        if ($status !== 'never' && (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $testedAt) !== 1 || preg_match('/^[a-f0-9]{64}$/', $fingerprint) !== 1)) {
+            throw new InvalidArgumentException('The Core connection-test record is malformed.');
+        }
+
+        return ['status' => $status, 'tested_at' => $testedAt, 'fingerprint' => $fingerprint];
     }
 
 }

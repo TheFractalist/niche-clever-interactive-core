@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-12-admin-dashboard-parity.1",
+  "manifest_version": "2026-10-12-setup-workflow-parity.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -159,10 +159,10 @@
       "source_blob": "f90519ad05748731b91d05e48b457d18581e12c2; 31f6d359509ec9a9ac6d2026eca92e7b7a39c5be",
       "owner": "Core",
       "licence": "GPL-2.0-or-later",
-      "target": "src/Admin/SettingsPage.php and assets/css/admin.css",
-      "method_scope": "NCI-only single-profile Dashboard chrome: standalone masthead/banner, Core-safe tabs, guided readiness checklist, table-like bounded field presentation, notices and blue sticky save treatment; reconstructed without source-line copying",
-      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md; 2026-10-12 NCI Core admin Dashboard-chrome parity correction",
-      "test_evidence": ["tests/c2-render.php", "visual-parity-matrix", "package-audit"],
+      "target": "src/Admin/SettingsPage.php, src/AI/ConnectionTestService.php, src/Configuration/ConnectionFingerprint.php and assets/css/admin.css",
+      "method_scope": "NCI-only single-profile Dashboard chrome and reconstructed four-step Core Setup workflow: server-constant confirmation, vector/corpus guidance, administrator-only completed-File-Search verification, placement guidance, current-test readiness and opaque diagnostic state; reconstructed without source-line copying",
+      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md; 2026-10-12 NCI Core admin Dashboard-chrome parity correction; 2026-10-12 NCI Core RC4 AskFolio Setup-workflow parity authorisation",
+      "test_evidence": ["tests/c2-render.php", "tests/c2-admin-chrome.php", "tests/c4-connection-test.php", "visual-parity-matrix", "package-audit"],
       "direct_incorporation": false
     },
     {

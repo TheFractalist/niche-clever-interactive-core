@@ -8,7 +8,10 @@ use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\AI\Transport\TransportResult;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\ConnectionFingerprint;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Configuration\TransportMode;
+use NicheCleverInteractive\Core\Security\PromptPolicy;
 
 require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
@@ -29,7 +32,7 @@ $settings = CoreSettings::fromArray([
     'profile' => [
         'id' => 'default',
         'corpus_version' => 'fixture-corpus-2026-10',
-        'vector_store_reference' => '',
+        'vector_store_reference' => 'vs_fixture_retrieval',
         'approved_evidence' => [
             'fixture_source' => ['title' => 'Fixture source', 'url' => 'https://example.test/ncli-fixture-source'],
         ],
@@ -39,6 +42,12 @@ $settings = CoreSettings::fromArray([
     'limits' => ['visitor_requests_per_day' => 10, 'provider_requests_per_day' => 100],
     'appearance' => ['panel_style' => 'classic'],
 ]);
+
+$settings = $settings->withConnectionTest(
+    'passed',
+    (string) ConnectionFingerprint::forSettings($settings, new SecretResolver('NCLI_NOT_A_SECRET'), new PromptPolicy(), TransportMode::MOCK),
+    '2026-10-12T12:00:00Z'
+);
 
 $service = new ChatService(new DeterministicMockTransport(), new SecretResolver('NCLI_NOT_A_SECRET'));
 $normal = $service->handle(['question' => 'What is NCI?'], $settings)->payload();
