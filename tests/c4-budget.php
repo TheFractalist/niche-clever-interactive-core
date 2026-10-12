@@ -1,0 +1,102 @@
+<?php
+
+declare(strict_types=1);
+
+use NicheCleverInteractive\Core\Budget\BucketStore;
+use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\Budget\ClientScopeResolver;
+use NicheCleverInteractive\Core\Configuration\CoreSettings;
+
+require_once dirname(__DIR__) . '/src/autoload.php';
+
+if (!defined('NCLI_CORE_SCOPE_SECRET')) {
+    define('NCLI_CORE_SCOPE_SECRET', 'c4-test-scope-secret');
+}
+if (!defined('NCLI_CORE_TRUSTED_PROXY_CIDRS')) {
+    define('NCLI_CORE_TRUSTED_PROXY_CIDRS', '127.0.0.1/32');
+}
+
+$failures = [];
+$assert = static function (bool $condition, string $message) use (&$failures): void {
+    if (!$condition) {
+        $failures[] = $message;
+    }
+};
+
+$store = new class implements BucketStore {
+    /** @var array<string, array{reserved: int, committed: int}> */
+    public array $rows = [];
+    public function reserve(string $kind, string $scopeHash, string $periodStart, int $limit): bool {
+        $key = $kind . ':' . $scopeHash . ':' . $periodStart;
+        $row = $this->rows[$key] ?? ['reserved' => 0, 'committed' => 0];
+        if ($row['reserved'] + $row['committed'] >= $limit) {
+            return false;
+        }
+        ++$row['reserved'];
+        $this->rows[$key] = $row;
+        return true;
+    }
+    public function commit(string $kind, string $scopeHash, string $periodStart): void {
+        $key = $kind . ':' . $scopeHash . ':' . $periodStart;
+        $row = $this->rows[$key];
+        $row['reserved'] = max(0, $row['reserved'] - 1);
+        ++$row['committed'];
+        $this->rows[$key] = $row;
+    }
+    public function release(string $kind, string $scopeHash, string $periodStart): void {
+        $key = $kind . ':' . $scopeHash . ':' . $periodStart;
+        $row = $this->rows[$key];
+        $row['reserved'] = max(0, $row['reserved'] - 1);
+        $this->rows[$key] = $row;
+    }
+};
+
+$settings = CoreSettings::fromArray([
+    'enabled' => true,
+    'profile' => ['id' => 'default', 'corpus_version' => 'fixture-corpus', 'vector_store_reference' => '', 'approved_evidence' => []],
+    'instructions' => '',
+    'response_preset' => 'balanced',
+    'limits' => ['visitor_requests_per_day' => 2, 'provider_requests_per_day' => 3],
+    'appearance' => ['panel_style' => 'classic'],
+]);
+
+$scopes = new ClientScopeResolver();
+$untrusted = $scopes->hash(['REMOTE_ADDR' => '203.0.113.10', 'HTTP_X_FORWARDED_FOR' => '198.51.100.2']);
+$direct = $scopes->hash(['REMOTE_ADDR' => '203.0.113.10']);
+$trusted = $scopes->hash(['REMOTE_ADDR' => '127.0.0.1', 'HTTP_X_FORWARDED_FOR' => '198.51.100.2, 127.0.0.1']);
+$assert($untrusted === $direct, 'Forwarded headers from an untrusted remote must be ignored.');
+$assert($trusted !== null && $trusted !== $scopes->hash(['REMOTE_ADDR' => '127.0.0.1']), 'Configured trusted proxies may supply a validated client address.');
+$assert($untrusted !== null && !str_contains($untrusted, '203.0.113.10'), 'Only the server-secret hash, not a raw IP, is used as storage scope.');
+
+$gate = new BudgetGate($store, $scopes);
+$first = $gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']);
+$second = $gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']);
+$third = $gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']);
+$assert($first !== null && $second !== null && $third === null, 'Reservations must enforce the visitor allowance atomically at the configured boundary.');
+$first?->release();
+$replacement = $gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']);
+$assert($replacement !== null, 'A pre-dispatch reservation release must restore allowance.');
+$replacement?->commit();
+$second?->commit();
+$assert($gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']) === null, 'Committed requests must remain counted for the UTC day.');
+
+foreach (['https://127.0.0.1/private', 'https://localhost/private', 'https://user:pass@example.test/private'] as $unsafe) {
+    try {
+        CoreSettings::fromArray([
+            'enabled' => false,
+            'profile' => ['id' => 'default', 'corpus_version' => '', 'vector_store_reference' => '', 'approved_evidence' => ['blocked' => ['title' => 'Blocked', 'url' => $unsafe]]],
+            'instructions' => '', 'response_preset' => 'balanced',
+            'limits' => ['visitor_requests_per_day' => 1, 'provider_requests_per_day' => 1], 'appearance' => ['panel_style' => 'classic'],
+        ]);
+        $assert(false, 'Private or credentialed evidence URLs must be rejected.');
+    } catch (\InvalidArgumentException $exception) {
+        $assert(true, 'Unsafe evidence URL rejected.');
+    }
+}
+
+if ($failures !== []) {
+    fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");
+    exit(1);
+}
+
+echo "PASS: C4 budget, proxy-scope and safe-URL checks verified\n";

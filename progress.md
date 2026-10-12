@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C3 mock retrieval, chat route and evidence.** C1 and C2 are tested. C3 provides Core's sole public route, deterministic fixture-only transport and current-evidence validation. Pro remains blocked until Core C5 technical acceptance.
+**12 October 2026 — C4 Core budgets, privacy and resilience.** C1–C3 are tested. C4 adds Core-only daily reservation accounting, privacy boundaries and safe public evidence URLs. Pro remains blocked until Core C5 technical acceptance.
 
 ## Implemented
 
@@ -21,13 +21,16 @@
 - C3 deterministic mock transport is enabled only by the boolean server constant `NCLI_CORE_MOCK_TRANSPORT` in the disposable fixture. There is no live provider client, credential, vector-store value or provider call.
 - C3 requires a completed File Search result whose current policy/corpus fingerprints and annotation tokens match the current Core evidence map before presenting a bounded answer and approved title/HTTPS URL.
 - C3 fixture validation: PASS — WordPress 6.5/PHP 8.1 served a mocked enabled answer and approved public evidence through Core's route; a prompt-injection fixture returned only `policy_refusal`; a 390px viewport retained the usable panel; keyboard focus advanced from question to Ask.
+- C4 visitor/provider daily reservations with explicit InnoDB transactions and row locking. Visitor scope is a server-secret HMAC; raw addresses are not stored. Forwarded headers are accepted only from configured trusted proxy CIDRs.
+- C4 uses UTC daily rollover, releases failed pre-dispatch paired reservations, retains accounting after an attempted/ambiguous transport outcome and does not retry automatically. Evidence URLs now reject IP literals, localhost, `.local`, `.internal` and URL credentials without fetching them.
+- C4 fixture validation: PASS — 20 concurrent mocked route requests on WordPress 6.5/PHP 8.1/MariaDB all returned HTTP 200; the two NCI-only bucket rows had 64-character scope hashes, zero reservations, committed count 20 and InnoDB engine.
 
 ## Requires verification
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
-- C3 deterministic domain/route checks, source/provenance audits, C1/C2 suites, full PHP lint and `git diff --check` require a final clean run before the C3 commit.
-- C4 atomic rate/provider reservations, privacy controls and resilience tests remain absent. C5 packaging, compatibility matrices and local candidate evidence remain absent.
+- C4 deterministic domain/route checks, source/provenance audits, C1–C3 suites, full PHP lint and `git diff --check` require a final clean run before the C4 commit.
+- C5 packaging, compatibility matrices and local candidate evidence remain absent.
 
 ## Remaining conditions
 
@@ -36,4 +39,4 @@
 
 ## Next authorised continuation
 
-Commit the C3 mock-only route/evidence increment after final source and changed-path audit, then begin C4 rate/budget and privacy controls. Do not create Pro.
+Commit the C4 budget/privacy increment after final source and changed-path audit, then begin C5 deterministic tooling and local-only candidate work. Do not create Pro.

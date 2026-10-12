@@ -30,6 +30,14 @@ The route first rejects malformed request shapes and attempts to override Core's
 
 Every historical answer needs a completed File Search result. The result must carry current policy and corpus fingerprints, and every current annotation token must map to Core's current approved evidence map. Public output is limited to the answer and approved title/credential-free HTTPS URL. Annotation tokens, IDs, retrieved text, provider payloads, secrets and diagnostics are never emitted. A policy refusal, invalid request, unavailable profile, provider failure and evidence failure use the closed public error set.
 
+## C4 budget, privacy and resilience boundary
+
+Before Core dispatches a transport request it reserves one visitor and one global provider allowance in the InnoDB-backed `ncli_core_rate_buckets` table. It locks the exact `(kind, scope_hash, period_start)` row in a transaction. The visitor scope is an HMAC under the server-only `NCLI_CORE_SCOPE_SECRET`; Core never persists the address itself. Forwarded-client headers are ignored unless `REMOTE_ADDR` is in the explicit `NCLI_CORE_TRUSTED_PROXY_CIDRS` CIDR allowlist.
+
+The day boundary is UTC midnight. A reservation released before provider dispatch restores allowance. Once dispatch is attempted, Core retains the reservation on timeout/ambiguous failure and never retries automatically. A returned answer that fails evidence validation remains accounted for because provider work was attempted. There is no cache in this phase.
+
+Core rejects credentialed, IP-literal, localhost, `.local` and `.internal` evidence links without fetching them, so public evidence cannot turn the browser into an internal-network request path. The detailed lifecycle and privacy record is `docs/PRIVACY-LIFECYCLE.md`.
+
 ## Six provisional seams
 
 | Seam | Contract | Bounded intent | Fail-closed rule |

@@ -3,6 +3,7 @@
 namespace NicheCleverInteractive\Core\Api\V1\Value;
 
 use InvalidArgumentException;
+use NicheCleverInteractive\Core\Security\PublicUrlPolicy;
 
 final class ApprovedEvidenceV1
 {
@@ -21,15 +22,7 @@ final class ApprovedEvidenceV1
         }
 
         if ($url !== null) {
-            $parts = parse_url($url);
-            if (
-                $parts === false
-                || ($parts['scheme'] ?? '') !== 'https'
-                || !isset($parts['host'])
-                || isset($parts['user'])
-                || isset($parts['pass'])
-                || strlen($url) > 2048
-            ) {
+            if (!PublicUrlPolicy::allows($url)) {
                 throw new InvalidArgumentException('Evidence URLs must be credential-free absolute HTTPS URLs.');
             }
         }

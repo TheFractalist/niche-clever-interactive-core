@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Configuration;
 
 use InvalidArgumentException;
+use NicheCleverInteractive\Core\Security\PublicUrlPolicy;
 
 final class CoreSettings
 {
@@ -137,6 +138,16 @@ final class CoreSettings
         return $this->values['response_preset'];
     }
 
+    public function visitorRequestsPerDay(): int
+    {
+        return $this->values['limits']['visitor_requests_per_day'];
+    }
+
+    public function providerRequestsPerDay(): int
+    {
+        return $this->values['limits']['provider_requests_per_day'];
+    }
+
     public function instructions(): string
     {
         return $this->values['instructions'];
@@ -201,7 +212,7 @@ final class CoreSettings
 
             $title = self::boundedString($record['title'] ?? '', 160);
             $url = self::boundedString($record['url'] ?? '', 2048);
-            if ($title === '' || filter_var($url, FILTER_VALIDATE_URL) === false || strncmp($url, 'https://', 8) !== 0 || self::hasCredential($url)) {
+            if ($title === '' || !PublicUrlPolicy::allows($url)) {
                 throw new InvalidArgumentException('The Core evidence map has an invalid public link.');
             }
 
@@ -212,9 +223,4 @@ final class CoreSettings
         return $normalised;
     }
 
-    private static function hasCredential(string $url): bool
-    {
-        $parts = parse_url($url);
-        return is_array($parts) && (isset($parts['user']) || isset($parts['pass']));
-    }
 }

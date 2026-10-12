@@ -14,6 +14,8 @@ use NicheCleverInteractive\Core\AI\ChatService;
 use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
 use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
+use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
 
 final class Plugin
 {
@@ -33,7 +35,7 @@ final class Plugin
         $transport = defined('NCLI_CORE_MOCK_TRANSPORT') && NCLI_CORE_MOCK_TRANSPORT === true
             ? new DeterministicMockTransport()
             : new UnavailableTransport();
-        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets));
+        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, null, new BudgetGate(new WordPressBucketStore())));
     }
 
     public static function register(string $pluginFile): void
@@ -128,7 +130,7 @@ final class Plugin
             committed_count bigint(20) unsigned NOT NULL DEFAULT 0,
             PRIMARY KEY  (id),
             UNIQUE KEY ncli_rate_scope_period (kind,scope_hash,period_start)
-        ) {$collate};";
+        ) {$collate} ENGINE=InnoDB;";
 
         dbDelta($sql);
     }

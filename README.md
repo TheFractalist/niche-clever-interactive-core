@@ -10,6 +10,7 @@ This public repository holds Niche Clever Interactive Core, a non-production Cor
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
 - C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and a responsive public panel.
 - C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned transport/evidence boundary. The only present transport is a server-constant-gated deterministic mock for disposable fixtures; there is no provider client, provider value or live request.
+- C4's Core-only daily visitor/provider reservations, server-secret scope hashing, trusted-proxy boundary and safe public-evidence URL policy. See `docs/PRIVACY-LIFECYCLE.md`.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
 
@@ -26,6 +27,7 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c2-render.php
     & 'C:\xampp\php\php.exe' tests/c3-retrieval.php
     & 'C:\xampp\php\php.exe' tests/c3-route.php
+    & 'C:\xampp\php\php.exe' tests/c4-budget.php
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
 The C0 fixture topology has no database dump or provider configuration. C1–C5 still require their respective implementation and acceptance evidence; a live File Search canary remains blocked until segregated test resources are supplied outside chat.
