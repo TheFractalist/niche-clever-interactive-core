@@ -13,7 +13,8 @@
 
 ## Requires verification
 
-- The current run must record PHP lint, pure contract-test and Git diff-check outcomes before its commit.
+- Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
+- Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
 - No WordPress, PHP 8.1 fixture, browser, provider, database, archive, security, coexistence, packaging or release behaviour is verified by this foundation.
 
 ## Remaining conditions
