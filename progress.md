@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C5 local mock-verified Core candidate.** C1–C4 are tested. C5 is preparing the `1.0.0-rc.1` local-only package and both fixture-matrix evidence. Pro remains blocked until Core technical acceptance.
+**12 October 2026 — C5 local mock-verified Core candidate.** C1–C4 are tested. The local-only `1.0.0-rc.1` package was built from commit 9f89f824857d36030ce2828d9bd1a1c37a1e41c2 and verified on both fixture matrices. Pro remains blocked until Core technical acceptance.
 
 ## Implemented
 
@@ -30,13 +30,13 @@
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
-- C5 package audit, checksum, licence/notices review, browser confirmation, rollback rehearsal and receipt remain to be recorded. WPCS/PHPCS and Plugin Check require separately reviewed disposable tooling; no vendor or third-party source is committed.
+- C5 candidate package, checksum, denylist/source audit and rollback rehearsal are complete. WPCS/PHPCS and Plugin Check remain unrun because no reviewed disposable toolchain is presently installed; no vendor or third-party source is committed.
 
 ## Remaining conditions
 
-- C5 local candidate evidence remains. A live canary with a segregated test credential/store is a C5 technical-acceptance blocker.
+- C5 is **mock-verified, live-canary deferred**. It is not technically accepted: the live canary is blocked on segregated provider resources, and WPCS/PHPCS, Plugin Check and GPL full-text package review still require a reviewed local tooling/licensing increment.
 - Pro remains outside active work. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Complete the C5 local candidate audit and receipt. Do not create Pro until a segregated live File Search canary passes.
+Do not create Pro. Next, establish reviewed disposable standards/Plugin Check tooling and add the GPL full licence text, then run the segregated live File Search canary only when Jacob supplies its test credential and vector store outside chat.
