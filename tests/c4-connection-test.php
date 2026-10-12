@@ -35,7 +35,6 @@ $settings = CoreSettings::fromArray([
         'id' => 'default',
         'corpus_version' => 'fixture-corpus-v1',
         'vector_store_reference' => 'vs_fixture_connection_test',
-        'approved_evidence' => [],
     ],
     'instructions' => 'Bounded fixture instructions.',
     'response_preset' => 'balanced',
@@ -97,7 +96,7 @@ $store = new class implements BucketStore {
 
 $completed = new class implements ResponseTransport {
     public function respond(TransportRequest $request): TransportResult {
-        return new TransportResult('discarded answer', true, ['discarded_citation'], $request->policyFingerprint(), $request->corpusFingerprint());
+        return new TransportResult('discarded answer', true, $request->policyFingerprint(), $request->corpusFingerprint());
     }
 };
 $service = new ConnectionTestService($completed, $secrets, new BudgetGate($store), $policy, TransportMode::MOCK);
@@ -113,7 +112,7 @@ $assert($secondOutcome->passed() && !$exhaustedOutcome->passed(), 'A connection 
 
 $incomplete = new class implements ResponseTransport {
     public function respond(TransportRequest $request): TransportResult {
-        return new TransportResult('discarded answer', false, [], $request->policyFingerprint(), $request->corpusFingerprint());
+        return new TransportResult('discarded answer', false, $request->policyFingerprint(), $request->corpusFingerprint());
     }
 };
 $failed = (new ConnectionTestService($incomplete, $secrets, new BudgetGate(new class implements BucketStore {

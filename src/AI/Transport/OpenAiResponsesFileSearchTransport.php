@@ -89,11 +89,6 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         ];
     }
 
-    public static function annotationTokenForFileId(string $fileId): string
-    {
-        return hash('sha256', 'ncli-openai-file-citation:' . $fileId);
-    }
-
     /**
      * @param array<string, mixed> $payload
      */
@@ -106,7 +101,6 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
 
         $completedFileSearch = false;
         $answerParts = [];
-        $annotationTokens = [];
         foreach ($output as $item) {
             if (!is_array($item)) {
                 continue;
@@ -126,23 +120,12 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
                 }
 
                 $answerParts[] = $content['text'];
-                $annotations = $content['annotations'] ?? [];
-                if (!is_array($annotations)) {
-                    continue;
-                }
-                foreach ($annotations as $annotation) {
-                    if (!is_array($annotation) || ($annotation['type'] ?? null) !== 'file_citation' || !is_string($annotation['file_id'] ?? null)) {
-                        continue;
-                    }
-                    $annotationTokens[] = self::annotationTokenForFileId($annotation['file_id']);
-                }
             }
         }
 
         return new TransportResult(
             trim(implode("\n", $answerParts)),
             $completedFileSearch,
-            array_values(array_unique($annotationTokens)),
             $request->policyFingerprint(),
             $request->corpusFingerprint()
         );

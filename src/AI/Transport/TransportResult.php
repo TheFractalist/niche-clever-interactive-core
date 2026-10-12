@@ -8,19 +8,13 @@ final class TransportResult
 {
     private string $answer;
     private bool $completedFileSearch;
-    /** @var list<string> */
-    private array $annotationTokens;
     private string $policyFingerprint;
     private string $corpusFingerprint;
 
-    /**
-     * @param list<string> $annotationTokens
-     */
-    public function __construct(string $answer, bool $completedFileSearch, array $annotationTokens, string $policyFingerprint, string $corpusFingerprint)
+    public function __construct(string $answer, bool $completedFileSearch, string $policyFingerprint, string $corpusFingerprint)
     {
         $this->answer = $answer;
         $this->completedFileSearch = $completedFileSearch;
-        $this->annotationTokens = $annotationTokens;
         $this->policyFingerprint = $policyFingerprint;
         $this->corpusFingerprint = $corpusFingerprint;
     }
@@ -33,12 +27,6 @@ final class TransportResult
     public function completedFileSearch(): bool
     {
         return $this->completedFileSearch;
-    }
-
-    /** @return list<string> */
-    public function annotationTokens(): array
-    {
-        return $this->annotationTokens;
     }
 
     public function policyFingerprint(): string

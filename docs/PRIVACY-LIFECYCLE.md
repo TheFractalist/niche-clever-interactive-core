@@ -8,13 +8,13 @@ Core's public route uses only a server-secret HMAC of the canonical client addre
 
 The `ncli_core_rate_buckets` table uses InnoDB transactions and a unique `(kind, scope_hash, period_start)` key. A reservation increments `reserved_count`; a settled request moves it to `committed_count`; a pre-dispatch cancellation releases it. UTC midnight creates a new period. Core does not auto-retry an ambiguous attempted provider request, and it retains that accounting outcome.
 
-The administrator-only connection test also reserves the global provider bucket, but it never creates a visitor bucket. It stores only a pass/fail/never state, UTC test time and opaque configuration fingerprint. The test deliberately discards its fixed verification prompt, answer, citation tokens, provider payload and retrieved text. Its diagnostic record is invalidated whenever the effective server key, transport mode, vector-store reference, corpus version, prompt policy or Core version changes.
+The administrator-only connection test also reserves the global provider bucket, but it never creates a visitor bucket. It stores only a pass/fail/never state, UTC test time and opaque configuration fingerprint. The test deliberately discards its fixed verification prompt, answer, provider payload, citation metadata and retrieved text. Its diagnostic record is invalidated whenever the effective server key, transport mode, vector-store reference, corpus version, prompt policy or Core version changes.
 
-## Evidence links
+## Retrieval output
 
-Approved evidence links must be bounded, credential-free HTTPS URLs. Core rejects URL credentials, IP-literal hosts, `localhost`, `.local` and `.internal` hosts before a public response can include them. It does not fetch or probe those links.
+Core emits the bounded answer only. It does not configure, store, validate or publish an approved-evidence map, source link or citation metadata. The browser therefore never follows provider-derived source URLs.
 
-The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends no retrieved File Search result text in its request, retains no provider payload, and converts provider file-citation IDs into opaque annotation tokens before Core evaluates the approved evidence map. The public response never contains the raw provider citation, vector-store reference, provider payload or credential.
+The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends no retrieved File Search result text in its request, retains no provider payload and ignores provider file-citation metadata. The public response never contains a provider citation, vector-store reference, provider payload or credential.
 
 ## Lifecycle
 

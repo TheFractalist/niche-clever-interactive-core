@@ -10,7 +10,6 @@ final class CacheKeyV1
     private ProfileIdV1 $profileId;
     private string $policyFingerprint;
     private string $corpusFingerprint;
-    private string $approvalMapRevision;
     private string $accessStateFingerprint;
     private string $responsePreset;
 
@@ -19,7 +18,6 @@ final class CacheKeyV1
         ProfileIdV1 $profileId,
         string $policyFingerprint,
         string $corpusFingerprint,
-        string $approvalMapRevision,
         string $accessStateFingerprint,
         string $responsePreset
     ) {
@@ -27,7 +25,7 @@ final class CacheKeyV1
             throw new InvalidArgumentException('Question digest must be a SHA-256 hexadecimal digest.');
         }
 
-        foreach ([$policyFingerprint, $corpusFingerprint, $approvalMapRevision, $accessStateFingerprint, $responsePreset] as $value) {
+        foreach ([$policyFingerprint, $corpusFingerprint, $accessStateFingerprint, $responsePreset] as $value) {
             if ($value === '') {
                 throw new InvalidArgumentException('Cache key fingerprints and preset must be explicit.');
             }
@@ -37,7 +35,6 @@ final class CacheKeyV1
         $this->profileId = $profileId;
         $this->policyFingerprint = $policyFingerprint;
         $this->corpusFingerprint = $corpusFingerprint;
-        $this->approvalMapRevision = $approvalMapRevision;
         $this->accessStateFingerprint = $accessStateFingerprint;
         $this->responsePreset = $responsePreset;
     }
@@ -53,7 +50,6 @@ final class CacheKeyV1
                     $this->profileId->value(),
                     $this->policyFingerprint,
                     $this->corpusFingerprint,
-                    $this->approvalMapRevision,
                     $this->accessStateFingerprint,
                     $this->responsePreset,
                 ]

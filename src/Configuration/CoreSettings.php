@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Configuration;
 
 use InvalidArgumentException;
-use NicheCleverInteractive\Core\Security\PublicUrlPolicy;
 
 final class CoreSettings
 {
@@ -41,7 +40,6 @@ final class CoreSettings
                 'id' => self::DEFAULT_PROFILE_ID,
                 'corpus_version' => '',
                 'vector_store_reference' => '',
-                'approved_evidence' => [],
             ],
             'instructions' => '',
             'response_preset' => 'balanced',
@@ -101,15 +99,12 @@ final class CoreSettings
             throw new InvalidArgumentException('Unknown Core panel style.');
         }
 
-        $evidence = self::normaliseEvidenceMap($profile['approved_evidence'] ?? []);
-
         return new self([
             'enabled' => self::boolValue($input['enabled'] ?? $defaults['enabled']),
             'profile' => [
                 'id' => $id,
                 'corpus_version' => self::boundedString($profile['corpus_version'] ?? '', 128),
                 'vector_store_reference' => self::boundedString($profile['vector_store_reference'] ?? '', 256),
-                'approved_evidence' => $evidence,
             ],
             'instructions' => self::boundedString($input['instructions'] ?? '', 4000),
             'response_preset' => $preset,
@@ -155,14 +150,6 @@ final class CoreSettings
     public function corpusVersion(): string
     {
         return $this->values['profile']['corpus_version'];
-    }
-
-    /**
-     * @return array<string, array{title: string, url: string}>
-     */
-    public function approvedEvidence(): array
-    {
-        return $this->values['profile']['approved_evidence'];
     }
 
     public function responsePreset(): string
@@ -259,35 +246,6 @@ final class CoreSettings
         }
 
         return $value;
-    }
-
-    /**
-     * @param mixed $value
-     * @return array<string, array{title: string, url: string}>
-     */
-    private static function normaliseEvidenceMap($value): array
-    {
-        if (!is_array($value) || count($value) > 100) {
-            throw new InvalidArgumentException('The Core evidence map is malformed.');
-        }
-
-        $normalised = [];
-        foreach ($value as $annotation => $record) {
-            if (!is_string($annotation) || preg_match('/^[A-Za-z0-9_-]{1,128}$/', $annotation) !== 1 || !is_array($record)) {
-                throw new InvalidArgumentException('The Core evidence map is malformed.');
-            }
-
-            $title = self::boundedString($record['title'] ?? '', 160);
-            $url = self::boundedString($record['url'] ?? '', 2048);
-            if ($title === '' || !PublicUrlPolicy::allows($url)) {
-                throw new InvalidArgumentException('The Core evidence map has an invalid public link.');
-            }
-
-            $normalised[$annotation] = ['title' => $title, 'url' => $url];
-        }
-
-        ksort($normalised);
-        return $normalised;
     }
 
     /**

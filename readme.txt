@@ -1,20 +1,20 @@
 === Niche Clever Interactive Core ===
 Contributors: nicheclever
-Tags: interactive, retrieval, evidence
+Tags: interactive, retrieval, file-search
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0-rc.4
+Stable tag: 1.0.0-rc.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Core-owned, evidence-bounded interactive responses for Niche Clever sites.
+Core-owned, File Search-grounded interactive responses for Niche Clever sites.
 
 == Description ==
 
 Niche Clever Interactive Core is a non-production, local-only release candidate.
 It provides a single Core profile, a bounded public panel, settings controls and
-evidence validation. Provider use remains server-side and separately controlled.
+completed File Search validation. Provider use remains server-side and separately controlled.
 
 == Installation ==
 
@@ -23,6 +23,9 @@ evidence validation. Provider use remains server-side and separately controlled.
 3. Configure the Core workspace with a server-side credential, vector-store reference and corpus version, then run the administrator-only connection test before enabling public answers.
 
 == Changelog ==
+
+= 1.0.0-rc.5 =
+* Local-only Core boundary correction. Core now answers directly from the configured File Search corpus after a completed retrieval. The approved evidence map, citation metadata and public source links have been removed from Core.
 
 = 1.0.0-rc.4 =
 * Local-only Setup-workflow parity candidate. It adds a server-side, administrator-only File Search connection test and makes a current passing test a public-chat readiness condition.

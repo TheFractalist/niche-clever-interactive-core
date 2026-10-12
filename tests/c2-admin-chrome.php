@@ -15,7 +15,6 @@ $ncliAdminChromeOptions = [
             'id' => 'default',
             'corpus_version' => '<unsafe version>',
             'vector_store_reference' => '',
-            'approved_evidence' => [],
         ],
         'instructions' => '',
         'response_preset' => 'balanced',

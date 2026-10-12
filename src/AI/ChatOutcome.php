@@ -4,35 +4,27 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\AI;
 
-use NicheCleverInteractive\Core\Api\V1\Value\ApprovedEvidenceV1;
 use NicheCleverInteractive\Core\Security\PublicError;
 
 final class ChatOutcome
 {
-    /** @var list<ApprovedEvidenceV1> */
-    private array $evidence;
     private ?string $answer;
     private ?PublicError $error;
 
-    /**
-     * @param list<ApprovedEvidenceV1> $evidence
-     */
-    private function __construct(?string $answer, array $evidence, ?PublicError $error)
+    private function __construct(?string $answer, ?PublicError $error)
     {
         $this->answer = $answer;
-        $this->evidence = $evidence;
         $this->error = $error;
     }
 
-    /** @param list<ApprovedEvidenceV1> $evidence */
-    public static function success(string $answer, array $evidence): self
+    public static function success(string $answer): self
     {
-        return new self($answer, $evidence, null);
+        return new self($answer, null);
     }
 
     public static function failure(string $code): self
     {
-        return new self(null, [], new PublicError($code));
+        return new self(null, new PublicError($code));
     }
 
     public function isSuccess(): bool
@@ -50,7 +42,6 @@ final class ChatOutcome
         return [
             'ok' => true,
             'answer' => $this->answer,
-            'evidence' => array_map(static fn (ApprovedEvidenceV1 $item): array => $item->publicPayload(), $this->evidence),
         ];
     }
 

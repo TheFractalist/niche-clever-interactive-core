@@ -8,7 +8,6 @@ final class ResolvedProfileV1
     private bool $enabled;
     private string $policyFingerprint;
     private string $corpusFingerprint;
-    private string $approvalMapRevision;
     private string $responsePreset;
 
     public function __construct(
@@ -16,14 +15,12 @@ final class ResolvedProfileV1
         bool $enabled,
         string $policyFingerprint,
         string $corpusFingerprint,
-        string $approvalMapRevision,
         string $responsePreset
     ) {
         $this->id = $id;
         $this->enabled = $enabled;
         $this->policyFingerprint = $policyFingerprint;
         $this->corpusFingerprint = $corpusFingerprint;
-        $this->approvalMapRevision = $approvalMapRevision;
         $this->responsePreset = $responsePreset;
     }
 
@@ -45,11 +42,6 @@ final class ResolvedProfileV1
     public function corpusFingerprint(): string
     {
         return $this->corpusFingerprint;
-    }
-
-    public function approvalMapRevision(): string
-    {
-        return $this->approvalMapRevision;
     }
 
     public function responsePreset(): string

@@ -32,9 +32,6 @@ $configured = CoreSettings::fromArray([
         'id' => 'default',
         'corpus_version' => 'fixture-corpus-2026-10',
         'vector_store_reference' => 'vs_fixture_route',
-        'approved_evidence' => [
-            'fixture_source' => ['title' => 'Fixture source', 'url' => 'https://example.test/ncli-fixture-source'],
-        ],
     ],
     'instructions' => '',
     'response_preset' => 'balanced',
@@ -57,8 +54,8 @@ $request = new class {
 
 $route = new ChatRoute(new ChatService(new DeterministicMockTransport(), new SecretResolver('NCLI_NOT_A_SECRET')));
 $payload = $route->respond($request);
-if (!is_array($payload) || ($payload['ok'] ?? false) !== true || ($payload['evidence'][0]['title'] ?? '') !== 'Fixture source') {
-    fwrite(STDERR, "FAIL: C3 route must return only its public success payload.\n");
+if (!is_array($payload) || ($payload['ok'] ?? false) !== true || !is_string($payload['answer'] ?? null) || array_key_exists('evidence', $payload)) {
+    fwrite(STDERR, "FAIL: C3 route must return only its bounded answer payload.\n");
     exit(1);
 }
 

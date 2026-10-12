@@ -36,7 +36,7 @@ $assert(str_contains($output, 'ncli-panel--classic'), 'Default panel style shoul
 $assert(str_contains($output, 'aria-live="polite"'), 'Panel should contain an accessible status region.');
 $assert(str_contains($output, 'ncli-panel__frame'), 'Panel should render the NCI frame.');
 $assert(str_contains($output, 'ncli-panel__reset'), 'Panel should render the session-only reset control.');
-$assert(str_contains($publicCss, '.ncli-panel__evidence'), 'Panel stylesheet contract should include evidence markup support.');
+$assert(!str_contains($publicCss, '.ncli-panel__evidence'), 'The public panel must not retain evidence-link markup support.');
 $assert(str_contains($publicCss, '.ncli-panel__reset[hidden]'), 'The initial session reset state must remain hidden.');
 $assert(str_contains($output, 'disabled'), 'Unready Core should render a disabled question form.');
 $assert(!str_contains($output, '<script>'), 'Panel title must be escaped.');
@@ -51,7 +51,8 @@ $assert(is_file(dirname(__DIR__) . '/assets/images/ncli-logo.png'), 'The approve
 $assert(is_file(dirname(__DIR__) . '/assets/images/ncli-admin-banner.png'), 'The approved NCI banner asset must exist.');
 $assert(str_contains($settingsPage, 'add_menu_page'), 'The Core workspace must register as an NCI top-level administrator page.');
 $assert(str_contains($settingsPage, "'ncli-core-admin'"), 'The Core workspace must load only its NCI administrator stylesheet.');
-$assert(str_contains($settingsPage, "['setup', 'profile', 'ai-evidence', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help']"), 'The administrator tab set must remain Core-bounded.');
+$assert(str_contains($settingsPage, "['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help']"), 'The administrator tab set must remain Core-bounded.');
+$assert(!str_contains($settingsPage, 'approved_evidence'), 'The administrator workspace must not expose an evidence-map setting.');
 $assert(str_contains($settingsPage, 'ncli-admin__masthead-art'), 'The Core workspace must render its Dashboard-style standalone masthead art.');
 $assert(str_contains($settingsPage, 'ncli-admin__get-started-count'), 'The Setup tab must render the Core-safe Dashboard-style checklist summary.');
 $assert(str_contains($settingsPage, 'ncli-admin__form-table'), 'Editable Core settings must use the grouped table-like workspace rows.');

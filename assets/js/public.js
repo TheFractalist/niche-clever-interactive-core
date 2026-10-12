@@ -8,7 +8,7 @@
     }
   }
 
-  function addTurn(panel, question, answer, evidence) {
+  function addTurn(panel, question, answer) {
     var transcript = panel.querySelector('.ncli-panel__transcript');
     if (!transcript) {
       return;
@@ -23,27 +23,6 @@
     answerElement.textContent = answer;
     turn.appendChild(questionElement);
     turn.appendChild(answerElement);
-    if (Array.isArray(evidence) && evidence.length) {
-      var list = document.createElement('ul');
-      list.className = 'ncli-panel__evidence';
-      evidence.forEach(function (item) {
-        if (!item || typeof item.title !== 'string') {
-          return;
-        }
-        var listItem = document.createElement('li');
-        if (typeof item.url === 'string') {
-          var link = document.createElement('a');
-          link.href = item.url;
-          link.textContent = item.title;
-          link.rel = 'noopener noreferrer';
-          listItem.appendChild(link);
-        } else {
-          listItem.textContent = item.title;
-        }
-        list.appendChild(listItem);
-      });
-      turn.appendChild(list);
-    }
     transcript.appendChild(turn);
     var reset = panel.querySelector('.ncli-panel__reset');
     if (reset) {
@@ -122,7 +101,7 @@
         setStatus(panel, message);
         return;
       }
-      addTurn(panel, question, payload.answer, payload.evidence);
+      addTurn(panel, question, payload.answer);
       textarea.value = '';
       setStatus(panel, 'Verified answer added to this session.');
     }).catch(function () {

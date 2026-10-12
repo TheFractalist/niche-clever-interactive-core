@@ -31,7 +31,6 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $fileId = 'file_fixture_123';
-$token = OpenAiResponsesFileSearchTransport::annotationTokenForFileId($fileId);
 $responsePayload = [
     'output' => [
         ['type' => 'file_search_call', 'status' => 'completed'],
@@ -69,7 +68,7 @@ $http = new class(json_encode($responsePayload, JSON_THROW_ON_ERROR)) implements
 };
 
 $transport = new OpenAiResponsesFileSearchTransport(new SecretResolver('NCLI_TEST_PROVIDER_KEY'), $http);
-$request = new TransportRequest('What is the fixture?', 'Use approved sources only.', 'balanced', str_repeat('a', 64), str_repeat('b', 64), 'vs_fixture_store');
+$request = new TransportRequest('What is the fixture?', 'Use the configured corpus only.', 'balanced', str_repeat('a', 64), str_repeat('b', 64), 'vs_fixture_store');
 $result = $transport->respond($request);
 $assert($http->url === 'https://api.openai.com/v1/responses', 'The live transport must use only the fixed Responses endpoint.');
 $assert(($http->headers['Authorization'] ?? '') === 'Bearer fixture-provider-key', 'The provider key must be sent only as the HTTP authorization header.');
@@ -78,9 +77,7 @@ $assert(($body['tools'][0]['type'] ?? null) === 'file_search', 'The live transpo
 $assert(($body['tools'][0]['vector_store_ids'][0] ?? null) === 'vs_fixture_store', 'The request must use the current Core vector-store reference.');
 $assert(!array_key_exists('include', $body), 'The live transport must not request retrieved search-result text.');
 $assert($result->completedFileSearch(), 'A completed provider File Search call must be recognised.');
-$assert($result->annotationTokens() === [$token], 'Provider file IDs must be transformed into opaque Core annotation tokens.');
-$assert(!in_array($fileId, $result->annotationTokens(), true), 'Provider file IDs must not be retained as public annotation tokens.');
-$assert(!str_contains(json_encode($result, JSON_THROW_ON_ERROR), $fileId), 'The transport result must not expose a provider file identifier.');
+$assert(!str_contains(json_encode($result, JSON_THROW_ON_ERROR), $fileId), 'The transport result must ignore provider file identifiers and citation metadata.');
 
 $settings = CoreSettings::fromArray([
     'enabled' => true,
@@ -88,9 +85,8 @@ $settings = CoreSettings::fromArray([
         'id' => 'default',
         'corpus_version' => 'fixture-corpus-2026-10',
         'vector_store_reference' => 'vs_fixture_store',
-        'approved_evidence' => [$token => ['title' => 'Approved fixture source', 'url' => 'https://example.test/approved-source']],
     ],
-    'instructions' => 'Use only current approved evidence.',
+    'instructions' => 'Use the configured corpus only.',
     'response_preset' => 'balanced',
     'limits' => ['visitor_requests_per_day' => 10, 'provider_requests_per_day' => 100],
     'appearance' => ['panel_style' => 'classic'],
@@ -101,8 +97,9 @@ $settings = $settings->withConnectionTest(
     '2026-10-12T12:00:00Z'
 );
 $outcome = (new ChatService($transport, new SecretResolver('NCLI_TEST_PROVIDER_KEY')))->handle(['question' => 'What is the fixture?'], $settings)->payload();
-$assert($outcome['ok'] === true, 'A completed File Search response with mapped evidence must be public-safe and accepted.');
+$assert($outcome['ok'] === true, 'A completed File Search response must be public-safe and accepted without citation mapping.');
 $assert(!str_contains(json_encode($outcome, JSON_THROW_ON_ERROR), $fileId), 'A public payload must not expose a provider file identifier.');
+$assert(!array_key_exists('evidence', $outcome), 'A public payload must not expose evidence-map metadata or citation links.');
 
 $incomplete = new OpenAiResponsesFileSearchTransport(
     new SecretResolver('NCLI_TEST_PROVIDER_KEY'),
@@ -115,7 +112,7 @@ $incomplete = new OpenAiResponsesFileSearchTransport(
     }
 );
 $incompleteOutcome = (new ChatService($incomplete, new SecretResolver('NCLI_TEST_PROVIDER_KEY')))->handle(['question' => 'What is the fixture?'], $settings)->payload();
-$assert(($incompleteOutcome['error']['code'] ?? null) === 'evidence_failure', 'An incomplete File Search call must fail as public evidence failure.');
+$assert(($incompleteOutcome['error']['code'] ?? null) === 'evidence_failure', 'An incomplete File Search call must fail as a closed retrieval failure.');
 
 $providerFailure = new OpenAiResponsesFileSearchTransport(
     new SecretResolver('NCLI_TEST_PROVIDER_KEY'),

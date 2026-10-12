@@ -54,7 +54,7 @@ $store = new class implements BucketStore {
 
 $settings = CoreSettings::fromArray([
     'enabled' => true,
-    'profile' => ['id' => 'default', 'corpus_version' => 'fixture-corpus', 'vector_store_reference' => '', 'approved_evidence' => []],
+    'profile' => ['id' => 'default', 'corpus_version' => 'fixture-corpus', 'vector_store_reference' => 'vs_fixture_budget'],
     'instructions' => '',
     'response_preset' => 'balanced',
     'limits' => ['visitor_requests_per_day' => 2, 'provider_requests_per_day' => 3],
@@ -85,23 +85,9 @@ $providerOnly = $gate->reserveProviderTest($settings);
 $assert($providerOnly !== null, 'A connection test may reserve the global provider budget without a visitor scope.');
 $providerOnly?->release();
 
-foreach (['https://127.0.0.1/private', 'https://localhost/private', 'https://user:pass@example.test/private'] as $unsafe) {
-    try {
-        CoreSettings::fromArray([
-            'enabled' => false,
-            'profile' => ['id' => 'default', 'corpus_version' => '', 'vector_store_reference' => '', 'approved_evidence' => ['blocked' => ['title' => 'Blocked', 'url' => $unsafe]]],
-            'instructions' => '', 'response_preset' => 'balanced',
-            'limits' => ['visitor_requests_per_day' => 1, 'provider_requests_per_day' => 1], 'appearance' => ['panel_style' => 'classic'],
-        ]);
-        $assert(false, 'Private or credentialed evidence URLs must be rejected.');
-    } catch (\InvalidArgumentException $exception) {
-        $assert(true, 'Unsafe evidence URL rejected.');
-    }
-}
-
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");
     exit(1);
 }
 
-echo "PASS: C4 budget, proxy-scope and safe-URL checks verified\n";
+echo "PASS: C4 budget and proxy-scope checks verified\n";

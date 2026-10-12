@@ -80,7 +80,7 @@ final class SettingsPage
         $tabs = [
             'setup' => 'Setup',
             'profile' => 'Profile',
-            'ai-evidence' => 'AI & Evidence',
+            'ai-corpus' => 'AI & Corpus',
             'conversation' => 'Conversation',
             'appearance-limits' => 'Appearance & Limits',
             'placement' => 'Placement',
@@ -200,10 +200,9 @@ final class SettingsPage
             $this->textarea('presentation_introduction', 'Panel introduction', (string) $values['presentation']['introduction']);
         }
 
-        if ($tab === 'ai-evidence') {
+        if ($tab === 'ai-corpus') {
             $this->text('vector_store_reference', 'Vector store reference', (string) $values['profile']['vector_store_reference']);
-            $this->textarea('approved_evidence_json', 'Approved evidence map JSON', json_encode($values['profile']['approved_evidence'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-            $this->descriptionRow('Only bounded public titles and credential-free HTTPS links are accepted.');
+            $this->descriptionRow('Core answers directly from the configured File Search corpus. It does not publish source links or citation metadata.');
         }
 
         if ($tab === 'conversation') {
@@ -222,7 +221,7 @@ final class SettingsPage
 
         echo '</tbody></table>';
 
-        if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-evidence' || $tab === 'conversation' || $tab === 'appearance-limits') {
+        if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-corpus' || $tab === 'conversation' || $tab === 'appearance-limits') {
             echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">Save Core settings</button><a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="Niche Clever" width="180" height="35"></a></div>';
         }
         echo '</form>';
@@ -242,8 +241,8 @@ final class SettingsPage
     private function renderHelp(): void
     {
         echo '<section class="ncli-admin__tab-panel"><h2>Help</h2>';
-        echo '<p>Core provides one default profile. Configure the corpus version, vector-store reference and approved public evidence map before enabling responses.</p>';
-        echo '<p>OpenAI Responses and File Search are external services. Provider configuration remains server-side and public responses remain evidence-bounded.</p></section>';
+        echo '<p>Core provides one default profile. Configure the corpus version and vector-store reference before enabling responses.</p>';
+        echo '<p>OpenAI Responses and File Search are external services. Provider configuration remains server-side and public responses contain the bounded answer only.</p></section>';
     }
 
     private function renderSetupChecklist(CoreSettings $settings): void
@@ -253,7 +252,7 @@ final class SettingsPage
         $keyState = $secrets->isAvailable() ? 'The server-side constant is available.' : 'Add the constant to the server configuration before testing.';
         $corpusState = $settings->vectorStoreReference() !== '' && $settings->corpusVersion() !== ''
             ? 'A vector-store reference and corpus version are saved.'
-            : 'Save the vector-store reference and corpus version in AI & Evidence.';
+            : 'Save the vector-store reference and corpus version in AI & Corpus.';
         $testState = $settings->connectionTestStatus() === 'passed' && $readiness->isReady()
             ? 'The current configuration passed its File Search connection test.'
             : 'Run a new test after changing the key, transport mode, vector store, corpus version or prompt policy.';
@@ -263,7 +262,7 @@ final class SettingsPage
         echo '<p>Core serves one carefully bounded public profile. It does not expose provider details or add Pro-only workspace controls.</p>';
         echo '<ol class="ncli-admin__checklist">';
         echo '<li><span class="ncli-admin__check">1</span><div><strong>Add your API key</strong><p>' . $this->escapeHtml($keyState) . ' Configure <code>NCLI_OPENAI_API_KEY_DEFAULT</code> in server configuration only, for example <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.</p></div></li>';
-        echo '<li><span class="ncli-admin__check">2</span><div><strong>Choose your vector store</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-evidence'])) . '">Open AI &amp; Evidence</a>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">2</span><div><strong>Choose your vector store</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">Open AI &amp; Corpus</a>.</p></div></li>';
         echo '<li><span class="ncli-admin__check">3</span><div><strong>Test your connection</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">Test connection</button></div></li>';
         echo '<li><span class="ncli-admin__check">4</span><div><strong>Place your conversation</strong><p>';
         if ($placements === []) {
@@ -336,21 +335,12 @@ final class SettingsPage
     private function requestInput(): array
     {
         $existing = $this->load()->toArray();
-        $rawEvidence = $_POST['approved_evidence_json'] ?? '{}';
-        $evidence = array_key_exists('approved_evidence_json', $_POST) && is_string($rawEvidence)
-            ? json_decode($this->unslash($rawEvidence), true)
-            : $existing['profile']['approved_evidence'];
-        if (!is_array($evidence)) {
-            $evidence = ['invalid' => ['title' => '', 'url' => '']];
-        }
-
         return [
             'enabled' => isset($_POST['enabled']) ? $_POST['enabled'] === '1' : $existing['enabled'],
             'profile' => [
                 'id' => CoreSettings::DEFAULT_PROFILE_ID,
                 'corpus_version' => $this->stringPost('corpus_version', $existing['profile']['corpus_version']),
                 'vector_store_reference' => $this->stringPost('vector_store_reference', $existing['profile']['vector_store_reference']),
-                'approved_evidence' => $evidence,
             ],
             'instructions' => $this->stringPost('instructions', $existing['instructions']),
             'response_preset' => $this->stringPost('response_preset', $existing['response_preset']),
@@ -378,7 +368,7 @@ final class SettingsPage
 
     private function safeTab($value): string
     {
-        $valid = ['setup', 'profile', 'ai-evidence', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help'];
+        $valid = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help'];
         return is_string($value) && in_array($value, $valid, true) ? $value : 'setup';
     }
 

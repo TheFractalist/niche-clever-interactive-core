@@ -24,8 +24,6 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__turn:first-child { margin-top: 1rem; }
 .ncli-panel__question { margin: 0 0 .6rem; color: var(--ncli-muted); font-weight: 700; }
 .ncli-panel__answer { margin: 0; }
-.ncli-panel__evidence { margin: .6rem 0 0; padding-left: 1rem; }
-.ncli-panel__evidence a { color: var(--ncli-accent); }
 .ncli-panel__footer { display: flex; justify-content: space-between; gap: 1rem; margin: 1.25rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--ncli-rule); color: var(--ncli-muted); font: 700 .72rem/1.35 var(--ncli-body-font); letter-spacing: .08em; text-transform: uppercase; }
 .ncli-limit-notice { max-width: var(--ncli-max); margin: 1rem auto; color: #3c434a; font-size: .95rem; }
 @media (max-width: 600px) { .ncli-panel__frame { padding: 1.25rem; } .ncli-panel__footer { flex-direction: column; } }

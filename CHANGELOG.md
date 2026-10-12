@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.5 — 12 October 2026
+
+Local-only Core boundary-correction candidate. Core now returns the bounded answer directly from the configured File Search corpus after a completed retrieval and current policy/corpus fingerprint checks. The approved-evidence map, its configuration screen, citation-token parsing, evidence-metadata extension seam and public source links have been removed. Legacy stored map data is ignored and dropped on the next settings save.
+
+The provider request, secret boundary, readiness/connection-test gate, rate reservations and generic failure behaviour remain unchanged. This candidate is not published, deployed, tagged or submitted to WordPress.org. No Pro implementation is included.
+
 ## 1.0.0-rc.4 — 12 October 2026
 
 Local-only Core Setup-workflow parity candidate. It reconstructs the four Core-safe setup steps: confirm the server-only key constant, save the vector-store reference and corpus version, run a nonce/capability-protected File Search connection test, then place the public panel. A passing test stores only a UTC time, pass/fail state and opaque configuration fingerprint; it stores no secret, vector-store value, provider payload, response, citation or retrieved text.

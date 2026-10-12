@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-12-setup-workflow-parity.1",
+  "manifest_version": "2026-10-12-core-evidence-map-removal.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -121,8 +121,8 @@
       "owner": "Core",
       "licence": "GPL-2.0-or-later",
       "target": "src/AI/Transport/OpenAiResponsesFileSearchTransport.php and HTTP support classes",
-      "method_scope": "server-constant-gated OpenAI Responses File Search request, completed-call parsing, opaque citation-token derivation and closed failures only",
-      "decision_reference": "2026-10-12-NCI-C5-LIVE-CANARY-CONTINUATION-PLAN",
+      "method_scope": "server-constant-gated OpenAI Responses File Search request, completed-call parsing, citation-metadata discard and closed failures only",
+      "decision_reference": "2026-10-12-NCI-C5-LIVE-CANARY-CONTINUATION-PLAN; 2026-10-12 owner direction to remove Core approved-evidence mapping",
       "test_evidence": ["tests/c5-live-transport.php", "segregated-live-canary"],
       "direct_incorporation": false
     },
@@ -173,8 +173,8 @@
       "owner": "Core",
       "licence": "GPL-2.0-or-later",
       "target": "src/Frontend/InteractivePanel.php, assets/css/public.css and assets/js/public.js",
-      "method_scope": "NCI-only Classic, Minimal and Dark frame, input, transcript, evidence and session-reset presentation; reconstructed without source-line copying",
-      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md",
+      "method_scope": "NCI-only Classic, Minimal and Dark frame, input, answer-only transcript and session-reset presentation; reconstructed without source-line copying",
+      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md; 2026-10-12 owner direction to remove Core approved-evidence mapping",
       "test_evidence": ["tests/c2-public-panel.php", "tests/c5-public-js.mjs", "visual-parity-matrix", "package-audit"],
       "direct_incorporation": false
     }

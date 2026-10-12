@@ -7,7 +7,6 @@ use LogicException;
 use NicheCleverInteractive\Core\Api\V1\Contracts\AnswerCacheV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ChronologyProviderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\CompletedTurnRecorderV1;
-use NicheCleverInteractive\Core\Api\V1\Contracts\EvidenceMetadataProviderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\WorkspaceExtensionV1;
 
@@ -20,7 +19,6 @@ final class ExtensionRegistryV1
         'profile_resolution' => ProfileResolverV1::class,
         'supplementary_chronology' => ChronologyProviderV1::class,
         'eligible_answer_cache' => AnswerCacheV1::class,
-        'evidence_metadata' => EvidenceMetadataProviderV1::class,
         'completed_public_turn' => CompletedTurnRecorderV1::class,
         'workspace_extension' => WorkspaceExtensionV1::class,
     ];

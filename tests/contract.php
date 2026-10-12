@@ -8,8 +8,8 @@ require_once __DIR__ . '/../src/autoload.php';
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;
 use NicheCleverInteractive\Core\Api\V1\Support\CompletedTurnEligibilityV1;
 use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
-use NicheCleverInteractive\Core\Api\V1\Value\ApprovedEvidenceV1;
 use NicheCleverInteractive\Core\Api\V1\Value\CacheKeyV1;
+use NicheCleverInteractive\Core\Api\V1\Value\CachedAnswerV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ChronologyFactV1;
 use NicheCleverInteractive\Core\Api\V1\Value\CompletedTurnV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
@@ -60,7 +60,6 @@ $makeCacheKey = static function (string $changed = '') use ($profile): CacheKeyV
     $parts = [
         'policy' => 'policy-r1',
         'corpus' => 'corpus-r1',
-        'approval' => 'approval-r1',
         'access' => 'access-r1',
         'preset' => 'balanced',
     ];
@@ -73,25 +72,17 @@ $makeCacheKey = static function (string $changed = '') use ($profile): CacheKeyV
         $profile,
         $parts['policy'],
         $parts['corpus'],
-        $parts['approval'],
         $parts['access'],
         $parts['preset']
     );
 };
 $baselineKey = $makeCacheKey();
-foreach (['policy', 'corpus', 'approval', 'access', 'preset'] as $field) {
+foreach (['policy', 'corpus', 'access', 'preset'] as $field) {
     $assert($baselineKey->identity() !== $makeCacheKey($field)->identity(), sprintf('Cache identity includes %s.', $field));
 }
 
-new ApprovedEvidenceV1('Approved evidence', 'https://example.test/evidence', 'approval-r1');
-$throws(
-    static fn (): ApprovedEvidenceV1 => new ApprovedEvidenceV1('Evidence', 'http://example.test', 'approval-r1'),
-    InvalidArgumentException::class
-);
-$throws(
-    static fn (): ApprovedEvidenceV1 => new ApprovedEvidenceV1('Evidence', 'https://user:pass@example.test', 'approval-r1'),
-    InvalidArgumentException::class
-);
+new CachedAnswerV1('Bounded cached answer.');
+$assert((new ReflectionMethod(CachedAnswerV1::class, '__construct'))->getNumberOfParameters() === 1, 'Cached answers must not carry map-derived source-reference tokens.');
 
 $resolver = new class implements ProfileResolverV1 {
     public function resolve(ProfileIdV1 $profileId): ?ResolvedProfileV1
@@ -105,11 +96,10 @@ $assert(
         'profile_resolution',
         'supplementary_chronology',
         'eligible_answer_cache',
-        'evidence_metadata',
         'completed_public_turn',
         'workspace_extension',
     ],
-    'The registry exposes exactly the six provisional Core seams.'
+    'The registry exposes exactly the five provisional Core seams.'
 );
 $registry->register('profile_resolution', $resolver);
 $assert($registry->has('profile_resolution'), 'The explicitly registered profile seam is available.');

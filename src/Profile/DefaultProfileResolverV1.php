@@ -33,7 +33,6 @@ final class DefaultProfileResolverV1 implements ProfileResolverV1
             true,
             PolicyFingerprint::create($this->policy, $this->settings->instructions(), $this->settings->responsePreset()),
             hash('sha256', $this->settings->corpusVersion()),
-            hash('sha256', json_encode($this->settings->approvedEvidence(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)),
             $this->settings->responsePreset()
         );
     }

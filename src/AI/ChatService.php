@@ -21,7 +21,6 @@ final class ChatService
     private SecretResolver $secrets;
     private PromptPolicy $policy;
     private ChatRequestValidator $requests;
-    private EvidenceValidator $evidence;
     private ?BudgetGate $budgets;
 
     public function __construct(
@@ -29,14 +28,12 @@ final class ChatService
         ?SecretResolver $secrets = null,
         ?PromptPolicy $policy = null,
         ?ChatRequestValidator $requests = null,
-        ?EvidenceValidator $evidence = null,
         ?BudgetGate $budgets = null
     ) {
         $this->transport = $transport;
         $this->secrets = $secrets ?? new SecretResolver();
         $this->policy = $policy ?? new PromptPolicy();
         $this->requests = $requests ?? new ChatRequestValidator();
-        $this->evidence = $evidence ?? new EvidenceValidator();
         $this->budgets = $budgets;
     }
 
@@ -95,8 +92,9 @@ final class ChatService
             return ChatOutcome::failure('provider_failure');
         }
 
-        $evidence = $this->evidence->validate($result, $profile, $settings);
-        if ($evidence === null) {
+        if (!$result->completedFileSearch()
+            || !hash_equals($profile->policyFingerprint(), $result->policyFingerprint())
+            || !hash_equals($profile->corpusFingerprint(), $result->corpusFingerprint())) {
             if (!$this->commitReservation($reservation)) {
                 return ChatOutcome::failure('provider_failure');
             }
@@ -106,7 +104,7 @@ final class ChatService
         if (!$this->commitReservation($reservation)) {
             return ChatOutcome::failure('provider_failure');
         }
-        return ChatOutcome::success($answer, $evidence);
+        return ChatOutcome::success($answer);
     }
 
     /** @param mixed $reservation */

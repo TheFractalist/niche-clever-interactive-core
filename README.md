@@ -1,19 +1,19 @@
 # Niche Clever Interactive Core
 
-This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only Setup-workflow parity candidate is `1.0.0-rc.4`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
+This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only boundary-correction candidate is `1.0.0-rc.5`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
 
 ## Current scope
 
-- PHP 8.1-compatible, provisional API-v1 contracts for six Core/Pro seams.
+- PHP 8.1-compatible, provisional API-v1 contracts for five Core/Pro seams.
 - Pure PHP contract/provenance/source-audit checks.
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
 - C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and a responsive public panel.
 - A visual-parity correction reconstructs the single-profile workspace and Classic, Minimal and Dark public panels in NCI code. Only the manifest-recorded NCI logo and administrator banner are directly incorporated; all other visual work is reconstruction.
-- C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned transport/evidence boundary. A newly authored OpenAI Responses/File Search adapter is available only when an explicit server constant enables it in a disposable fixture; no credential, vector-store reference or provider payload is committed.
-- C4's Core-only daily visitor/provider reservations, server-secret scope hashing, trusted-proxy boundary and safe public-evidence URL policy. See `docs/PRIVACY-LIFECYCLE.md`.
+- C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned completed-File-Search boundary. A newly authored OpenAI Responses/File Search adapter is available only when an explicit server constant enables it in a disposable fixture; no credential, vector-store reference or provider payload is committed.
+- C4's Core-only daily visitor/provider reservations and server-secret scope hashing with a trusted-proxy boundary. See `docs/PRIVACY-LIFECYCLE.md`.
 
-Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
+Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, completed-File-Search validation and public answer construction. Pro integration is not implemented or tested here.
 
 ## Start here
 
@@ -37,7 +37,7 @@ Run the pure local checks:
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
-The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 remains technically accepted as a local-only technical candidate following a segregated live File Search canary. RC4 adds a separate local-only Setup-workflow correction: its administrator connection test must pass again in the updated candidate before this correction can be accepted. Public release, deployment and WordPress.org submission remain separate decisions.
+The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 remains technically accepted as historical local-only technical evidence following a segregated live File Search canary. RC5 needs its own deterministic/package/fixture validation before it can replace RC4 as the current local-only candidate. Public release, deployment and WordPress.org submission remain separate decisions.
 
 ## Licence
 

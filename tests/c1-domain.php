@@ -67,9 +67,6 @@ $valid = CoreSettings::fromArray([
         'id' => 'default',
         'corpus_version' => 'corpus-2026-10',
         'vector_store_reference' => 'test-store-reference',
-        'approved_evidence' => [
-            'source_1' => ['title' => 'Public source', 'url' => 'https://example.test/source'],
-        ],
     ],
     'instructions' => 'Use the approved corpus.',
     'response_preset' => 'concise',
@@ -78,14 +75,13 @@ $valid = CoreSettings::fromArray([
 ]);
 
 $assert($valid->toArray()['profile']['id'] === 'default', 'Default profile settings should round trip.');
-$assert($valid->approvedEvidence()['source_1']['url'] === 'https://example.test/source', 'Approved evidence should round trip.');
+$assert(!array_key_exists('approved_evidence', $valid->toArray()['profile']), 'The retired evidence-map setting must not be retained.');
 
 foreach ([
     ['enabled' => 'yes'],
     ['profile' => ['id' => 'unknown']],
     ['response_preset' => 'unbounded'],
     ['appearance' => ['panel_style' => 'unknown']],
-    ['profile' => ['approved_evidence' => ['x' => ['title' => 'x', 'url' => 'http://example.test']]]],
 ] as $invalid) {
     try {
         CoreSettings::fromArray($invalid);
@@ -94,6 +90,9 @@ foreach ([
         $assert(true, 'Malformed settings rejected.');
     }
 }
+
+$legacyMap = CoreSettings::fromArray(['profile' => ['approved_evidence' => ['legacy' => ['title' => 'Ignored', 'url' => 'http://example.test']]]]);
+$assert(!array_key_exists('approved_evidence', $legacyMap->toArray()['profile']), 'Legacy evidence-map data must be ignored and removed on the next settings save.');
 
 $resolver = new DefaultProfileResolverV1($valid, new PromptPolicy());
 $assert($resolver->resolve(new ProfileIdV1('default')) !== null, 'Enabled default profile should resolve.');

@@ -2,9 +2,9 @@
 
 ## Core-owned implementation
 
-Core owns the plugin lifecycle, one default profile, fresh ncli_core_settings, schema marker, rate-bucket table, secret resolution, readiness, public route, request order, provider transport, evidence validation, final response and public error construction. It owns the Core administration workspace and default public panel.
+Core owns the plugin lifecycle, one default profile, fresh ncli_core_settings, schema marker, rate-bucket table, secret resolution, readiness, public route, request order, provider transport, completed-File-Search validation, final answer construction and public error construction. It owns the Core administration workspace and default public panel.
 
-Core API v1 is an extension boundary, not shared implementation. Only its six declared seams may be registered. Core validates all seam output and remains the sole route/provider/credential/evidence owner.
+Core API v1 is an extension boundary, not shared implementation. Only its five declared seams may be registered. Core validates all seam output and remains the sole route/provider/credential/retrieval owner.
 
 ## Pro-owned implementation
 
