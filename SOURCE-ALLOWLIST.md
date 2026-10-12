@@ -10,7 +10,7 @@ The permitted set is limited to newly authored Core material, the machine-readab
 
 | Path set | Permitted purpose | Provenance |
 | --- | --- | --- |
-| AGENTS.md, README.md, LICENSE, CHANGELOG.md, SOURCE-ALLOWLIST.md, progress.md, .gitignore | Governance and continuity | Newly authored |
+| AGENTS.md, README.md, readme.txt, LICENSE, COPYING, CHANGELOG.md, SOURCE-ALLOWLIST.md, phpcs.xml.dist, progress.md, .gitignore | Governance, plugin metadata and deterministic standards configuration | Newly authored, except `COPYING` is the unmodified official GNU GPL v2 text |
 | docs/**, provenance/** | Architecture, ownership, UX/test records and provenance controls | Newly authored except manifest source metadata |
 | fixtures/** | Disposable local topology and instructions, without data snapshots | Newly authored |
 | niche-clever-interactive-core.php, src/** | Newly authored Core code | Newly authored or manifest-recorded reconstruction |
@@ -23,7 +23,7 @@ The permitted set is limited to newly authored Core material, the machine-readab
 Unless Jacob gives a later explicit, per-item approval, do not add:
 
 - AskFolio source, tests, notices, vendors, build material, CSS, JavaScript, graphics or any unmanifested adaptation. The protected checkpoint is reference-only.
-- Third-party dependencies, copied licence notices, vendored code, generated code or downloaded packages.
+- Third-party dependencies, copied licence notices, vendored code, generated code or downloaded packages. The sole exception is the unmodified official GNU GPL v2 text in `COPYING`, included to provide the complete licence text for this GPL-2.0-or-later package.
 - Niche Clever/AskFolio imagery, logos, banners, screenshots, release assets or WordPress.org assets, except the exact two manifest-recorded owner-approved assets.
 - Credentials, provider configuration or identifiers, vector-store/corpus material, visitor data, question/answer records, logs, databases, runtime copies or build/release archives.
 - Pro code, Pro schema, migrations, release tags or package artefacts.

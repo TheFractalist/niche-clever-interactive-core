@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/../src/autoload.php';
 
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;

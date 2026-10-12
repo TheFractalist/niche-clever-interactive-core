@@ -30,7 +30,9 @@ New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
 $files = @(
     'niche-clever-interactive-core.php',
     'LICENSE',
+    'COPYING',
     'README.md',
+    'readme.txt',
     'CHANGELOG.md'
 )
 foreach ($file in $files) {

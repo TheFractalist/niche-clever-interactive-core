@@ -5,6 +5,10 @@
  * @package NicheCleverInteractive\Core
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 spl_autoload_register(
     static function (string $class): void {
         $prefix = 'NicheCleverInteractive\\Core\\';

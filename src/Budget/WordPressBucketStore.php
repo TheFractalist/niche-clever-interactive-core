@@ -6,6 +6,8 @@ namespace NicheCleverInteractive\Core\Budget;
 
 use RuntimeException;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Daily rate reservations require uncached, row-locked InnoDB transactions; each value is prepared and the table name is derived solely from $wpdb->prefix.
+// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- PHPCS cannot track the already prepared SQL value or the safe dynamic table identifier used by the transaction boundary.
 final class WordPressBucketStore implements BucketStore
 {
     public function reserve(string $kind, string $scopeHash, string $periodStart, int $limit): bool

@@ -7,6 +7,7 @@ use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\Budget\ClientScopeResolver;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 
+require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
 
 if (!defined('NCLI_CORE_SCOPE_SECRET')) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use NicheCleverInteractive\Core\Frontend\InteractivePanel;
 
+require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
 
 $panel = new InteractivePanel();

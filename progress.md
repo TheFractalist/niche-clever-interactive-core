@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C5 local mock-verified Core candidate.** C1–C4 are tested. The local-only `1.0.0-rc.1` package was built from commit 9f89f824857d36030ce2828d9bd1a1c37a1e41c2 and verified on both fixture matrices. Pro remains blocked until Core technical acceptance.
+**12 October 2026 — C5 local mock-verified Core candidate.** C1–C4 are tested. C5's GPL package, deterministic security/static checks, Plugin Check and exact-package rollback evidence are complete. The candidate remains local-only and Pro remains blocked until the live File Search canary technically accepts Core.
 
 ## Implemented
 
@@ -25,18 +25,20 @@
 - C4 uses UTC daily rollover, releases failed pre-dispatch paired reservations, retains accounting after an attempted/ambiguous transport outcome and does not retry automatically. Evidence URLs now reject IP literals, localhost, `.local`, `.internal` and URL credentials without fetching them.
 - C4 fixture validation: PASS — 20 concurrent mocked route requests on WordPress 6.5/PHP 8.1/MariaDB all returned HTTP 200; the two NCI-only bucket rows had 64-character scope hashes, zero reservations, committed count 20 and InnoDB engine.
 - C5 candidate controls: a package script builds only the explicit Core runtime allowlist outside the repository, rejects prohibited paths/content and emits a SHA-256 manifest. JavaScript syntax/boundary and package-policy checks are deterministic and dependency-free.
+- C5 quality completion: the package now includes the complete official GPL v2 text and WordPress readme metadata; direct PHP files reject browser access. PHPCS 3.13.6/WPCS 3.4.1 completed with zero findings against the committed Core security/database ruleset. The external Composer audit reported no advisory.
+- C5 Plugin Check completion: official Plugin Check 2.1.0 ran against the exact ZIP-derived candidate in the disposable current fixture. It reported no errors after package metadata and direct-file guards were added. The remaining warnings are reviewed: the temporary candidate directory changes the expected text-domain slug, and the rate store deliberately uses prepared, uncached, row-locked SQL with a `$wpdb`-prefix table name.
 
 ## Requires verification
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
-- C5 candidate package, checksum, denylist/source audit and rollback rehearsal are complete. WPCS/PHPCS and Plugin Check remain unrun because no reviewed disposable toolchain is presently installed; no vendor or third-party source is committed.
+- C5 candidate package, checksum, denylist/source audit and rollback rehearsal are complete. The toolchain, ZIP and fixture evidence are external to the repository and context pack; no vendor or third-party source is committed.
 
 ## Remaining conditions
 
-- C5 is **mock-verified, live-canary deferred**. It is not technically accepted: the live canary is blocked on segregated provider resources, and WPCS/PHPCS, Plugin Check and GPL full-text package review still require a reviewed local tooling/licensing increment.
+- C5 is **mock-verified, live-canary deferred**. It is not technically accepted because the live File Search canary is blocked on segregated provider resources.
 - Pro remains outside active work. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Do not create Pro. Next, establish reviewed disposable standards/Plugin Check tooling and add the GPL full licence text, then run the segregated live File Search canary only when Jacob supplies its test credential and vector store outside chat.
+Do not create Pro. Run the segregated live File Search canary only when Jacob supplies its test credential and vector store outside chat.

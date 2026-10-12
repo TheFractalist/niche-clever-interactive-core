@@ -37,4 +37,4 @@ The C0 fixture topology has no database dump or provider configuration. C1–C5 
 
 ## Licence
 
-Newly authored repository material is licensed under GPL-2.0-or-later; see LICENSE. That notice does not assert any right to reuse AskFolio, third-party, Niche Clever or other external material.
+Newly authored repository material is licensed under GPL-2.0-or-later; see LICENSE and the complete GPL v2 text in COPYING. Those files do not assert any right to reuse AskFolio, third-party, Niche Clever or other external material.

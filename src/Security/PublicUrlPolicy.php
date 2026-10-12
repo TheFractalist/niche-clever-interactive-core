@@ -8,7 +8,7 @@ final class PublicUrlPolicy
 {
     public static function allows(string $url): bool
     {
-        $parts = parse_url($url);
+        $parts = wp_parse_url($url);
         if ($parts === false || ($parts['scheme'] ?? '') !== 'https' || !isset($parts['host']) || isset($parts['user']) || isset($parts['pass'])) {
             return false;
         }

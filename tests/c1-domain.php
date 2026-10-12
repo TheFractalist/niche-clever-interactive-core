@@ -49,6 +49,7 @@ if (!function_exists('dbDelta')) {
     }
 }
 
+require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
 
 $failures = [];

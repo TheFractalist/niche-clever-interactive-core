@@ -10,6 +10,7 @@ use NicheCleverInteractive\Core\AI\Transport\TransportResult;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 
+require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
 
 if (!defined('NCLI_CORE_MOCK_TRANSPORT')) {

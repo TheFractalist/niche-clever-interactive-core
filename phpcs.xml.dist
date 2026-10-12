@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="NCI Core">
+	<description>WordPress security and API checks for the typed, PSR-4 Core source tree.</description>
+	<file>niche-clever-interactive-core.php</file>
+	<file>src</file>
+	<arg name="extensions" value="php"/>
+
+	<!--
+		Core deliberately uses PSR-4 files and typed camelCase contracts. This ruleset
+		therefore runs the WordPress checks that materially protect plugin behaviour,
+		rather than legacy procedural naming and formatting conventions.
+	-->
+	<rule ref="WordPress.DB.DirectDatabaseQuery"/>
+	<rule ref="WordPress.DB.PreparedSQL"/>
+	<rule ref="WordPress.DB.SlowDBQuery"/>
+	<rule ref="WordPress.PHP.DevelopmentFunctions"/>
+	<rule ref="WordPress.Security.EscapeOutput"/>
+	<rule ref="WordPress.Security.NonceVerification"/>
+	<rule ref="WordPress.Security.ValidatedSanitizedInput"/>
+</ruleset>
