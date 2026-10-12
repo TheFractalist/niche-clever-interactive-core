@@ -9,7 +9,7 @@ This public repository holds Niche Clever Interactive Core, a non-production Cor
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
 - C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and a responsive public panel.
-- C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned transport/evidence boundary. The only present transport is a server-constant-gated deterministic mock for disposable fixtures; there is no provider client, provider value or live request.
+- C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned transport/evidence boundary. A newly authored OpenAI Responses/File Search adapter is available only when an explicit server constant enables it in a disposable fixture; no credential, vector-store reference or provider payload is committed.
 - C4's Core-only daily visitor/provider reservations, server-secret scope hashing, trusted-proxy boundary and safe public-evidence URL policy. See `docs/PRIVACY-LIFECYCLE.md`.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
@@ -28,12 +28,13 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c3-retrieval.php
     & 'C:\xampp\php\php.exe' tests/c3-route.php
     & 'C:\xampp\php\php.exe' tests/c4-budget.php
+    & 'C:\xampp\php\php.exe' tests/c5-live-transport.php
     & 'C:\xampp\php\php.exe' tests/c5-package.php
     node --check assets/js/public.js
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
-The C0 fixture topology has no database dump or provider configuration. C1–C5 still require their respective implementation and acceptance evidence; a live File Search canary remains blocked until segregated test resources are supplied outside chat.
+The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 is technically accepted as a local-only candidate following a segregated live File Search canary; public release, deployment and WordPress.org submission remain separate decisions.
 
 ## Licence
 

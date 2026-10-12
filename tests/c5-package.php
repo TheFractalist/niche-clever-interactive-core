@@ -29,6 +29,8 @@ $assert(str_contains($copying, 'END OF TERMS AND CONDITIONS'), 'COPYING must con
 $assert(str_contains($script, 'Candidate output must be outside the Core repository.'), 'The package script must prohibit repository output.');
 $assert(str_contains($script, "'COPYING'"), 'The package allowlist must include the complete GPL v2 text.');
 $assert(str_contains($script, "'assets', 'blocks', 'src'"), 'The package allowlist must include only Core runtime directories.');
+$assert(str_contains($script, 'ZipArchiveMode]::Create'), 'The package script must create its ZIP with the portable archive writer.');
+$assert(str_contains($script, 'non-portable path separator'), 'The package script must reject non-portable ZIP entry paths.');
 foreach (['tests', 'fixtures', 'docs', 'provenance', 'scripts', 'vendor', 'node_modules', 'wpip', 'askfolio'] as $forbidden) {
     $assert(stripos($script, $forbidden) !== false, 'The package denylist must name ' . $forbidden . '.');
 }

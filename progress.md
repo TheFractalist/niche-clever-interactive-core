@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C5 local mock-verified Core candidate.** C1–C4 are tested. C5's GPL package, deterministic security/static checks, Plugin Check and exact-package rollback evidence are complete. The candidate remains local-only and Pro remains blocked until the live File Search canary technically accepts Core.
+**12 October 2026 — C5 technically accepted local Core candidate.** C1–C5 are tested. The local-only `1.0.0-rc.1` candidate has passed its segregated live File Search canary as well as package, security/static and rollback checks. It is not published, deployed or submitted to WordPress.org.
 
 ## Implemented
 
@@ -27,6 +27,9 @@
 - C5 candidate controls: a package script builds only the explicit Core runtime allowlist outside the repository, rejects prohibited paths/content and emits a SHA-256 manifest. JavaScript syntax/boundary and package-policy checks are deterministic and dependency-free.
 - C5 quality completion: the package now includes the complete official GPL v2 text and WordPress readme metadata; direct PHP files reject browser access. PHPCS 3.13.6/WPCS 3.4.1 completed with zero findings against the committed Core security/database ruleset. The external Composer audit reported no advisory.
 - C5 Plugin Check completion: official Plugin Check 2.1.0 ran against the exact ZIP-derived candidate in the disposable current fixture. It reported no errors after package metadata and direct-file guards were added. The remaining warnings are reviewed: the temporary candidate directory changes the expected text-domain slug, and the rate store deliberately uses prepared, uncached, row-locked SQL with a `$wpdb`-prefix table name.
+- C5 live transport: newly authored Core-only Responses/File Search adapter, selected only by the explicit `NCLI_CORE_LIVE_TRANSPORT` server constant. It uses the existing server-constant secret resolver, requests no retrieved File Search result text, and transforms provider file citations into opaque Core tokens before evidence-map validation.
+- C5 live-canary validation: PASS — the segregated WordPress 6.5/PHP 8.1/MariaDB fixture completed File Search and a bounded public route response; approved evidence was public-safe, unapproved/stale evidence failed closed, provider failure was generic, and simulated timeout accounting was retained. Neither the fixture result nor receipts contain a credential, provider identifier, payload or corpus text.
+- C5 portability correction: the first rebuilt ZIP used Windows path separators and failed Linux extraction before activation. The package writer was replaced with an explicit portable ZIP writer; the corrected ZIP extracted, activated, passed Plugin Check and was removed in a complete current-fixture rollback rehearsal.
 
 ## Requires verification
 
@@ -36,9 +39,9 @@
 
 ## Remaining conditions
 
-- C5 is **mock-verified, live-canary deferred**. It is not technically accepted because the live File Search canary is blocked on segregated provider resources.
-- Pro remains outside active work. Its archive policy is documented in the canonical NCI context pack only.
+- C5 is technically accepted as a local-only release candidate. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
+- Pro remains unstarted. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Do not create Pro. Run the segregated live File Search canary only when Jacob supplies its test credential and vector store outside chat.
+Do not publish or deploy Core. A later authorised Pro P1 start must use a separate private checkout and retain Core API-v1 compatibility boundaries.

@@ -2,7 +2,7 @@
 
 ## Status and limits
 
-This document records a provisional API scaffold and C1–C3 runtime/security boundary. It does not freeze API v1, establish Pro compatibility or implement a live provider call. Core package versioning and API-major versioning are separate.
+This document records a provisional API scaffold and C1–C5 runtime/security boundary. It does not freeze API v1 or establish Pro compatibility. The OpenAI Responses/File Search adapter is inert unless an explicit server-only fixture constant enables it. Core package versioning and API-major versioning are separate.
 
 Future Pro registration must occur only after Core bootstrap, validate the Core API major and declared minimum Core package version, and fail closed when absent or incompatible. It must then register no public route and make no provider call. Standalone Core remains usable.
 
@@ -26,9 +26,9 @@ Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/in
 
 ## C3 mock retrieval and evidence boundary
 
-The route first rejects malformed request shapes and attempts to override Core's default profile/preset. It then resolves the default profile without fallback, applies fixed prompt policy, checks readiness and calls its Core-owned transport. The only current transport is `DeterministicMockTransport`, enabled solely by the boolean server constant `NCLI_CORE_MOCK_TRANSPORT` in a disposable fixture. Without that constant, Core selects an unavailable transport; no live provider client, credential, vector-store value or provider call exists in this phase.
+The route first rejects malformed request shapes and attempts to override Core's default profile/preset. It then resolves the default profile without fallback, applies fixed prompt policy, checks readiness and calls its Core-owned transport. `DeterministicMockTransport` is enabled only by the boolean server constant `NCLI_CORE_MOCK_TRANSPORT`. `OpenAiResponsesFileSearchTransport` is selected only by the separate boolean `NCLI_CORE_LIVE_TRANSPORT`; it reads the key solely from `NCLI_OPENAI_API_KEY_DEFAULT`, sends a fixed Responses request to the OpenAI endpoint with File Search, and uses the current Core vector-store setting. Both values are supplied only to a disposable fixture environment. Without one of those explicit modes, Core selects an unavailable transport.
 
-Every historical answer needs a completed File Search result. The result must carry current policy and corpus fingerprints, and every current annotation token must map to Core's current approved evidence map. Public output is limited to the answer and approved title/credential-free HTTPS URL. Annotation tokens, IDs, retrieved text, provider payloads, secrets and diagnostics are never emitted. A policy refusal, invalid request, unavailable profile, provider failure and evidence failure use the closed public error set.
+Every historical answer needs a completed File Search result. The adapter deliberately does not request File Search result text. It converts each provider file-citation identifier into an opaque, one-way Core annotation token; only a current approved-evidence mapping can make it public. The result must carry current policy and corpus fingerprints, and every current annotation token must map to Core's current approved evidence map. Public output is limited to the answer and approved title/credential-free HTTPS URL. Annotation tokens, IDs, retrieved text, provider payloads, secrets and diagnostics are never emitted. A policy refusal, invalid request, unavailable profile, provider failure and evidence failure use the closed public error set.
 
 ## C4 budget, privacy and resilience boundary
 

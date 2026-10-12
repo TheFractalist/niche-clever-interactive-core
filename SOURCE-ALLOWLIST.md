@@ -37,6 +37,6 @@ Before any commit or later package proposal, inspect the changed paths and confi
 1. every source file is newly authored or has a complete, approved manifest record before reconstruction;
 2. no protected AskFolio identifier, source, asset or dependency was incorporated outside the two exact asset exceptions;
 3. no secret, private data, provider/corpus material or release output is present; and
-4. the proposed change does not introduce Pro implementation or a functional service.
+4. the proposed change does not introduce Pro implementation, production provider access, or a functional service outside an explicitly enabled disposable C5 fixture.
 
 No manifest item permits copying a whole legacy file. Direct incorporation is false except the two owner-granted binary visual assets.

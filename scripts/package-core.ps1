@@ -60,7 +60,39 @@ foreach ($file in $filesInPackage) {
     }
 }
 
-Compress-Archive -LiteralPath $packageRoot -DestinationPath $archive -CompressionLevel Optimal
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archiveStream = [System.IO.File]::Open($archive, [System.IO.FileMode]::CreateNew)
+$zip = [System.IO.Compression.ZipArchive]::new($archiveStream, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    foreach ($file in $filesInPackage) {
+        $relative = $file.FullName.Substring($packageRoot.Length + 1).Replace('\', '/')
+        $entry = $zip.CreateEntry("$packageName/$relative", [System.IO.Compression.CompressionLevel]::Optimal)
+        $entryStream = $entry.Open()
+        $sourceStream = [System.IO.File]::OpenRead($file.FullName)
+        try {
+            $sourceStream.CopyTo($entryStream)
+        } finally {
+            $sourceStream.Dispose()
+            $entryStream.Dispose()
+        }
+    }
+} finally {
+    $zip.Dispose()
+    $archiveStream.Dispose()
+}
+
+$zipCheck = [System.IO.Compression.ZipFile]::OpenRead($archive)
+try {
+    foreach ($entry in $zipCheck.Entries) {
+        if ($entry.FullName.Contains('\')) {
+            throw "Package ZIP entry uses a non-portable path separator: $($entry.FullName)"
+        }
+    }
+} finally {
+    $zipCheck.Dispose()
+}
+
 $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash.ToLowerInvariant()
 "$hash  $archiveName" | Set-Content -LiteralPath $checksum -NoNewline
 Remove-Item -LiteralPath $stage -Recurse -Force

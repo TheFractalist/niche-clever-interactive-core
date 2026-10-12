@@ -12,6 +12,8 @@ use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Frontend\InteractivePanel;
 use NicheCleverInteractive\Core\AI\ChatService;
 use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
+use NicheCleverInteractive\Core\AI\Transport\OpenAiResponsesFileSearchTransport;
+use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
@@ -32,9 +34,7 @@ final class Plugin
         $this->secrets = new SecretResolver();
         $this->settingsPage = new SettingsPage();
         $this->interactivePanel = new InteractivePanel();
-        $transport = defined('NCLI_CORE_MOCK_TRANSPORT') && NCLI_CORE_MOCK_TRANSPORT === true
-            ? new DeterministicMockTransport()
-            : new UnavailableTransport();
+        $transport = $this->transport();
         $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, null, new BudgetGate(new WordPressBucketStore())));
     }
 
@@ -102,6 +102,19 @@ final class Plugin
         }
 
         return Readiness::evaluate(CoreSettings::fromArray($settings), $this->secrets);
+    }
+
+    private function transport(): ResponseTransport
+    {
+        if (defined('NCLI_CORE_MOCK_TRANSPORT') && NCLI_CORE_MOCK_TRANSPORT === true) {
+            return new DeterministicMockTransport();
+        }
+
+        if (defined('NCLI_CORE_LIVE_TRANSPORT') && NCLI_CORE_LIVE_TRANSPORT === true) {
+            return new OpenAiResponsesFileSearchTransport($this->secrets);
+        }
+
+        return new UnavailableTransport();
     }
 
     private static function createRateBucketTable(): void

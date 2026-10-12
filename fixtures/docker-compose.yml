@@ -23,8 +23,13 @@ services:
       WORDPRESS_DB_USER: ncli
       WORDPRESS_DB_PASSWORD: ncli_fixture_only
       WORDPRESS_DEBUG: "1"
+      NCLI_CORE_TRANSPORT_MODE: ${NCLI_CORE_TRANSPORT_MODE:-mock}
+      NCLI_OPENAI_API_KEY_DEFAULT: ${NCLI_OPENAI_API_KEY_DEFAULT:-}
+      NCLI_TEST_VECTOR_STORE_REFERENCE: ${NCLI_TEST_VECTOR_STORE_REFERENCE:-}
       WORDPRESS_CONFIG_EXTRA: |
-        define('NCLI_CORE_MOCK_TRANSPORT', true);
+        define('NCLI_CORE_MOCK_TRANSPORT', getenv('NCLI_CORE_TRANSPORT_MODE') === 'mock');
+        define('NCLI_CORE_LIVE_TRANSPORT', getenv('NCLI_CORE_TRANSPORT_MODE') === 'live');
+        if (getenv('NCLI_OPENAI_API_KEY_DEFAULT') !== '') { define('NCLI_OPENAI_API_KEY_DEFAULT', getenv('NCLI_OPENAI_API_KEY_DEFAULT')); }
     volumes:
       - ../:/var/www/html/wp-content/plugins/niche-clever-interactive-core:ro
       - ncli_wp65:/var/www/html
@@ -51,8 +56,13 @@ services:
       WORDPRESS_DB_USER: ncli
       WORDPRESS_DB_PASSWORD: ncli_fixture_only
       WORDPRESS_DEBUG: "1"
+      NCLI_CORE_TRANSPORT_MODE: ${NCLI_CORE_TRANSPORT_MODE:-mock}
+      NCLI_OPENAI_API_KEY_DEFAULT: ${NCLI_OPENAI_API_KEY_DEFAULT:-}
+      NCLI_TEST_VECTOR_STORE_REFERENCE: ${NCLI_TEST_VECTOR_STORE_REFERENCE:-}
       WORDPRESS_CONFIG_EXTRA: |
-        define('NCLI_CORE_MOCK_TRANSPORT', true);
+        define('NCLI_CORE_MOCK_TRANSPORT', getenv('NCLI_CORE_TRANSPORT_MODE') === 'mock');
+        define('NCLI_CORE_LIVE_TRANSPORT', getenv('NCLI_CORE_TRANSPORT_MODE') === 'live');
+        if (getenv('NCLI_OPENAI_API_KEY_DEFAULT') !== '') { define('NCLI_OPENAI_API_KEY_DEFAULT', getenv('NCLI_OPENAI_API_KEY_DEFAULT')); }
     volumes:
       - ../:/var/www/html/wp-content/plugins/niche-clever-interactive-core:ro
       - ncli_wpcurrent:/var/www/html

@@ -11,14 +11,16 @@ final class TransportRequest
     private string $responsePreset;
     private string $policyFingerprint;
     private string $corpusFingerprint;
+    private string $vectorStoreReference;
 
-    public function __construct(string $question, string $fixedInstructions, string $responsePreset, string $policyFingerprint, string $corpusFingerprint)
+    public function __construct(string $question, string $fixedInstructions, string $responsePreset, string $policyFingerprint, string $corpusFingerprint, string $vectorStoreReference = '')
     {
         $this->question = $question;
         $this->fixedInstructions = $fixedInstructions;
         $this->responsePreset = $responsePreset;
         $this->policyFingerprint = $policyFingerprint;
         $this->corpusFingerprint = $corpusFingerprint;
+        $this->vectorStoreReference = $vectorStoreReference;
     }
 
     public function question(): string
@@ -44,5 +46,10 @@ final class TransportRequest
     public function corpusFingerprint(): string
     {
         return $this->corpusFingerprint;
+    }
+
+    public function vectorStoreReference(): string
+    {
+        return $this->vectorStoreReference;
     }
 }

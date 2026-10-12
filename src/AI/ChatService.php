@@ -75,7 +75,8 @@ final class ChatService
                 $this->policy->fixedInstructions(),
                 $validated['response_preset'],
                 $profile->policyFingerprint(),
-                $profile->corpusFingerprint()
+                $profile->corpusFingerprint(),
+                $settings->vectorStoreReference()
             ));
         } catch (\Throwable $exception) {
             // A request may already have reached a provider; retain the reservation

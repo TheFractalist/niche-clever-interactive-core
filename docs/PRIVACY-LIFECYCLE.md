@@ -12,6 +12,8 @@ The `ncli_core_rate_buckets` table uses InnoDB transactions and a unique `(kind,
 
 Approved evidence links must be bounded, credential-free HTTPS URLs. Core rejects URL credentials, IP-literal hosts, `localhost`, `.local` and `.internal` hosts before a public response can include them. It does not fetch or probe those links.
 
+The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends no retrieved File Search result text in its request, retains no provider payload, and converts provider file-citation IDs into opaque annotation tokens before Core evaluates the approved evidence map. The public response never contains the raw provider citation, vector-store reference, provider payload or credential.
+
 ## Lifecycle
 
 Activation creates only fresh NCI settings, the NCI schema marker and the prefixed rate-bucket table. Deactivation preserves them for recoverability. This Core release has no uninstall deletion behaviour, archive, transcript persistence or visitor-record export. Existing AskFolio/WPIP options, transients, constants and tables are neither read nor changed.
