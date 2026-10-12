@@ -52,6 +52,19 @@ $assert(is_file(dirname(__DIR__) . '/assets/images/ncli-admin-banner.png'), 'The
 $assert(str_contains($settingsPage, 'add_menu_page'), 'The Core workspace must register as an NCI top-level administrator page.');
 $assert(str_contains($settingsPage, "'ncli-core-admin'"), 'The Core workspace must load only its NCI administrator stylesheet.');
 $assert(str_contains($settingsPage, "['setup', 'profile', 'ai-evidence', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help']"), 'The administrator tab set must remain Core-bounded.');
+$assert(str_contains($settingsPage, 'ncli-admin__masthead-art'), 'The Core workspace must render its Dashboard-style standalone masthead art.');
+$assert(str_contains($settingsPage, 'ncli-admin__get-started-count'), 'The Setup tab must render the Core-safe Dashboard-style checklist summary.');
+$assert(str_contains($settingsPage, 'ncli-admin__form-table'), 'Editable Core settings must use the grouped table-like workspace rows.');
+$assert(str_contains($settingsPage, 'ncli-admin__tab-panel'), 'Read-only Core tabs must retain the shared workspace panel frame.');
+$assert(str_contains($settingsPage, 'ncli-admin__save-bar'), 'Editable Core settings must retain the NCI save treatment.');
+$assert(!str_contains($settingsPage, 'profile-picker'), 'The Core workspace must not add a profile picker.');
+$assert(!str_contains($settingsPage, 'add-profile'), 'The Core workspace must not add profile creation controls.');
+$adminCss = (string) file_get_contents(dirname(__DIR__) . '/assets/css/admin.css');
+$assert(str_contains($adminCss, 'max-width: 1000px'), 'Administrator chrome must retain the Dashboard workspace width.');
+$assert(str_contains($adminCss, 'margin: 16px 0 20px'), 'Administrator chrome must retain the standalone masthead spacing.');
+$assert(str_contains($adminCss, '.ncli-admin__save-bar { position: sticky'), 'The blue save treatment must remain sticky.');
+$assert(str_contains($adminCss, 'background: #123b5a'), 'Administrator chrome must retain the dashboard blue treatment.');
+$assert(is_file(dirname(__DIR__) . '/tests/c2-admin-chrome.php'), 'The administrator Chrome must have a focused rendered-markup test.');
 $assert(!str_contains($settingsPage, 'archive'), 'The Core workspace must not add archive controls.');
 
 if ($failures !== []) {

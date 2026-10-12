@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-12-visual-parity.1",
+  "manifest_version": "2026-10-12-admin-dashboard-parity.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -160,9 +160,9 @@
       "owner": "Core",
       "licence": "GPL-2.0-or-later",
       "target": "src/Admin/SettingsPage.php and assets/css/admin.css",
-      "method_scope": "NCI-only single-profile masthead, Core-safe tabs, readiness cards, bounded field presentation and sticky save affordance; reconstructed without source-line copying",
-      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md",
-      "test_evidence": ["tests/c2-settings-page.php", "visual-parity-matrix", "package-audit"],
+      "method_scope": "NCI-only single-profile Dashboard chrome: standalone masthead/banner, Core-safe tabs, guided readiness checklist, table-like bounded field presentation, notices and blue sticky save treatment; reconstructed without source-line copying",
+      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md; 2026-10-12 NCI Core admin Dashboard-chrome parity correction",
+      "test_evidence": ["tests/c2-render.php", "visual-parity-matrix", "package-audit"],
       "direct_incorporation": false
     },
     {

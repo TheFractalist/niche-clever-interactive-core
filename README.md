@@ -26,6 +26,7 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/source-audit.php
     & 'C:\xampp\php\php.exe' tests/c1-domain.php
     & 'C:\xampp\php\php.exe' tests/c2-render.php
+    & 'C:\xampp\php\php.exe' tests/c2-admin-chrome.php
     & 'C:\xampp\php\php.exe' tests/c3-retrieval.php
     & 'C:\xampp\php\php.exe' tests/c3-route.php
     & 'C:\xampp\php\php.exe' tests/c4-budget.php

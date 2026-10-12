@@ -33,6 +33,7 @@
 - Visual-parity correction: NCI-owned administrator presentation now supplies a top-level single-profile workspace with masthead, Core-safe tabs, readiness guidance and sticky save action. The public shell reconstructs Classic, Minimal and Dark styles around the unchanged Core request/evidence boundary. Historical `editorial` settings normalise to `dark`; only the two manifest-pinned owner-authorised visual binaries are included.
 - Visual-parity validation: PASS — pure settings/render, JavaScript/session-state, provenance, source and package policy checks; PHP lint; PHPCS 3.13.6/WPCS 3.4.1 focused source scan; and Plugin Check 2.1.0 of the ZIP-derived candidate. Plugin Check retains only the previously reviewed fixture-directory text-domain, row-locked `$wpdb` and intentional Core-owned OpenAI direct-integration warnings.
 - Visual fixture validation: PASS — generated-data-only WordPress 6.5/PHP 8.1/MariaDB rendered the corrected Classic panel; current WordPress 7.1/PHP 8.3/MariaDB rendered Classic, Minimal and Dark, unready/disabled, mocked-answer/evidence, refusal and reset states. Desktop and 390px keyboard/focus checks passed. The C5 live transport was unchanged and its technical-acceptance evidence remains valid.
+- Administrator Dashboard-chrome correction: local-only `1.0.0-rc.3` replaces the RC.2 custom blue masthead and summary-card deviation with the actual authenticated Test-Site AskFolio workspace chrome: standalone approved banner, tabbed frame, single guided checklist, table-like field rows, safe notices and blue save bar. It retains all Core-only tabs, fields, request/security boundaries and the two authorised visual binaries. Desktop comparison, keyboard tab order and browser-console checks passed; the external browser viewport override did not apply, so a fresh live narrow-width administrator comparison remains explicitly unverified.
 
 ## Requires verification
 
@@ -40,10 +41,11 @@
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
 - C5 candidate package, checksum, denylist/source audit and rollback rehearsal are complete. The toolchain, ZIP and fixture evidence are external to the repository and context pack; no vendor or third-party source is committed.
 - Visual comparison screenshots are redacted, fixture-only evidence. The protected reference screenshots remain reference-only and are not copied into Core, candidate packages or the canonical context pack.
+- RC.3 administrator evidence is limited to authenticated Test-Site desktop screenshots and accessibility/browser checks. Its intended narrow breakpoint is covered by the NCI stylesheet and deterministic markup checks, but must not be represented as a completed live narrow browser comparison until a functioning responsive browser fixture is available.
 
 ## Remaining conditions
 
-- C5 is technically accepted as a local-only release candidate, and the separate visual-parity correction is accepted locally. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
+- C5 is technically accepted as a local-only release candidate. The RC.3 administrator Dashboard-chrome correction is desktop-verified locally; its live narrow-width administrator comparison remains required before visual acceptance can be recorded. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
 - Pro remains unstarted. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation

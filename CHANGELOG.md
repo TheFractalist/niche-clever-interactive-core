@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.3 — 12 October 2026
+
+Local-only Core administrator Dashboard-chrome parity correction candidate. It reconstructs the standalone banner framing, guided checklist, tabbed workspace, table-like form rows, notices and blue save treatment in new NCI code.
+
+The eight Core-safe tabs, one-profile model, C5 transport/evidence/security/budget behaviour and two approved visual binaries are unchanged. No AskFolio source, Premium profile-management feature or other legacy asset is included. This candidate is not published, deployed, tagged or submitted to WordPress.org.
+
 ## 1.0.0-rc.2 — 12 October 2026
 
 Local-only Core visual-parity correction candidate. It reconstructs the established single-profile workspace and the Classic, Minimal and Dark public panel styles in new NCI code, while retaining the C5 route, evidence, reservation and provider boundaries unchanged.

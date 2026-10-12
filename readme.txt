@@ -4,7 +4,7 @@ Tags: interactive, retrieval, evidence
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0-rc.2
+Stable tag: 1.0.0-rc.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,9 @@ evidence validation. Provider use remains server-side and separately controlled.
 3. Configure the Core workspace with server-side credentials only when a separately authorised provider integration is available.
 
 == Changelog ==
+
+= 1.0.0-rc.3 =
+* Local-only administrator Dashboard-chrome parity correction candidate. It retains the Core-only one-profile workspace and settings boundaries.
 
 = 1.0.0-rc.2 =
 * Local-only visual-parity correction candidate with reconstructed Core-only administration and Classic, Minimal and Dark public panels.

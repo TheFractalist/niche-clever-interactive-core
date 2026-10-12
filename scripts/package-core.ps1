@@ -11,7 +11,7 @@ if ($output.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'Candidate output must be outside the Core repository.'
 }
 
-$version = '1.0.0-rc.2'
+$version = '1.0.0-rc.3'
 $packageName = 'niche-clever-interactive-core'
 $archiveName = "$packageName-$version.zip"
 $stage = Join-Path $output "$packageName-$version-staging"

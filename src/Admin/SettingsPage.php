@@ -80,9 +80,9 @@ final class SettingsPage
             'help' => 'Help',
         ];
 
-        echo '<div class="wrap ncli-admin">';
-        echo '<header class="ncli-admin__masthead"><div class="ncli-admin__masthead-bar"><div><h1>Niche Clever Interactive</h1><p>Core workspace</p></div><span>One profile, bounded public evidence</span></div>';
-        echo '<img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace">';
+        echo '<h1 class="screen-reader-text">Niche Clever Interactive Core workspace</h1>';
+        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
         echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="NCI Core settings">';
         foreach ($tabs as $id => $label) {
             $class = $id === $tab ? ' nav-tab-active' : '';
@@ -101,7 +101,7 @@ final class SettingsPage
         } elseif ($tab === 'help') {
             $this->renderHelp();
         } elseif ($tab === 'placement') {
-            echo '<section class="ncli-admin__card"><h2>Placement</h2><p>Use the <code>[ncli_interactive]</code> shortcode or the NCI Interactive block. Contextual and collection placement belongs to Pro.</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><h2>Placement</h2><p>Use the <code>[ncli_interactive]</code> shortcode or the NCI Interactive block. Contextual and collection placement belongs to Pro.</p></section>';
         } else {
             $this->renderForm($settings, $tab);
         }
@@ -137,10 +137,12 @@ final class SettingsPage
             wp_nonce_field(self::SAVE_ACTION, '_ncli_nonce');
         }
 
+        if ($tab === 'setup') {
+            $this->renderSetupChecklist($settings);
+        }
+
+        echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         if ($tab === 'setup' || $tab === 'profile') {
-            if ($tab === 'setup') {
-                $this->renderSetupChecklist($settings);
-            }
             echo '<input type="hidden" name="enabled" value="0">';
             $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled']);
             $this->text('corpus_version', 'Corpus version', (string) $values['profile']['corpus_version']);
@@ -155,7 +157,7 @@ final class SettingsPage
         if ($tab === 'ai-evidence') {
             $this->text('vector_store_reference', 'Vector store reference', (string) $values['profile']['vector_store_reference']);
             $this->textarea('approved_evidence_json', 'Approved evidence map JSON', json_encode($values['profile']['approved_evidence'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-            echo '<p class="description">Only bounded public titles and credential-free HTTPS links are accepted.</p>';
+            $this->descriptionRow('Only bounded public titles and credential-free HTTPS links are accepted.');
         }
 
         if ($tab === 'conversation') {
@@ -172,6 +174,8 @@ final class SettingsPage
             $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day']);
         }
 
+        echo '</tbody></table>';
+
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-evidence' || $tab === 'conversation' || $tab === 'appearance-limits') {
             echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">Save Core settings</button><a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="Niche Clever" width="180" height="35"></a></div>';
         }
@@ -180,14 +184,14 @@ final class SettingsPage
 
     private function renderDiagnostics(Readiness $readiness): void
     {
-        echo '<section class="ncli-admin__card"><h2>Diagnostics</h2>';
+        echo '<section class="ncli-admin__tab-panel"><h2>Diagnostics</h2>';
         echo '<p>Readiness: <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
         echo '<p>No credential, provider payload, file identifier, vector-store identifier or retrieved content is shown in diagnostics.</p></section>';
     }
 
     private function renderHelp(): void
     {
-        echo '<section class="ncli-admin__card"><h2>Help</h2>';
+        echo '<section class="ncli-admin__tab-panel"><h2>Help</h2>';
         echo '<p>Core provides one default profile. Configure the corpus version, vector-store reference and approved public evidence map before enabling responses.</p>';
         echo '<p>OpenAI Responses and File Search are external services. Provider configuration remains server-side and public responses remain evidence-bounded.</p></section>';
     }
@@ -200,10 +204,9 @@ final class SettingsPage
             ? 'The bounded Core profile can accept verified public questions.'
             : 'Complete the Core profile and server-side provider configuration before enabling public answers.';
 
-        echo '<section class="ncli-admin__card ncli-admin__get-started"><p class="ncli-admin__eyebrow">Get started</p><h2>Prepare the Core profile</h2>';
+        echo '<section class="ncli-admin__get-started"><h2><span>Get started</span><span class="ncli-admin__get-started-count">3 Core steps</span></h2>';
         echo '<p>Core serves one carefully bounded public profile. It does not expose provider details or add Pro-only workspace controls.</p>';
-        echo '<ol class="ncli-admin__checklist"><li><strong>1. Profile</strong><span>Record the current corpus version and public panel labels.</span></li><li><strong>2. Evidence</strong><span>Approve only the titles and HTTPS links that may appear publicly.</span></li><li><strong>3. Readiness</strong><span>' . $this->escapeHtml($detail) . '</span></li></ol>';
-        echo '<p class="ncli-admin__readiness"><strong>' . $this->escapeHtml($state) . '</strong><span>' . $this->escapeHtml($readiness->state()) . '</span></p></section>';
+        echo '<ol class="ncli-admin__checklist"><li><span class="ncli-admin__check">1</span><div><strong>Profile</strong><p>Record the current corpus version and public panel labels.</p></div></li><li><span class="ncli-admin__check">2</span><div><strong>Evidence</strong><p>Approve only the titles and HTTPS links that may appear publicly.</p></div></li><li><span class="ncli-admin__check">3</span><div><strong>Readiness</strong><p>' . $this->escapeHtml($detail) . '</p></div></li></ol></section>';
     }
 
     private function currentNotice(): string
@@ -280,17 +283,17 @@ final class SettingsPage
 
     private function checkbox(string $name, string $label, bool $checked): void
     {
-        echo '<p class="ncli-admin__field"><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($label) . '</label></p>';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->escapeHtml($label) . '</th><td><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> Enable public answers for the default Core profile.</label></td></tr>';
     }
 
     private function text(string $name, string $label, string $value): void
     {
-        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<input class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></label></p>';
+        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><input id="ncli-' . $this->escapeAttribute($name) . '" class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></td></tr>';
     }
 
     private function textarea(string $name, string $label, string $value): void
     {
-        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<textarea class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></label></p>';
+        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><textarea id="ncli-' . $this->escapeAttribute($name) . '" class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></td></tr>';
     }
 
     /**
@@ -298,16 +301,21 @@ final class SettingsPage
      */
     private function select(string $name, string $label, array $options, string $selected): void
     {
-        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<select name="' . $this->escapeAttribute($name) . '">';
+        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><select id="ncli-' . $this->escapeAttribute($name) . '" name="' . $this->escapeAttribute($name) . '">';
         foreach ($options as $value => $text) {
             echo '<option value="' . $this->escapeAttribute($value) . '"' . ($selected === $value ? ' selected' : '') . '>' . $this->escapeHtml($text) . '</option>';
         }
-        echo '</select></label></p>';
+        echo '</select></td></tr>';
     }
 
     private function number(string $name, string $label, int $value): void
     {
-        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<input type="number" min="1" name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></label></p>';
+        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><input id="ncli-' . $this->escapeAttribute($name) . '" type="number" min="1" name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></td></tr>';
+    }
+
+    private function descriptionRow(string $message): void
+    {
+        echo '<tr class="ncli-admin__field ncli-admin__field--description"><th scope="row"></th><td><p class="description">' . $this->escapeHtml($message) . '</p></td></tr>';
     }
 
     private function redirect(array $query): void
