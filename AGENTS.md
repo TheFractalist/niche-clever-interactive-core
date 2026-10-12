@@ -7,11 +7,12 @@
 3. This repository is the source authority for Core-only code created after the authorised 12 October 2026 foundation package.
 4. The NCI context pack records programme decisions and handback evidence; it is not a build or runtime directory.
 
-## Foundation boundaries
+## Programme boundaries
 
-- This is a non-production foundation, not functional NCI Core 1.0.0.
-- All code in this initial foundation is newly authored. The AskFolio checkpoint is reference-only: do not copy, adapt, extract, vendor or otherwise incorporate its code, tests, notices, assets or dependencies without a later per-item written approval.
-- Do not add Pro code, a functional chat flow, routes, provider clients, credentials, databases, WordPress installation work, assets, CI, packages, tags or releases.
+- This is non-production Core work. C0 has begun under the continuous Core-first authority; do not represent a completed phase as a release.
+- The AskFolio checkpoint is reference-only. Reconstruction requires a prior entry in provenance/nci-source-manifest.json, including pinned source blob, lawful ownership/licence, target method scope, decision reference and test evidence. Never copy a whole mixed legacy file, legacy test, vendor, build, migration, runtime data or corpus.
+- The two legacy visual assets specifically recorded in the provenance manifest are the sole asset exception. Do not add another legacy image, screenshot or WordPress.org asset without an owner decision and manifest entry.
+- Do not add Pro implementation, a production credential/store, existing AskFolio access, release publication, remote tag, WordPress.org work or production deployment.
 - Preserve Core as the sole future owner of the public chat route, provider access, credential resolution, request ordering, final evidence validation and public errors. Pro compatibility is provisional and must fail closed.
 - Do not put private corpus content, visitor data, logs, provider identifiers or secrets in this repository.
 
@@ -26,7 +27,9 @@ Before committing, inspect git status, the staged diff and the source/asset audi
 Run the pure contract suite and PHP syntax checks with the local PHP executable:
 
     & 'C:\xampp\php\php.exe' tests/contract.php
+    & 'C:\xampp\php\php.exe' tests/provenance.php
+    & 'C:\xampp\php\php.exe' tests/source-audit.php
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
     git diff --check
 
-These checks do not demonstrate WordPress, browser, provider, storage, security or release behaviour. Record validation and remaining gate conditions in progress.md.
+These checks do not demonstrate WordPress, browser, provider, storage, security or release behaviour. Run the relevant fixture/browser/static/package tests before recording a later gate. Record validation and remaining gate conditions in progress.md.

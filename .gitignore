@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+vendor/
+node_modules/
+coverage/
+artifacts/
+fixtures/snapshots/
+*.zip
+*.sql

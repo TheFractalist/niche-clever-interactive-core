@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "manifest_version": "2026-10-12-c0.1",
+  "protected_source": {
+    "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
+    "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
+    "access": "reference-only"
+  },
+  "policy": {
+    "direct_incorporation": false,
+    "whole_legacy_file_copy": false,
+    "legacy_tests_vendors_builds_migrations_runtime_data": false,
+    "require_entry_before_adaptation": true
+  },
+  "entries": [
+    {
+      "id": "core-foundation",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "repository foundation",
+      "method_scope": "all initial foundation files",
+      "decision_reference": "2026-10-12-NCI-GATE-0-OWNER-DECISIONS-AND-CORE-FOUNDATION-AUTHORISATION.md",
+      "test_evidence": ["tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-lifecycle",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Plugin.php",
+      "source_blob": "f99cd8045831a9ad3fca78b17fad01616c61beca",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Plugin.php",
+      "method_scope": "new lifecycle, service composition and privacy registration only",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["activation-isolation", "no-wpip-access"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-settings",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Support/Settings.php",
+      "source_blob": "504c132b00659cd56b11108c0e5316e54a77bb96",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Configuration/CoreSettings.php",
+      "method_scope": "fresh single-profile NCI settings shape and validation only",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["fresh-keys", "no-wpip-settings", "round-trip"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-readiness",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Support/ConnectionReadiness.php",
+      "source_blob": "00a13a66f736e6091d4fcc407ae050740b90e0ae",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Configuration/Readiness.php",
+      "method_scope": "safe Core readiness states without key or provider detail disclosure",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["safe-unready-error"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-input-validation",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Security/InputValidator.php",
+      "source_blob": "a28e1e0d707092f41a1c318eb9d670b63a04ec7b",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Security/QuestionValidator.php",
+      "method_scope": "bounded question/profile/preset validation and injection rejection",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["malformed-input", "injection-fixtures"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-prompt-policy",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Security/PromptPolicy.php",
+      "source_blob": "e3f22cda12eab3a4f9ced5f93ec3b28d70e3ec9d",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Security/PromptPolicy.php",
+      "method_scope": "fixed NCI prompt safeguards and refusal classification only",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["refusal", "fixed-instructions"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-policy-composition",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Security/PolicyComposer.php",
+      "source_blob": "5d81239daf1d4870deb9a04134a61a081296aba5",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Security/PolicyFingerprint.php",
+      "method_scope": "deterministic policy fingerprints and bounded owner instructions only",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["fingerprint-invalidation"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-chat-boundary",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/includes/Api/RestController.php",
+      "source_blob": "5535e6c9d69248e1beb1238c1d33cdcd33bb68db",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Http/ChatController.php",
+      "method_scope": "sole NCI chat route, Core validation/order and public-safe errors only",
+      "decision_reference": "2026-10-12-NCI-CONTINUOUS-CORE-FIRST-DELIVERY-AUTHORITY.md",
+      "test_evidence": ["nonce-capability", "one-route", "unknown-profile-fails-closed"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "nci-logo",
+      "kind": "owner-approved-asset",
+      "source_path": "plugins/wp-interactive-portfolio/assets/images/niche-clever-logo.png",
+      "source_blob": "3be333c7c76eca0b23f895a0c7a494b3d83f2aa4",
+      "owner": "NCI owner grant",
+      "licence": "owner-granted NCI visual reuse",
+      "target": "assets/images/ncli-logo.png",
+      "method_scope": "Core visual identity only",
+      "decision_reference": "NCI-CD-002",
+      "test_evidence": ["asset-allowlist", "package-audit"],
+      "direct_incorporation": true
+    },
+    {
+      "id": "nci-admin-banner",
+      "kind": "owner-approved-asset",
+      "source_path": "plugins/wp-interactive-portfolio/assets/images/askfolio-admin-banner-1544x500.png",
+      "source_blob": "c215db3ecced1af3d16a45837adbb7ba262fc4c8",
+      "owner": "NCI owner grant",
+      "licence": "owner-granted NCI visual reuse",
+      "target": "assets/images/ncli-admin-banner.png",
+      "method_scope": "Core administrator identity only",
+      "decision_reference": "NCI-CD-002",
+      "test_evidence": ["asset-allowlist", "package-audit"],
+      "direct_incorporation": true
+    }
+  ]
+}

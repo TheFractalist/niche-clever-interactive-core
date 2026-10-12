@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — authorised Core foundation.** Establish a small, newly authored public Core repository foundation only: governance, a deny-by-default source/build policy, provisional PHP 8.1 API contracts and pure local tests. This is not permission to extract AskFolio material, implement a functional chat system, create Pro, or make a release.
+**12 October 2026 — C0 baseline reconciliation.** The continuous Core-first authority supersedes the earlier foundation future-work restriction. C0 records source ownership, provenance, fixture and acceptance controls before functional Core reconstruction begins. Pro remains blocked until Core C5 technical acceptance.
 
 ## Implemented
 
@@ -10,18 +10,20 @@
 - Provisional six-seam API-v1 contract types and one-registration-per-seam registry.
 - Nonfunctional plugin bootstrap boundary with no WordPress hook, route, settings, storage, provider or network behaviour.
 - Pure contract suite for the declared foundation rules.
+- C0 machine-readable source/asset manifest, ownership and UX ledgers, phase test matrix, source audit and disposable generated-data fixture topology.
+- C0 validation: PASS — pure contracts (33 checks), manifest control test, executable source audit, complete PHP lint, Compose configuration check and image-manifest checks completed locally. No container, database, existing installation or provider resource was started or changed.
 
 ## Requires verification
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
-- No WordPress, PHP 8.1 fixture, browser, provider, database, archive, security, coexistence, packaging or release behaviour is verified by this foundation.
+- C0 topology is defined and its Compose configuration/image manifests are verified. A clean fixture boot and generated-data activation test belongs to C1 because there is not yet a functional Core lifecycle.
 
 ## Remaining conditions
 
-- Per-item source provenance/licence/extraction or adaptation approval; NCI asset rights or replacements; UX acceptance evidence; definitive Core/Pro compatibility approval; isolated WordPress fixtures; archive storage/retention/export/erasure/backup-restoration design; and independent release/submission approval.
-- The private Pro repository remains outside this work package.
+- C1 functional Core foundation, C2 public/admin UX, C3 mock retrieval/evidence, C4 atomic budgets/privacy and C5 candidate evidence remain. A live canary with a segregated test credential/store is a C5 technical-acceptance blocker.
+- Pro remains outside active work. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Do not begin another engineering phase automatically. A later, separately approved work package may propose the next Core increment after independent review of this foundation receipt.
+Complete C0 fixture readiness and receipt, then begin C1 within the continuous Core-first authority.

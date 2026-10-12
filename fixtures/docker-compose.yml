@@ -1,0 +1,60 @@
+name: ncli-core-fixtures
+
+services:
+  db65:
+    image: mariadb:10.11
+    profiles: [wp65]
+    environment:
+      MARIADB_DATABASE: ncli_core
+      MARIADB_USER: ncli
+      MARIADB_PASSWORD: ncli_fixture_only
+      MARIADB_ROOT_PASSWORD: ncli_root_fixture_only
+    volumes:
+      - ncli_db65:/var/lib/mysql
+
+  wp65:
+    image: wordpress:6.5-php8.1-apache
+    profiles: [wp65]
+    depends_on: [db65]
+    ports: ["8085:80"]
+    environment:
+      WORDPRESS_DB_HOST: db65
+      WORDPRESS_DB_NAME: ncli_core
+      WORDPRESS_DB_USER: ncli
+      WORDPRESS_DB_PASSWORD: ncli_fixture_only
+      WORDPRESS_DEBUG: "1"
+    volumes:
+      - ../:/var/www/html/wp-content/plugins/niche-clever-interactive-core:ro
+      - ncli_wp65:/var/www/html
+
+  dbcurrent:
+    image: mariadb:11.4
+    profiles: [current]
+    environment:
+      MARIADB_DATABASE: ncli_core
+      MARIADB_USER: ncli
+      MARIADB_PASSWORD: ncli_fixture_only
+      MARIADB_ROOT_PASSWORD: ncli_root_fixture_only
+    volumes:
+      - ncli_dbcurrent:/var/lib/mysql
+
+  wpcurrent:
+    image: wordpress:php8.3-apache
+    profiles: [current]
+    depends_on: [dbcurrent]
+    ports: ["8086:80"]
+    environment:
+      WORDPRESS_DB_HOST: dbcurrent
+      WORDPRESS_DB_NAME: ncli_core
+      WORDPRESS_DB_USER: ncli
+      WORDPRESS_DB_PASSWORD: ncli_fixture_only
+      WORDPRESS_DEBUG: "1"
+    volumes:
+      - ../:/var/www/html/wp-content/plugins/niche-clever-interactive-core:ro
+      - ncli_wpcurrent:/var/www/html
+
+volumes:
+  ncli_db65:
+  ncli_wp65:
+  ncli_dbcurrent:
+  ncli_wpcurrent:

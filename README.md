@@ -1,12 +1,13 @@
 # Niche Clever Interactive Core
 
-This public repository holds the newly authored, non-production foundation for Niche Clever Interactive Core. It is deliberately not a functional plugin release and must not be installed, packaged or represented as NCI Core 1.0.0.
+This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. It began as a newly authored foundation and is now in C0 baseline reconciliation. It is not a released plugin and must not be represented as NCI Core 1.0.0.
 
 ## Current scope
 
-- PHP 8.1-compatible, provisional API-v1 contracts for six future Core/Pro seams.
-- Pure PHP contract tests that verify bounded value objects, one-registration-per-seam behaviour and declared fail-closed rules.
-- A nonfunctional WordPress plugin header/bootstrap boundary with no routes, provider client, settings, UI, storage or external calls.
+- PHP 8.1-compatible, provisional API-v1 contracts for six Core/Pro seams.
+- Pure PHP contract/provenance/source-audit checks.
+- C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
+- A nonfunctional WordPress plugin header/bootstrap boundary. C1 has not yet implemented routes, provider transport, settings, UI or storage.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
 
@@ -17,9 +18,11 @@ Read AGENTS.md, docs/ARCHITECTURE.md, SOURCE-ALLOWLIST.md and progress.md.
 Run the pure local checks:
 
     & 'C:\xampp\php\php.exe' tests/contract.php
+    & 'C:\xampp\php\php.exe' tests/provenance.php
+    & 'C:\xampp\php\php.exe' tests/source-audit.php
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
-The foundation has no Composer dependencies, WordPress runtime, database, provider configuration, assets, build command, release package or CI workflow.
+The C0 fixture topology has no database dump or provider configuration. C1–C5 still require their respective implementation and acceptance evidence; a live File Search canary remains blocked until segregated test resources are supplied outside chat.
 
 ## Licence
 
