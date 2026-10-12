@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-12-c5.1",
+  "manifest_version": "2026-10-12-visual-parity.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -135,8 +135,8 @@
       "licence": "owner-granted NCI visual reuse",
       "target": "assets/images/ncli-logo.png",
       "method_scope": "Core visual identity only",
-      "decision_reference": "NCI-CD-002",
-      "test_evidence": ["asset-allowlist", "package-audit"],
+      "decision_reference": "NCI-CD-002; 2026-10-12 owner confirmation for Core visual-parity correction",
+      "test_evidence": ["asset-allowlist", "package-audit", "visual-parity-matrix"],
       "direct_incorporation": true
     },
     {
@@ -148,9 +148,35 @@
       "licence": "owner-granted NCI visual reuse",
       "target": "assets/images/ncli-admin-banner.png",
       "method_scope": "Core administrator identity only",
-      "decision_reference": "NCI-CD-002",
-      "test_evidence": ["asset-allowlist", "package-audit"],
+      "decision_reference": "NCI-CD-002; 2026-10-12 owner confirmation for Core visual-parity correction",
+      "test_evidence": ["asset-allowlist", "package-audit", "visual-parity-matrix"],
       "direct_incorporation": true
+    },
+    {
+      "id": "core-visual-admin-reconstruction",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/assets/css/admin.css; plugins/wp-interactive-portfolio/includes/Admin/AdminPage.php",
+      "source_blob": "f90519ad05748731b91d05e48b457d18581e12c2; 31f6d359509ec9a9ac6d2026eca92e7b7a39c5be",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Admin/SettingsPage.php and assets/css/admin.css",
+      "method_scope": "NCI-only single-profile masthead, Core-safe tabs, readiness cards, bounded field presentation and sticky save affordance; reconstructed without source-line copying",
+      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md",
+      "test_evidence": ["tests/c2-settings-page.php", "visual-parity-matrix", "package-audit"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "core-visual-public-reconstruction",
+      "kind": "adaptation",
+      "source_path": "plugins/wp-interactive-portfolio/assets/css/public.css; plugins/wp-interactive-portfolio/assets/js/public.js; plugins/wp-interactive-portfolio/includes/Frontend/PublicRenderer.php",
+      "source_blob": "80a07818cc61180b9483132ca0fcf1a61649ca1f; bd01aeafeeb9e3ec8335385a7b427e1cff950121; b8cda68873c1bd6a7fdeab505763ed527f3e1835",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Frontend/InteractivePanel.php, assets/css/public.css and assets/js/public.js",
+      "method_scope": "NCI-only Classic, Minimal and Dark frame, input, transcript, evidence and session-reset presentation; reconstructed without source-line copying",
+      "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md",
+      "test_evidence": ["tests/c2-public-panel.php", "tests/c5-public-js.mjs", "visual-parity-matrix", "package-audit"],
+      "direct_incorporation": false
     }
   ]
 }

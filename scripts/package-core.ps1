@@ -11,7 +11,7 @@ if ($output.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'Candidate output must be outside the Core repository.'
 }
 
-$version = '1.0.0-rc.1'
+$version = '1.0.0-rc.2'
 $packageName = 'niche-clever-interactive-core'
 $archiveName = "$packageName-$version.zip"
 $stage = Join-Path $output "$packageName-$version-staging"
@@ -40,6 +40,27 @@ foreach ($file in $files) {
 }
 foreach ($directory in @('assets', 'blocks', 'src')) {
     Copy-Item -LiteralPath (Join-Path $root $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
+}
+
+$allowedAssetFiles = @(
+    'assets/css/admin.css',
+    'assets/css/public.css',
+    'assets/images/ncli-admin-banner.png',
+    'assets/images/ncli-logo.png',
+    'assets/js/public.js'
+)
+$actualAssetFiles = Get-ChildItem -LiteralPath (Join-Path $packageRoot 'assets') -Recurse -File | ForEach-Object {
+    $_.FullName.Substring($packageRoot.Length + 1).Replace('\', '/')
+}
+foreach ($asset in $actualAssetFiles) {
+    if ($asset -notin $allowedAssetFiles) {
+        throw "Package asset is not on the Core allowlist: $asset"
+    }
+}
+foreach ($asset in $allowedAssetFiles) {
+    if ($asset -notin $actualAssetFiles) {
+        throw "Required Core package asset is missing: $asset"
+    }
 }
 
 $denyPath = '(?i)(^|/)(\.git|tests|fixtures|docs|provenance|scripts|vendor|node_modules|artifacts)(/|$)|wpip|askfolio|\.env|\.sql$'

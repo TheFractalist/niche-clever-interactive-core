@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.2 — 12 October 2026
+
+Local-only Core visual-parity correction candidate. It reconstructs the established single-profile workspace and the Classic, Minimal and Dark public panel styles in new NCI code, while retaining the C5 route, evidence, reservation and provider boundaries unchanged.
+
+Only two owner-authorised visual assets are included: the Niche Clever logo and the administrator banner recorded in `provenance/nci-source-manifest.json`. No other legacy artwork, source or Pro capability is included. This candidate is not published, deployed, tagged or submitted to WordPress.org.
+
 ## 1.0.0-rc.1 — 12 October 2026
 
 Local-only, technically accepted Core release candidate. It includes the C0–C4 newly authored Core foundation: single-profile administration and panel, the sole Core chat route, deterministic fixture-only retrieval/evidence controls, and privacy-bounded daily reservations.

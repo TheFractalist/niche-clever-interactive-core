@@ -1,6 +1,6 @@
 # Niche Clever Interactive Core
 
-This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only candidate is `1.0.0-rc.1`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
+This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only visual-correction candidate is `1.0.0-rc.2`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
 
 ## Current scope
 
@@ -9,6 +9,7 @@ This public repository holds Niche Clever Interactive Core, a non-production Cor
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
 - C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and a responsive public panel.
+- A visual-parity correction reconstructs the single-profile workspace and Classic, Minimal and Dark public panels in NCI code. Only the manifest-recorded NCI logo and administrator banner are directly incorporated; all other visual work is reconstruction.
 - C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned transport/evidence boundary. A newly authored OpenAI Responses/File Search adapter is available only when an explicit server constant enables it in a disposable fixture; no credential, vector-store reference or provider payload is committed.
 - C4's Core-only daily visitor/provider reservations, server-secret scope hashing, trusted-proxy boundary and safe public-evidence URL policy. See `docs/PRIVACY-LIFECYCLE.md`.
 
@@ -34,7 +35,7 @@ Run the pure local checks:
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
-The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 is technically accepted as a local-only candidate following a segregated live File Search canary; public release, deployment and WordPress.org submission remain separate decisions.
+The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 remains technically accepted as a local-only technical candidate following a segregated live File Search canary. The separate `1.0.0-rc.2` visual-parity correction has passed local verification; public release, deployment and WordPress.org submission remain separate decisions.
 
 ## Licence
 

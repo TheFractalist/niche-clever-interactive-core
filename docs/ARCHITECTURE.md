@@ -22,7 +22,9 @@ The Core default profile is the only C1 profile. A disabled profile and every na
 
 C2 adds a one-profile administrator workspace: Setup, Profile, AI and Evidence, Conversation, Appearance and Limits, Placement, Diagnostics and Help. It uses the Core capability/nonce guard, CoreSettings validation and escaped output. The settings page never renders a key, provider payload, retrieved text, file ID or vector-store identifier.
 
-Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/interactive block. It has classic, minimal and editorial panel styles. C3 sends a JSON request only to Core's route and keeps the browser transcript in page memory only; no transcript or turn is persisted.
+Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/interactive block. It has Classic, Minimal and Dark panel styles. A historical `editorial` setting value is normalised to `dark` when settings are read or saved; it is not presented as a selectable style. The Core-only presentation fields are bounded title, headline, introduction, placeholder and footer labels, with a shortcode/block title taking precedence for one render. C3 sends a JSON request only to Core's route and keeps the browser transcript in page memory only; no transcript or turn is persisted.
+
+The administrator workspace is a top-level, one-profile Core screen with NCI-specific masthead, bounded setup/readiness guidance, Core-safe tabs and a sticky save action. It never adds profile switching, authored question collections, contextual placement, cache or archive controls: those remain Pro-only. The public frame supplies only a session reset and loading/disabled states around the existing Core route and evidence output; it does not alter request payloads, transport ordering or validation.
 
 ## C3 mock retrieval and evidence boundary
 

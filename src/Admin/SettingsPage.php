@@ -32,19 +32,31 @@ final class SettingsPage
 
         add_action('admin_menu', [$this, 'addMenu']);
         add_action('admin_post_' . self::SAVE_ACTION, [$this, 'save']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
     }
 
     public function addMenu(): void
     {
-        if (function_exists('add_options_page')) {
-            add_options_page(
+        if (function_exists('add_menu_page')) {
+            add_menu_page(
                 'Niche Clever Interactive Core',
                 'NCI Core',
                 'manage_options',
                 self::PAGE_SLUG,
-                [$this, 'render']
+                [$this, 'render'],
+                'dashicons-format-chat',
+                58
             );
         }
+    }
+
+    public function enqueueAssets(string $hook): void
+    {
+        if ($hook !== 'toplevel_page_' . self::PAGE_SLUG || !function_exists('wp_enqueue_style') || !function_exists('plugins_url')) {
+            return;
+        }
+
+        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
     }
 
     public function render(): void
@@ -69,9 +81,9 @@ final class SettingsPage
         ];
 
         echo '<div class="wrap ncli-admin">';
-        echo '<h1>Niche Clever Interactive Core</h1>';
-        echo '<p>One Core profile. Provider credentials are server constants and are never displayed here.</p>';
-        echo '<nav class="nav-tab-wrapper" aria-label="NCI Core settings">';
+        echo '<header class="ncli-admin__masthead"><div class="ncli-admin__masthead-bar"><div><h1>Niche Clever Interactive</h1><p>Core workspace</p></div><span>One profile, bounded public evidence</span></div>';
+        echo '<img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="NCI Core settings">';
         foreach ($tabs as $id => $label) {
             $class = $id === $tab ? ' nav-tab-active' : '';
             $url = $this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => $id]);
@@ -79,12 +91,17 @@ final class SettingsPage
         }
         echo '</nav>';
 
+        $notice = $this->currentNotice();
+        if ($notice !== '') {
+            echo '<div class="notice ' . ($notice === 'saved' ? 'notice-success' : 'notice-error') . '"><p>' . $this->escapeHtml($notice === 'saved' ? 'Core settings saved.' : 'Core settings could not be saved. Review the bounded field values and try again.') . '</p></div>';
+        }
+
         if ($tab === 'diagnostics') {
             $this->renderDiagnostics($readiness);
         } elseif ($tab === 'help') {
             $this->renderHelp();
         } elseif ($tab === 'placement') {
-            echo '<p>Use the ncli_interactive shortcode or the NCI Interactive block. Contextual and collection placement belongs to Pro.</p>';
+            echo '<section class="ncli-admin__card"><h2>Placement</h2><p>Use the <code>[ncli_interactive]</code> shortcode or the NCI Interactive block. Contextual and collection placement belongs to Pro.</p></section>';
         } else {
             $this->renderForm($settings, $tab);
         }
@@ -113,7 +130,7 @@ final class SettingsPage
     private function renderForm(CoreSettings $settings, string $tab): void
     {
         $values = $settings->toArray();
-        echo '<form method="post" action="' . $this->escapeAttribute($this->postUrl()) . '">';
+        echo '<form id="ncli-core-save" class="ncli-admin__workspace" method="post" action="' . $this->escapeAttribute($this->postUrl()) . '">';
         echo '<input type="hidden" name="action" value="' . self::SAVE_ACTION . '">';
         echo '<input type="hidden" name="ncli_tab" value="' . $this->escapeAttribute($tab) . '">';
         if (function_exists('wp_nonce_field')) {
@@ -121,9 +138,18 @@ final class SettingsPage
         }
 
         if ($tab === 'setup' || $tab === 'profile') {
+            if ($tab === 'setup') {
+                $this->renderSetupChecklist($settings);
+            }
             echo '<input type="hidden" name="enabled" value="0">';
             $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled']);
             $this->text('corpus_version', 'Corpus version', (string) $values['profile']['corpus_version']);
+        }
+
+        if ($tab === 'profile') {
+            $this->text('presentation_title', 'Panel title', (string) $values['presentation']['title']);
+            $this->text('presentation_headline', 'Panel headline', (string) $values['presentation']['headline']);
+            $this->textarea('presentation_introduction', 'Panel introduction', (string) $values['presentation']['introduction']);
         }
 
         if ($tab === 'ai-evidence') {
@@ -135,34 +161,64 @@ final class SettingsPage
         if ($tab === 'conversation') {
             $this->textarea('instructions', 'Bounded owner instructions', (string) $values['instructions']);
             $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset']);
+            $this->text('presentation_placeholder', 'Question placeholder', (string) $values['presentation']['placeholder']);
+            $this->text('presentation_footer_left', 'Panel footer left label', (string) $values['presentation']['footer_left']);
+            $this->text('presentation_footer_right', 'Panel footer right label', (string) $values['presentation']['footer_right']);
         }
 
         if ($tab === 'appearance-limits') {
-            $this->select('panel_style', 'Panel style', ['classic' => 'Classic', 'minimal' => 'Minimal', 'editorial' => 'Editorial'], (string) $values['appearance']['panel_style']);
+            $this->select('panel_style', 'Panel style', ['classic' => 'Classic', 'minimal' => 'Minimal', 'dark' => 'Dark'], (string) $values['appearance']['panel_style']);
             $this->number('visitor_requests_per_day', 'Visitor requests per day', (int) $values['limits']['visitor_requests_per_day']);
             $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day']);
         }
 
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-evidence' || $tab === 'conversation' || $tab === 'appearance-limits') {
-            if (function_exists('submit_button')) {
-                submit_button('Save Core settings');
-            }
+            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">Save Core settings</button><a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="Niche Clever" width="180" height="35"></a></div>';
         }
         echo '</form>';
     }
 
     private function renderDiagnostics(Readiness $readiness): void
     {
-        echo '<h2>Diagnostics</h2>';
+        echo '<section class="ncli-admin__card"><h2>Diagnostics</h2>';
         echo '<p>Readiness: <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
-        echo '<p>No credential, provider payload, file identifier, vector-store identifier or retrieved content is shown in diagnostics.</p>';
+        echo '<p>No credential, provider payload, file identifier, vector-store identifier or retrieved content is shown in diagnostics.</p></section>';
     }
 
     private function renderHelp(): void
     {
-        echo '<h2>Help</h2>';
+        echo '<section class="ncli-admin__card"><h2>Help</h2>';
         echo '<p>Core provides one default profile. Configure the corpus version, vector-store reference and approved public evidence map before enabling responses.</p>';
-        echo '<p>OpenAI Responses and File Search are external services. This development build does not yet make provider calls.</p>';
+        echo '<p>OpenAI Responses and File Search are external services. Provider configuration remains server-side and public responses remain evidence-bounded.</p></section>';
+    }
+
+    private function renderSetupChecklist(CoreSettings $settings): void
+    {
+        $readiness = Readiness::evaluate($settings, new SecretResolver());
+        $state = $readiness->isReady() ? 'Ready' : 'Needs configuration';
+        $detail = $readiness->isReady()
+            ? 'The bounded Core profile can accept verified public questions.'
+            : 'Complete the Core profile and server-side provider configuration before enabling public answers.';
+
+        echo '<section class="ncli-admin__card ncli-admin__get-started"><p class="ncli-admin__eyebrow">Get started</p><h2>Prepare the Core profile</h2>';
+        echo '<p>Core serves one carefully bounded public profile. It does not expose provider details or add Pro-only workspace controls.</p>';
+        echo '<ol class="ncli-admin__checklist"><li><strong>1. Profile</strong><span>Record the current corpus version and public panel labels.</span></li><li><strong>2. Evidence</strong><span>Approve only the titles and HTTPS links that may appear publicly.</span></li><li><strong>3. Readiness</strong><span>' . $this->escapeHtml($detail) . '</span></li></ol>';
+        echo '<p class="ncli-admin__readiness"><strong>' . $this->escapeHtml($state) . '</strong><span>' . $this->escapeHtml($readiness->state()) . '</span></p></section>';
+    }
+
+    private function currentNotice(): string
+    {
+        $notice = $_GET['ncli_notice'] ?? '';
+        return is_string($notice) && in_array($notice, ['saved', 'invalid'], true) ? $notice : '';
+    }
+
+    private function assetUrl(string $path): string
+    {
+        if (!function_exists('plugins_url')) {
+            return '';
+        }
+
+        return plugins_url($path, dirname(__DIR__, 2) . '/niche-clever-interactive-core.php');
     }
 
     private function load(): CoreSettings
@@ -200,6 +256,14 @@ final class SettingsPage
                 'provider_requests_per_day' => $this->intPost('provider_requests_per_day', $existing['limits']['provider_requests_per_day']),
             ],
             'appearance' => ['panel_style' => $this->stringPost('panel_style', $existing['appearance']['panel_style'])],
+            'presentation' => [
+                'title' => $this->stringPost('presentation_title', $existing['presentation']['title']),
+                'headline' => $this->stringPost('presentation_headline', $existing['presentation']['headline']),
+                'introduction' => $this->stringPost('presentation_introduction', $existing['presentation']['introduction']),
+                'placeholder' => $this->stringPost('presentation_placeholder', $existing['presentation']['placeholder']),
+                'footer_left' => $this->stringPost('presentation_footer_left', $existing['presentation']['footer_left']),
+                'footer_right' => $this->stringPost('presentation_footer_right', $existing['presentation']['footer_right']),
+            ],
         ];
     }
 
@@ -216,17 +280,17 @@ final class SettingsPage
 
     private function checkbox(string $name, string $label, bool $checked): void
     {
-        echo '<p><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($label) . '</label></p>';
+        echo '<p class="ncli-admin__field"><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($label) . '</label></p>';
     }
 
     private function text(string $name, string $label, string $value): void
     {
-        echo '<p><label>' . $this->escapeHtml($label) . '<br><input class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></label></p>';
+        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<input class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></label></p>';
     }
 
     private function textarea(string $name, string $label, string $value): void
     {
-        echo '<p><label>' . $this->escapeHtml($label) . '<br><textarea class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></label></p>';
+        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<textarea class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></label></p>';
     }
 
     /**
@@ -234,7 +298,7 @@ final class SettingsPage
      */
     private function select(string $name, string $label, array $options, string $selected): void
     {
-        echo '<p><label>' . $this->escapeHtml($label) . '<br><select name="' . $this->escapeAttribute($name) . '">';
+        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<select name="' . $this->escapeAttribute($name) . '">';
         foreach ($options as $value => $text) {
             echo '<option value="' . $this->escapeAttribute($value) . '"' . ($selected === $value ? ' selected' : '') . '>' . $this->escapeHtml($text) . '</option>';
         }
@@ -243,7 +307,7 @@ final class SettingsPage
 
     private function number(string $name, string $label, int $value): void
     {
-        echo '<p><label>' . $this->escapeHtml($label) . '<br><input type="number" min="1" name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></label></p>';
+        echo '<p class="ncli-admin__field"><label>' . $this->escapeHtml($label) . '<input type="number" min="1" name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></label></p>';
     }
 
     private function redirect(array $query): void
@@ -265,10 +329,10 @@ final class SettingsPage
     private function adminUrl(array $query): string
     {
         if (function_exists('admin_url') && function_exists('add_query_arg')) {
-            return add_query_arg($query, admin_url('options-general.php'));
+            return add_query_arg($query, admin_url('admin.php'));
         }
 
-        return '/wp-admin/options-general.php';
+        return '/wp-admin/admin.php';
     }
 
     private function postUrl(): string

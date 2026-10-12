@@ -15,7 +15,7 @@ final class CoreSettings
     public const DEFAULT_PROFILE_ID = 'default';
 
     private const PRESETS = ['concise', 'balanced', 'detailed'];
-    private const PANEL_STYLES = ['classic', 'minimal', 'editorial'];
+    private const PANEL_STYLES = ['classic', 'minimal', 'dark'];
 
     /**
      * @var array<string, mixed>
@@ -52,6 +52,14 @@ final class CoreSettings
             'appearance' => [
                 'panel_style' => 'classic',
             ],
+            'presentation' => [
+                'title' => 'Ask Niche Clever',
+                'headline' => 'Inform your ideas, and methods',
+                'introduction' => '',
+                'placeholder' => 'Ask a question…',
+                'footer_left' => 'Context is everything',
+                'footer_right' => 'Get better answers',
+            ],
         ];
     }
 
@@ -64,6 +72,7 @@ final class CoreSettings
         $profile = is_array($input['profile'] ?? null) ? $input['profile'] : [];
         $limits = is_array($input['limits'] ?? null) ? $input['limits'] : [];
         $appearance = is_array($input['appearance'] ?? null) ? $input['appearance'] : [];
+        $presentation = is_array($input['presentation'] ?? null) ? $input['presentation'] : [];
 
         $id = self::boundedString($profile['id'] ?? self::DEFAULT_PROFILE_ID, 64);
         if ($id !== self::DEFAULT_PROFILE_ID) {
@@ -76,6 +85,9 @@ final class CoreSettings
         }
 
         $style = self::boundedString($appearance['panel_style'] ?? $defaults['appearance']['panel_style'], 16);
+        if ($style === 'editorial') {
+            $style = 'dark';
+        }
         if (!in_array($style, self::PANEL_STYLES, true)) {
             throw new InvalidArgumentException('Unknown Core panel style.');
         }
@@ -98,6 +110,14 @@ final class CoreSettings
             ],
             'appearance' => [
                 'panel_style' => $style,
+            ],
+            'presentation' => [
+                'title' => self::boundedString($presentation['title'] ?? $defaults['presentation']['title'], 120),
+                'headline' => self::boundedString($presentation['headline'] ?? $defaults['presentation']['headline'], 180),
+                'introduction' => self::boundedString($presentation['introduction'] ?? '', 500),
+                'placeholder' => self::boundedString($presentation['placeholder'] ?? $defaults['presentation']['placeholder'], 160),
+                'footer_left' => self::boundedString($presentation['footer_left'] ?? $defaults['presentation']['footer_left'], 120),
+                'footer_right' => self::boundedString($presentation['footer_right'] ?? $defaults['presentation']['footer_right'], 120),
             ],
         ]);
     }
@@ -151,6 +171,14 @@ final class CoreSettings
     public function instructions(): string
     {
         return $this->values['instructions'];
+    }
+
+    /**
+     * @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string}
+     */
+    public function presentation(): array
+    {
+        return $this->values['presentation'];
     }
 
     /**

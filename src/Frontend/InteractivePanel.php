@@ -55,19 +55,29 @@ final class InteractivePanel
         $readiness = Readiness::evaluate($settings, new SecretResolver());
         $this->enqueueRegisteredAssets();
 
-        $title = isset($attributes['title']) && is_string($attributes['title']) ? $attributes['title'] : 'Ask Niche Clever';
+        $presentation = $settings->presentation();
+        $title = isset($attributes['title']) && is_string($attributes['title']) && trim($attributes['title']) !== ''
+            ? $attributes['title']
+            : $presentation['title'];
         $status = $readiness->isReady() ? 'Ready for a verified answer.' : 'This interactive service is not available yet.';
         $disabled = $readiness->isReady() ? '' : ' disabled';
 
         return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" aria-labelledby="ncli-panel-title">'
-            . '<h2 id="ncli-panel-title">' . $this->html($title) . '</h2>'
+            . '<div class="ncli-panel__frame">'
+            . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . $this->html($title) . '</h2>'
+            . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'
+            . ($presentation['introduction'] !== '' ? '<p class="ncli-panel__introduction">' . $this->html($presentation['introduction']) . '</p>' : '')
+            . '</header>'
             . '<form class="ncli-panel__form" data-ncli-interactive="1">'
-            . '<label for="ncli-question">Your question</label>'
-            . '<textarea id="ncli-question" name="question" rows="4" maxlength="2000"' . $disabled . '></textarea>'
-            . '<button type="submit"' . $disabled . '>Ask</button>'
+            . '<label class="screen-reader-text" for="ncli-question">Ask a question</label>'
+            . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="' . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
+            . '<button type="submit" aria-label="Submit question"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">Ask</span></button></div>'
+            . '<button class="ncli-panel__reset" type="button" hidden>Reset conversation</button>'
             . '</form>'
             . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
+            . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>' . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
+            . '</div>'
             . '</section>';
     }
 

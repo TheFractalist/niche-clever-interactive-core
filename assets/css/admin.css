@@ -1,0 +1,35 @@
+.ncli-admin { max-width: 1080px; margin: 18px 20px 40px 2px; color: #1d2935; }
+.ncli-admin__masthead { overflow: hidden; border: 1px solid #d6dce2; background: #fcfbf8; box-shadow: 0 1px 1px rgba(18, 59, 90, .08); }
+.ncli-admin__masthead-bar { display: flex; justify-content: space-between; gap: 18px; align-items: end; min-height: 92px; padding: 22px 28px; background: #123b5a; color: #fff; }
+.ncli-admin__masthead h1 { margin: 0; color: inherit; font-size: 27px; line-height: 1.15; letter-spacing: -.02em; }
+.ncli-admin__masthead p { margin: 5px 0 0; color: #d9e6f0; }
+.ncli-admin__masthead-bar > span { color: #d9e6f0; font-size: 13px; text-align: right; }
+.ncli-admin__masthead-art { display: block; width: 100%; height: auto; max-height: 180px; object-fit: cover; object-position: center; }
+.ncli-admin__tabs { margin: 18px 0 0; border-bottom-color: #ccd5dc; }
+.ncli-admin__tabs .nav-tab { border-color: transparent; background: transparent; color: #355167; font-size: 14px; }
+.ncli-admin__tabs .nav-tab-active { border-color: #ccd5dc #ccd5dc #fcfbf8; background: #fcfbf8; color: #123b5a; font-weight: 600; }
+.ncli-admin .notice { margin: 18px 0 0; }
+.ncli-admin__workspace, .ncli-admin__card { box-sizing: border-box; margin-top: 18px; padding: 28px; border: 1px solid #d6dce2; background: #fcfbf8; box-shadow: 0 1px 1px rgba(18, 59, 90, .05); }
+.ncli-admin__workspace > .ncli-admin__field + .ncli-admin__field { margin-top: 20px; }
+.ncli-admin__field { max-width: 720px; margin: 0 0 20px; }
+.ncli-admin__field label { display: grid; gap: 7px; color: #21384a; font-weight: 600; }
+.ncli-admin__field input:not([type="checkbox"]), .ncli-admin__field select, .ncli-admin__field textarea { max-width: 100%; border-color: #aab8c2; background: #fff; color: #1d2935; font-weight: 400; }
+.ncli-admin__field input.regular-text { width: min(100%, 520px); }
+.ncli-admin__field input[type="number"] { width: 130px; }
+.ncli-admin__field textarea { min-height: 110px; }
+.ncli-admin__card h2, .ncli-admin__get-started h2 { margin: 0 0 9px; color: #123b5a; font-size: 21px; }
+.ncli-admin__card p:last-child { margin-bottom: 0; }
+.ncli-admin__eyebrow { margin: 0 0 6px; color: #3f718e; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.ncli-admin__get-started { border-top: 4px solid #3f718e; }
+.ncli-admin__checklist { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 24px 0 18px; padding: 0; list-style: none; }
+.ncli-admin__checklist li { display: grid; gap: 6px; min-height: 88px; padding: 15px; border: 1px solid #d6dce2; background: #fff; }
+.ncli-admin__checklist strong { color: #123b5a; }
+.ncli-admin__checklist span { color: #536575; font-size: 13px; line-height: 1.45; }
+.ncli-admin__readiness { display: flex; gap: 9px; align-items: center; margin: 0; }
+.ncli-admin__readiness strong { padding: 4px 8px; border-radius: 999px; background: #e5eef4; color: #123b5a; font-size: 12px; }
+.ncli-admin__readiness span { color: #536575; font-size: 13px; }
+.ncli-admin__save-bar { position: sticky; bottom: 12px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 20px; margin: 28px -28px -28px; padding: 14px 28px; border-top: 1px solid #d6dce2; background: rgba(252, 251, 248, .96); box-shadow: 0 -4px 14px rgba(18, 59, 90, .08); }
+.ncli-admin__save-bar .button-primary { min-height: 36px; border-color: #123b5a; background: #123b5a; }
+.ncli-admin__save-bar .button-primary:hover, .ncli-admin__save-bar .button-primary:focus { border-color: #0c2b43; background: #0c2b43; }
+.ncli-admin__brand img { display: block; width: auto; height: 28px; }
+@media (max-width: 782px) { .ncli-admin { margin-right: 10px; } .ncli-admin__masthead-bar { align-items: start; min-height: 0; padding: 20px; } .ncli-admin__masthead-bar > span { display: none; } .ncli-admin__masthead-art { min-height: 86px; } .ncli-admin__workspace, .ncli-admin__card { padding: 20px; } .ncli-admin__checklist { grid-template-columns: 1fr; } .ncli-admin__save-bar { margin: 22px -20px -20px; padding: 12px 20px; } }

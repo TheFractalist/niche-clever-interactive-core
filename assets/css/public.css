@@ -1,23 +1,32 @@
-.ncli-panel {
-  border: 1px solid #d6d8dc;
-  border-radius: 0.75rem;
-  box-sizing: border-box;
-  color: #172033;
-  margin: 1.5rem 0;
-  max-width: 48rem;
-  padding: 1.25rem;
-}
-.ncli-panel--classic { background: #f7f8fa; }
-.ncli-panel--minimal { background: #fff; border-radius: 0; }
-.ncli-panel--editorial { background: #19243d; color: #fff; }
-.ncli-panel__form { display: grid; gap: 0.65rem; }
-.ncli-panel textarea { box-sizing: border-box; font: inherit; max-width: 100%; padding: 0.5rem; width: 100%; }
-.ncli-panel button { justify-self: start; padding: 0.5rem 0.9rem; }
-.ncli-panel button:focus-visible, .ncli-panel textarea:focus-visible { outline: 3px solid #145da0; outline-offset: 2px; }
-.ncli-panel__status, .ncli-limit-notice { font-size: 0.95rem; }
-.ncli-panel__transcript { display: grid; gap: 0.75rem; margin-top: 1rem; }
-.ncli-panel__turn { border-top: 1px solid currentColor; padding-top: 0.75rem; }
-.ncli-panel__question { font-weight: 700; }
-.ncli-panel__answer { margin-bottom: 0.5rem; }
-.ncli-panel__evidence { margin: 0; padding-left: 1.25rem; }
-@media (max-width: 480px) { .ncli-panel { border-radius: 0; margin-left: 0; margin-right: 0; padding: 1rem; } }
+/* NCI-owned reconstruction of the established three-panel design language. */
+section.ncli-panel { --ncli-max: 48rem; --ncli-bg: #fff; --ncli-ink: #111; --ncli-muted: #555; --ncli-rule: #b7b7b7; --ncli-surface: #eee; --ncli-hover: #eee; --ncli-accent: #111; --ncli-on-accent: #fff; --ncli-radius: 0; --ncli-frame-border: 1px solid var(--ncli-ink); --ncli-frame-pad: 1.5rem; --ncli-body-font: Arial, Helvetica, sans-serif; --ncli-head-font: Georgia, serif; --ncli-head-weight: 400; box-sizing: border-box; display: block; width: 100%; max-width: var(--ncli-max); margin: 2rem auto; padding: 0; border: 0; border-radius: var(--ncli-radius); background: var(--ncli-bg); color: var(--ncli-ink); font-family: var(--ncli-body-font); font-size: 16px; line-height: 1.5; text-align: left; }
+section.ncli-panel *, section.ncli-panel *::before, section.ncli-panel *::after { box-sizing: border-box; }
+section.ncli-panel--minimal { --ncli-ink: #1f2937; --ncli-muted: #6b7280; --ncli-rule: #e5e7eb; --ncli-surface: #f3f4f6; --ncli-hover: #f3f4f6; --ncli-accent: #2563eb; --ncli-radius: 14px; --ncli-frame-border: 0; --ncli-frame-pad: 1.25rem; --ncli-body-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --ncli-head-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --ncli-head-weight: 650; }
+section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted: #9aa3b2; --ncli-rule: #2d3340; --ncli-surface: #1a1e27; --ncli-hover: #222836; --ncli-accent: #7dd3fc; --ncli-on-accent: #0b1220; --ncli-radius: 12px; --ncli-frame-border: 1px solid var(--ncli-rule); --ncli-frame-pad: 1.5rem; --ncli-body-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --ncli-head-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --ncli-head-weight: 650; }
+.ncli-panel__frame { margin: 0; padding: var(--ncli-frame-pad); border: var(--ncli-frame-border); border-radius: var(--ncli-radius); background: transparent; }
+.ncli-panel__header { margin: 0; padding: 0 0 1rem; border-bottom: 1px solid var(--ncli-rule); }
+.ncli-panel__title { margin: 0; padding: 0; color: var(--ncli-ink); font: var(--ncli-head-weight) clamp(1.75rem, 4.5vw, 2.75rem)/1.08 var(--ncli-head-font); }
+.ncli-panel__headline { margin: .5rem 0 0; color: var(--ncli-ink); font: 400 .95rem/1.45 var(--ncli-body-font); }
+.ncli-panel__introduction { margin: .75rem 0 0; color: var(--ncli-muted); font: 400 .95rem/1.5 var(--ncli-body-font); }
+.ncli-panel__form { margin: 1.25rem 0 0; padding: 0; }
+.ncli-panel__input-shell { display: flex; gap: .5rem; min-height: 48px; }
+.ncli-panel textarea { flex: 1; min-width: 0; min-height: 48px; margin: 0; padding: .75rem; resize: vertical; border: 1px solid var(--ncli-rule); border-radius: var(--ncli-radius); background: var(--ncli-bg); box-shadow: none; color: var(--ncli-ink); font: inherit; font-size: 1rem; line-height: 1.4; }
+.ncli-panel textarea::placeholder { color: var(--ncli-muted); opacity: 1; }
+.ncli-panel textarea:focus { outline: 3px solid var(--ncli-accent); outline-offset: -3px; border-color: var(--ncli-accent); }
+.ncli-panel button[type="submit"] { flex: 0 0 48px; min-height: 48px; margin: 0; padding: 0; border: 0; border-radius: var(--ncli-radius); background: var(--ncli-accent); box-shadow: none; color: var(--ncli-on-accent); font-size: 1.2rem; line-height: 1; cursor: pointer; }
+.ncli-panel button[type="submit"]:hover, .ncli-panel button[type="submit"]:focus-visible { filter: brightness(1.15); outline: 3px solid var(--ncli-accent); outline-offset: 2px; }
+.ncli-panel button:disabled, .ncli-panel textarea:disabled { opacity: .55; cursor: not-allowed; }
+.ncli-panel__reset { display: inline-block; margin: .75rem 0 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--ncli-ink); font: 700 .72rem/1 var(--ncli-body-font); letter-spacing: .08em; text-decoration: underline; text-transform: uppercase; cursor: pointer; }
+.ncli-panel__reset[hidden] { display: none; }
+.ncli-panel__status { max-width: 46rem; margin: 1rem 0 0; color: var(--ncli-muted); font-size: .95rem; line-height: 1.5; }
+.ncli-panel__transcript { overflow: visible; }
+.ncli-panel__turn { margin: .9rem 0; padding: .85rem; border: 1px solid var(--ncli-rule); border-radius: var(--ncli-radius); background: transparent; color: var(--ncli-ink); font-size: .95rem; line-height: 1.5; }
+.ncli-panel__turn:first-child { margin-top: 1rem; }
+.ncli-panel__question { margin: 0 0 .6rem; color: var(--ncli-muted); font-weight: 700; }
+.ncli-panel__answer { margin: 0; }
+.ncli-panel__evidence { margin: .6rem 0 0; padding-left: 1rem; }
+.ncli-panel__evidence a { color: var(--ncli-accent); }
+.ncli-panel__footer { display: flex; justify-content: space-between; gap: 1rem; margin: 1.25rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--ncli-rule); color: var(--ncli-muted); font: 700 .72rem/1.35 var(--ncli-body-font); letter-spacing: .08em; text-transform: uppercase; }
+.ncli-limit-notice { max-width: var(--ncli-max); margin: 1rem auto; color: #3c434a; font-size: .95rem; }
+@media (max-width: 600px) { .ncli-panel__frame { padding: 1.25rem; } .ncli-panel__footer { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .ncli-panel *, .ncli-panel *::before, .ncli-panel *::after { scroll-behavior: auto; transition: none !important; } }

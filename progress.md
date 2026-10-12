@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C5 technically accepted local Core candidate.** C1–C5 are tested. The local-only `1.0.0-rc.1` candidate has passed its segregated live File Search canary as well as package, security/static and rollback checks. It is not published, deployed or submitted to WordPress.org.
+**12 October 2026 — visual-parity correction accepted locally.** C5 technical acceptance at `716c28b` remains valid. The separate local-only `1.0.0-rc.2` candidate reconstructs the approved Core visual language and has passed its visual matrix, package and rollback checks. It is not published, deployed or submitted to WordPress.org.
 
 ## Implemented
 
@@ -30,18 +30,22 @@
 - C5 live transport: newly authored Core-only Responses/File Search adapter, selected only by the explicit `NCLI_CORE_LIVE_TRANSPORT` server constant. It uses the existing server-constant secret resolver, requests no retrieved File Search result text, and transforms provider file citations into opaque Core tokens before evidence-map validation.
 - C5 live-canary validation: PASS — the segregated WordPress 6.5/PHP 8.1/MariaDB fixture completed File Search and a bounded public route response; approved evidence was public-safe, unapproved/stale evidence failed closed, provider failure was generic, and simulated timeout accounting was retained. Neither the fixture result nor receipts contain a credential, provider identifier, payload or corpus text.
 - C5 portability correction: the first rebuilt ZIP used Windows path separators and failed Linux extraction before activation. The package writer was replaced with an explicit portable ZIP writer; the corrected ZIP extracted, activated, passed Plugin Check and was removed in a complete current-fixture rollback rehearsal.
+- Visual-parity correction: NCI-owned administrator presentation now supplies a top-level single-profile workspace with masthead, Core-safe tabs, readiness guidance and sticky save action. The public shell reconstructs Classic, Minimal and Dark styles around the unchanged Core request/evidence boundary. Historical `editorial` settings normalise to `dark`; only the two manifest-pinned owner-authorised visual binaries are included.
+- Visual-parity validation: PASS — pure settings/render, JavaScript/session-state, provenance, source and package policy checks; PHP lint; PHPCS 3.13.6/WPCS 3.4.1 focused source scan; and Plugin Check 2.1.0 of the ZIP-derived candidate. Plugin Check retains only the previously reviewed fixture-directory text-domain, row-locked `$wpdb` and intentional Core-owned OpenAI direct-integration warnings.
+- Visual fixture validation: PASS — generated-data-only WordPress 6.5/PHP 8.1/MariaDB rendered the corrected Classic panel; current WordPress 7.1/PHP 8.3/MariaDB rendered Classic, Minimal and Dark, unready/disabled, mocked-answer/evidence, refusal and reset states. Desktop and 390px keyboard/focus checks passed. The C5 live transport was unchanged and its technical-acceptance evidence remains valid.
 
 ## Requires verification
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
 - C5 candidate package, checksum, denylist/source audit and rollback rehearsal are complete. The toolchain, ZIP and fixture evidence are external to the repository and context pack; no vendor or third-party source is committed.
+- Visual comparison screenshots are redacted, fixture-only evidence. The protected reference screenshots remain reference-only and are not copied into Core, candidate packages or the canonical context pack.
 
 ## Remaining conditions
 
-- C5 is technically accepted as a local-only release candidate. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
+- C5 is technically accepted as a local-only release candidate, and the separate visual-parity correction is accepted locally. Public release, deployment, WordPress.org submission and production provider use remain separate decisions.
 - Pro remains unstarted. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Do not publish or deploy Core. A later authorised Pro P1 start must use a separate private checkout and retain Core API-v1 compatibility boundaries.
+Do not publish or deploy Core. Pro P1 remains blocked until Jacob accepts the completed visual-parity matrix as the delivery acceptance record; any later authorised Pro P1 start must use a separate private checkout and retain Core API-v1 compatibility boundaries.

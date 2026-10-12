@@ -13,3 +13,9 @@ The following intentional deviations are already accepted by the Core/Pro bounda
 | Legacy public identifiers and WPIP settings | Replaced by fresh NCI identifiers/settings; no migration. |
 
 Only the manifest-approved logo and admin banner may be reused. Browser screenshots will be redacted and kept outside the repository and context pack; a checksum/reference only appears in phase receipts.
+
+## Visual-parity correction, 12 October 2026
+
+The `1.0.0-rc.2` correction reconstructs the established administrator masthead/tabs/cards/sticky save affordance and the Classic, Minimal and Dark public panel language in NCI-owned PHP, CSS and JavaScript. It is not a redesign. The former Core `editorial` panel setting is a compatibility alias for `dark` and is not exposed in the workspace.
+
+The only direct binary incorporation remains the exact manifest-pinned Niche Clever logo and administrator banner. The protected administrator stylesheet, public stylesheet, public script and renderer are reference-only adaptation sources; no legacy file is copied. The following omissions remain deliberate Core/Pro separations: multi-profile switching, authored question collections, contextual placement, cache controls and archive controls.
