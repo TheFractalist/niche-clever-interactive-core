@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C4 Core budgets, privacy and resilience.** C1–C3 are tested. C4 adds Core-only daily reservation accounting, privacy boundaries and safe public evidence URLs. Pro remains blocked until Core C5 technical acceptance.
+**12 October 2026 — C5 local mock-verified Core candidate.** C1–C4 are tested. C5 is preparing the `1.0.0-rc.1` local-only package and both fixture-matrix evidence. Pro remains blocked until Core technical acceptance.
 
 ## Implemented
 
@@ -24,19 +24,19 @@
 - C4 visitor/provider daily reservations with explicit InnoDB transactions and row locking. Visitor scope is a server-secret HMAC; raw addresses are not stored. Forwarded headers are accepted only from configured trusted proxy CIDRs.
 - C4 uses UTC daily rollover, releases failed pre-dispatch paired reservations, retains accounting after an attempted/ambiguous transport outcome and does not retry automatically. Evidence URLs now reject IP literals, localhost, `.local`, `.internal` and URL credentials without fetching them.
 - C4 fixture validation: PASS — 20 concurrent mocked route requests on WordPress 6.5/PHP 8.1/MariaDB all returned HTTP 200; the two NCI-only bucket rows had 64-character scope hashes, zero reservations, committed count 20 and InnoDB engine.
+- C5 candidate controls: a package script builds only the explicit Core runtime allowlist outside the repository, rejects prohibited paths/content and emits a SHA-256 manifest. JavaScript syntax/boundary and package-policy checks are deterministic and dependency-free.
 
 ## Requires verification
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
-- C4 deterministic domain/route checks, source/provenance audits, C1–C3 suites, full PHP lint and `git diff --check` require a final clean run before the C4 commit.
-- C5 packaging, compatibility matrices and local candidate evidence remain absent.
+- C5 package audit, checksum, licence/notices review, browser confirmation, rollback rehearsal and receipt remain to be recorded. WPCS/PHPCS and Plugin Check require separately reviewed disposable tooling; no vendor or third-party source is committed.
 
 ## Remaining conditions
 
-- C4 atomic budgets/privacy and C5 candidate evidence remain. A live canary with a segregated test credential/store is a C5 technical-acceptance blocker.
+- C5 local candidate evidence remains. A live canary with a segregated test credential/store is a C5 technical-acceptance blocker.
 - Pro remains outside active work. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Commit the C4 budget/privacy increment after final source and changed-path audit, then begin C5 deterministic tooling and local-only candidate work. Do not create Pro.
+Complete the C5 local candidate audit and receipt. Do not create Pro until a segregated live File Search canary passes.

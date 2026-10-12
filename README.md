@@ -1,6 +1,6 @@
 # Niche Clever Interactive Core
 
-This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. It began as a newly authored foundation and is now in C0 baseline reconciliation. It is not a released plugin and must not be represented as NCI Core 1.0.0.
+This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only candidate is `1.0.0-rc.1`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
 
 ## Current scope
 
@@ -28,6 +28,9 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c3-retrieval.php
     & 'C:\xampp\php\php.exe' tests/c3-route.php
     & 'C:\xampp\php\php.exe' tests/c4-budget.php
+    & 'C:\xampp\php\php.exe' tests/c5-package.php
+    node --check assets/js/public.js
+    node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
 The C0 fixture topology has no database dump or provider configuration. C1–C5 still require their respective implementation and acceptance evidence; a live File Search canary remains blocked until segregated test resources are supplied outside chat.

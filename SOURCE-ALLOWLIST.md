@@ -10,11 +10,12 @@ The permitted set is limited to newly authored Core material, the machine-readab
 
 | Path set | Permitted purpose | Provenance |
 | --- | --- | --- |
-| AGENTS.md, README.md, LICENSE, SOURCE-ALLOWLIST.md, progress.md, .gitignore | Governance and continuity | Newly authored |
+| AGENTS.md, README.md, LICENSE, CHANGELOG.md, SOURCE-ALLOWLIST.md, progress.md, .gitignore | Governance and continuity | Newly authored |
 | docs/**, provenance/** | Architecture, ownership, UX/test records and provenance controls | Newly authored except manifest source metadata |
 | fixtures/** | Disposable local topology and instructions, without data snapshots | Newly authored |
 | niche-clever-interactive-core.php, src/** | Newly authored Core code | Newly authored or manifest-recorded reconstruction |
 | tests/** | Local deterministic checks | Newly authored |
+| scripts/package-core.ps1 | Local-only Core candidate packaging and denylist audit | Newly authored |
 | assets/images/ncli-logo.png, assets/images/ncli-admin-banner.png | Approved NCI visual identity only | Exact manifest entries nci-logo and nci-admin-banner |
 
 ## Denied material
