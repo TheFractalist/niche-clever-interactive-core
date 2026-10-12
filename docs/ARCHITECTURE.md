@@ -10,13 +10,19 @@ Future Pro registration must occur only after Core bootstrap, validate the Core 
 
 Only future Core may own the public POST /ncli/v1/chat route, credential resolution, provider transport, rate/budget ordering, profile readiness, final evidence filtering and public errors. No seam receives an API key, raw provider payload, retrieved source text, secret resolver, provider client, route registrar or mutable Core request object.
 
-C1 registers an NCI-only activation/deactivation lifecycle. Activation creates fresh ncli_core_settings and a schema marker, then creates the prefixed ncli_core_rate_buckets table. Deactivation deliberately preserves NCI settings and rate data. C1 has no public route, provider client, transport, administration UI or public panel.
+C1 registers an NCI-only activation/deactivation lifecycle. Activation creates fresh ncli_core_settings and a schema marker, then creates the prefixed ncli_core_rate_buckets table. Deactivation deliberately preserves NCI settings and rate data.
 
 The only supported API-key source is the server-side NCLI_OPENAI_API_KEY_DEFAULT constant. Core never reads a key from an option, settings request or API request. Readiness remains unready until the default profile is enabled, that constant is present, and the configured vector-store reference and corpus version are non-empty.
 
 Public-safe error payloads are closed to six codes: profile unavailable, invalid request, policy refusal, allowance exceeded, provider-safe failure and evidence failure. They are deliberately generic.
 
 The Core default profile is the only C1 profile. A disabled profile and every named non-default profile resolve to no profile; no request may fall back to Core from an unknown name.
+
+## C2 workspace and presentation boundary
+
+C2 adds a one-profile administrator workspace: Setup, Profile, AI and Evidence, Conversation, Appearance and Limits, Placement, Diagnostics and Help. It uses the Core capability/nonce guard, CoreSettings validation and escaped output. The settings page never renders a key, provider payload, retrieved text, file ID or vector-store identifier.
+
+Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/interactive block. It has classic, minimal and editorial panel styles. Before C3, the panel is deliberately unavailable-safe: it renders a disabled form and no request is sent. Its browser transcript is only a client-side placeholder at this stage; no transcript or turn is persisted.
 
 ## Six provisional seams
 

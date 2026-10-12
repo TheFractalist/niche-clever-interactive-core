@@ -1,0 +1,15 @@
+{
+  "apiVersion": 3,
+  "name": "ncli/interactive",
+  "title": "NCI Interactive",
+  "category": "widgets",
+  "description": "Displays the Niche Clever Interactive Core question panel.",
+  "textdomain": "niche-clever-interactive-core",
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": "Ask Niche Clever"
+    }
+  },
+  "render": "file:./render.php"
+}

@@ -170,8 +170,8 @@ foreach ($iterator as $file) {
         $source .= $content === false ? '' : $content;
     }
 }
-foreach (['register_rest_route', 'OpenAIProvider', 'Responses API', 'vector-store'] as $forbidden) {
-    $assert(!str_contains($source, $forbidden), sprintf('C1 source does not implement %s.', $forbidden));
+foreach (['register_rest_route', 'OpenAIProvider', 'Responses API'] as $forbidden) {
+    $assert(!str_contains($source, $forbidden), sprintf('Core source does not implement %s before C3.', $forbidden));
 }
 
 echo sprintf("PASS: %d pure contract checks\n", $checks);

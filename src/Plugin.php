@@ -5,20 +5,26 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core;
 
 use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
+use NicheCleverInteractive\Core\Admin\SettingsPage;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Frontend\InteractivePanel;
 
 final class Plugin
 {
     private static ?self $instance = null;
     private ExtensionRegistryV1 $extensions;
     private SecretResolver $secrets;
+    private SettingsPage $settingsPage;
+    private InteractivePanel $interactivePanel;
 
     private function __construct()
     {
         $this->extensions = new ExtensionRegistryV1();
         $this->secrets = new SecretResolver();
+        $this->settingsPage = new SettingsPage();
+        $this->interactivePanel = new InteractivePanel();
     }
 
     public static function register(string $pluginFile): void
@@ -41,6 +47,9 @@ final class Plugin
 
     public function boot(): void
     {
+        $this->settingsPage->register();
+        $this->interactivePanel->register();
+
         if (function_exists('do_action')) {
             do_action('ncli_core_api_v1_ready', $this->extensions);
         }

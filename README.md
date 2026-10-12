@@ -8,7 +8,8 @@ This public repository holds Niche Clever Interactive Core, a non-production Cor
 - Pure PHP contract/provenance/source-audit checks.
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
-- No public route, provider transport, administration UI or public panel yet; those remain later gates.
+- C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and an unavailable-safe responsive public panel.
+- No public chat route or provider transport yet; enabled answer flow remains a later gate.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
 
