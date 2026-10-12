@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Niche Clever Interactive Core
- * Description: Non-production Core foundation only. It provides no functional visitor or administrator feature.
- * Version: 0.0.0-foundation
+ * Description: A non-production Core-first development build for Niche Clever Interactive.
+ * Version: 0.1.0-dev
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
@@ -13,7 +13,11 @@
 
 defined('ABSPATH') || exit;
 
-const NCLI_CORE_VERSION = '0.0.0-foundation';
+const NCLI_CORE_VERSION = '0.1.0-dev';
 const NCLI_CORE_API_MAJOR = 1;
 
 require_once __DIR__ . '/src/autoload.php';
+
+use NicheCleverInteractive\Core\Plugin;
+
+Plugin::register(__FILE__);

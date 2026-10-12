@@ -7,7 +7,8 @@ This public repository holds Niche Clever Interactive Core, a non-production Cor
 - PHP 8.1-compatible, provisional API-v1 contracts for six Core/Pro seams.
 - Pure PHP contract/provenance/source-audit checks.
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
-- A nonfunctional WordPress plugin header/bootstrap boundary. C1 has not yet implemented routes, provider transport, settings, UI or storage.
+- C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
+- No public route, provider transport, administration UI or public panel yet; those remain later gates.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
 
