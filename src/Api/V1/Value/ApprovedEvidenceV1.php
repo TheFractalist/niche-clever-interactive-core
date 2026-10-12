@@ -38,4 +38,12 @@ final class ApprovedEvidenceV1
         $this->url = $url;
         $this->approvalRevision = $approvalRevision;
     }
+
+    /**
+     * @return array{title: string, url: string|null}
+     */
+    public function publicPayload(): array
+    {
+        return ['title' => $this->title, 'url' => $this->url];
+    }
 }

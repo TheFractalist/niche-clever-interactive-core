@@ -170,8 +170,10 @@ foreach ($iterator as $file) {
         $source .= $content === false ? '' : $content;
     }
 }
-foreach (['register_rest_route', 'OpenAIProvider', 'Responses API'] as $forbidden) {
-    $assert(!str_contains($source, $forbidden), sprintf('Core source does not implement %s before C3.', $forbidden));
+$assert(substr_count($source, 'register_rest_route') === 2, 'C3 must contain one guarded registration for Core’s sole REST route.');
+$assert(str_contains($source, "register_rest_route('ncli/v1', '/chat'"), 'C3 must register only the Core chat route namespace.');
+foreach (['OpenAIProvider', 'Responses API'] as $forbidden) {
+    $assert(!str_contains($source, $forbidden), sprintf('Core source does not implement live %s in mock-only C3.', $forbidden));
 }
 
 echo sprintf("PASS: %d pure contract checks\n", $checks);

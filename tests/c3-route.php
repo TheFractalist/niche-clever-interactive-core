@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+use NicheCleverInteractive\Core\AI\ChatService;
+use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
+use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Rest\ChatRoute;
+
+$ncliRouteOptions = [];
+if (!function_exists('get_option')) {
+    function get_option($name, $default = false) {
+        global $ncliRouteOptions;
+        return $ncliRouteOptions[$name] ?? $default;
+    }
+}
+
+require_once dirname(__DIR__) . '/src/autoload.php';
+
+if (!defined('NCLI_CORE_MOCK_TRANSPORT')) {
+    define('NCLI_CORE_MOCK_TRANSPORT', true);
+}
+
+$ncliRouteOptions[CoreSettings::OPTION_NAME] = [
+    'enabled' => true,
+    'profile' => [
+        'id' => 'default',
+        'corpus_version' => 'fixture-corpus-2026-10',
+        'vector_store_reference' => '',
+        'approved_evidence' => [
+            'fixture_source' => ['title' => 'Fixture source', 'url' => 'https://example.test/ncli-fixture-source'],
+        ],
+    ],
+    'instructions' => '',
+    'response_preset' => 'balanced',
+    'limits' => ['visitor_requests_per_day' => 10, 'provider_requests_per_day' => 100],
+    'appearance' => ['panel_style' => 'classic'],
+];
+
+$request = new class {
+    /** @return array{question: string} */
+    public function get_json_params(): array
+    {
+        return ['question' => 'What is NCI?'];
+    }
+};
+
+$route = new ChatRoute(new ChatService(new DeterministicMockTransport(), new SecretResolver('NCLI_NOT_A_SECRET')));
+$payload = $route->respond($request);
+if (!is_array($payload) || ($payload['ok'] ?? false) !== true || ($payload['evidence'][0]['title'] ?? '') !== 'Fixture source') {
+    fwrite(STDERR, "FAIL: C3 route must return only its public success payload.\n");
+    exit(1);
+}
+
+echo "PASS: C3 chat route public payload verified\n";

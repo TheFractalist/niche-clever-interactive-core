@@ -25,6 +25,15 @@ final class Readiness
             return new self(self::DISABLED);
         }
 
+        // The mock transport is an explicit, server-side disposable-fixture mode.
+        // It never accepts a credential or a vector-store reference and cannot be
+        // enabled from a setting or request.
+        if (defined('NCLI_CORE_MOCK_TRANSPORT') && NCLI_CORE_MOCK_TRANSPORT === true) {
+            return $settings->corpusVersion() === ''
+                ? new self(self::MISSING_CORPUS_VERSION)
+                : new self(self::READY);
+        }
+
         if (!$secrets->isAvailable()) {
             return new self(self::MISSING_SECRET);
         }

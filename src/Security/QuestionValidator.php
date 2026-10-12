@@ -17,6 +17,15 @@ final class QuestionValidator
             return null;
         }
 
+        if ($this->isInjectionAttempt($question)) {
+            return null;
+        }
+
+        return $question;
+    }
+
+    public function isInjectionAttempt(string $question): bool
+    {
         $normalised = strtolower(preg_replace('/\s+/', ' ', $question) ?? '');
         $patterns = [
             '/\b(ignore|disregard|override)\b.{0,80}\b(previous|system|developer|instructions?)\b/',
@@ -24,10 +33,10 @@ final class QuestionValidator
         ];
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $normalised) === 1) {
-                return null;
+                return true;
             }
         }
 
-        return $question;
+        return false;
     }
 }

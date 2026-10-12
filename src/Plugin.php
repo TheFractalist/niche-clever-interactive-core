@@ -10,6 +10,10 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Frontend\InteractivePanel;
+use NicheCleverInteractive\Core\AI\ChatService;
+use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
+use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
+use NicheCleverInteractive\Core\Rest\ChatRoute;
 
 final class Plugin
 {
@@ -18,6 +22,7 @@ final class Plugin
     private SecretResolver $secrets;
     private SettingsPage $settingsPage;
     private InteractivePanel $interactivePanel;
+    private ChatRoute $chatRoute;
 
     private function __construct()
     {
@@ -25,6 +30,10 @@ final class Plugin
         $this->secrets = new SecretResolver();
         $this->settingsPage = new SettingsPage();
         $this->interactivePanel = new InteractivePanel();
+        $transport = defined('NCLI_CORE_MOCK_TRANSPORT') && NCLI_CORE_MOCK_TRANSPORT === true
+            ? new DeterministicMockTransport()
+            : new UnavailableTransport();
+        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets));
     }
 
     public static function register(string $pluginFile): void
@@ -49,6 +58,7 @@ final class Plugin
     {
         $this->settingsPage->register();
         $this->interactivePanel->register();
+        $this->chatRoute->register();
 
         if (function_exists('do_action')) {
             do_action('ncli_core_api_v1_ready', $this->extensions);

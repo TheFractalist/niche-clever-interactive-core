@@ -8,8 +8,8 @@ This public repository holds Niche Clever Interactive Core, a non-production Cor
 - Pure PHP contract/provenance/source-audit checks.
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
-- C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and an unavailable-safe responsive public panel.
-- No public chat route or provider transport yet; enabled answer flow remains a later gate.
+- C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and a responsive public panel.
+- C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned transport/evidence boundary. The only present transport is a server-constant-gated deterministic mock for disposable fixtures; there is no provider client, provider value or live request.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, evidence filtering and public response construction. Pro integration is not implemented or tested here.
 
@@ -22,6 +22,10 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/contract.php
     & 'C:\xampp\php\php.exe' tests/provenance.php
     & 'C:\xampp\php\php.exe' tests/source-audit.php
+    & 'C:\xampp\php\php.exe' tests/c1-domain.php
+    & 'C:\xampp\php\php.exe' tests/c2-render.php
+    & 'C:\xampp\php\php.exe' tests/c3-retrieval.php
+    & 'C:\xampp\php\php.exe' tests/c3-route.php
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
 The C0 fixture topology has no database dump or provider configuration. C1–C5 still require their respective implementation and acceptance evidence; a live File Search canary remains blocked until segregated test resources are supplied outside chat.

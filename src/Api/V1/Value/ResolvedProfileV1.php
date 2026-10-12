@@ -36,4 +36,24 @@ final class ResolvedProfileV1
     {
         return $this->enabled;
     }
+
+    public function policyFingerprint(): string
+    {
+        return $this->policyFingerprint;
+    }
+
+    public function corpusFingerprint(): string
+    {
+        return $this->corpusFingerprint;
+    }
+
+    public function approvalMapRevision(): string
+    {
+        return $this->approvalMapRevision;
+    }
+
+    public function responsePreset(): string
+    {
+        return $this->responsePreset;
+    }
 }

@@ -2,13 +2,13 @@
 
 ## Status and limits
 
-This document records a provisional API scaffold and C1 runtime/security boundary. It does not freeze API v1, establish Pro compatibility, or implement retrieval, a public chat route or a provider call. Core package versioning and API-major versioning are separate.
+This document records a provisional API scaffold and C1–C3 runtime/security boundary. It does not freeze API v1, establish Pro compatibility or implement a live provider call. Core package versioning and API-major versioning are separate.
 
 Future Pro registration must occur only after Core bootstrap, validate the Core API major and declared minimum Core package version, and fail closed when absent or incompatible. It must then register no public route and make no provider call. Standalone Core remains usable.
 
 ## Core-owned request boundary
 
-Only future Core may own the public POST /ncli/v1/chat route, credential resolution, provider transport, rate/budget ordering, profile readiness, final evidence filtering and public errors. No seam receives an API key, raw provider payload, retrieved source text, secret resolver, provider client, route registrar or mutable Core request object.
+Core owns the sole public POST /ncli/v1/chat route, credential resolution, transport selection, rate/budget ordering, profile readiness, final evidence filtering and public errors. No seam receives an API key, raw provider payload, retrieved source text, secret resolver, provider client, route registrar or mutable Core request object.
 
 C1 registers an NCI-only activation/deactivation lifecycle. Activation creates fresh ncli_core_settings and a schema marker, then creates the prefixed ncli_core_rate_buckets table. Deactivation deliberately preserves NCI settings and rate data.
 
@@ -22,7 +22,13 @@ The Core default profile is the only C1 profile. A disabled profile and every na
 
 C2 adds a one-profile administrator workspace: Setup, Profile, AI and Evidence, Conversation, Appearance and Limits, Placement, Diagnostics and Help. It uses the Core capability/nonce guard, CoreSettings validation and escaped output. The settings page never renders a key, provider payload, retrieved text, file ID or vector-store identifier.
 
-Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/interactive block. It has classic, minimal and editorial panel styles. Before C3, the panel is deliberately unavailable-safe: it renders a disabled form and no request is sent. Its browser transcript is only a client-side placeholder at this stage; no transcript or turn is persisted.
+Core registers the ncli_interactive and ncli_limit_notice shortcodes and ncli/interactive block. It has classic, minimal and editorial panel styles. C3 sends a JSON request only to Core's route and keeps the browser transcript in page memory only; no transcript or turn is persisted.
+
+## C3 mock retrieval and evidence boundary
+
+The route first rejects malformed request shapes and attempts to override Core's default profile/preset. It then resolves the default profile without fallback, applies fixed prompt policy, checks readiness and calls its Core-owned transport. The only current transport is `DeterministicMockTransport`, enabled solely by the boolean server constant `NCLI_CORE_MOCK_TRANSPORT` in a disposable fixture. Without that constant, Core selects an unavailable transport; no live provider client, credential, vector-store value or provider call exists in this phase.
+
+Every historical answer needs a completed File Search result. The result must carry current policy and corpus fingerprints, and every current annotation token must map to Core's current approved evidence map. Public output is limited to the answer and approved title/credential-free HTTPS URL. Annotation tokens, IDs, retrieved text, provider payloads, secrets and diagnostics are never emitted. A policy refusal, invalid request, unavailable profile, provider failure and evidence failure use the closed public error set.
 
 ## Six provisional seams
 

@@ -13,6 +13,6 @@ final class PromptPolicy
 
     public function isRefused(string $question): bool
     {
-        return (new QuestionValidator())->validate($question) === null;
+        return (new QuestionValidator())->isInjectionAttempt($question);
     }
 }

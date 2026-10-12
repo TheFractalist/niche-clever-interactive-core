@@ -2,7 +2,7 @@
 
 ## Current objective
 
-**12 October 2026 — C2 Core administration and public UX.** C1 is tested. C2 provides the Core-only configuration workspace and unavailable-safe presentation while retrieval is absent. Pro remains blocked until Core C5 technical acceptance.
+**12 October 2026 — C3 mock retrieval, chat route and evidence.** C1 and C2 are tested. C3 provides Core's sole public route, deterministic fixture-only transport and current-evidence validation. Pro remains blocked until Core C5 technical acceptance.
 
 ## Implemented
 
@@ -17,18 +17,23 @@
 - C1 fixture validation: PASS — an isolated WordPress 6.5/PHP 8.1 installation activated and deactivated Core; NCI settings/schema marker and rate table existed, and settings remained after deactivation. No existing AskFolio installation was changed.
 - C2 one-profile Settings workspace with capability/nonce save guard and escaped values; eight documented Core screens; Core shortcodes/block metadata; three responsive CSS styles and unavailable-safe disabled panel.
 - C2 fixture validation: PASS — Core settings page returned HTTP 200 with all workspace labels; a nonce-protected save returned its expected safe redirect; the generated NCI-only public page rendered the panel, label, disabled controls and unavailable status in a browser.
+- C3 Core-owned `POST /ncli/v1/chat` route, fail-closed default-profile resolution, request/preset validation, fixed prompt policy and closed public error responses.
+- C3 deterministic mock transport is enabled only by the boolean server constant `NCLI_CORE_MOCK_TRANSPORT` in the disposable fixture. There is no live provider client, credential, vector-store value or provider call.
+- C3 requires a completed File Search result whose current policy/corpus fingerprints and annotation tokens match the current Core evidence map before presenting a bounded answer and approved title/HTTPS URL.
+- C3 fixture validation: PASS — WordPress 6.5/PHP 8.1 served a mocked enabled answer and approved public evidence through Core's route; a prompt-injection fixture returned only `policy_refusal`; a 390px viewport retained the usable panel; keyboard focus advanced from question to Ask.
 
 ## Requires verification
 
 - Foundation validation recorded on 12 October 2026: PASS — C:\xampp\php\php.exe tests\contract.php completed 33 pure contract checks; PASS — PHP syntax lint completed without errors for all 20 PHP files; PASS — git diff --check completed without whitespace errors.
 - Source/asset audit recorded on 12 October 2026: PASS — executable source contains no AskFolio or WPIP references; credential-shaped value scan found no matches; changed-path inspection found only the 26 newly authored foundation files.
-- C2 still requires narrow-width and enabled-flow keyboard acceptance once the C3 mock request path exists. No public REST route, provider transport, evidence retrieval, atomic rate reservation implementation or packaging exists.
+- C3 deterministic domain/route checks, source/provenance audits, C1/C2 suites, full PHP lint and `git diff --check` require a final clean run before the C3 commit.
+- C4 atomic rate/provider reservations, privacy controls and resilience tests remain absent. C5 packaging, compatibility matrices and local candidate evidence remain absent.
 
 ## Remaining conditions
 
-- C2 final acceptance, C3 mock retrieval/evidence, C4 atomic budgets/privacy and C5 candidate evidence remain. A live canary with a segregated test credential/store is a C5 technical-acceptance blocker.
+- C4 atomic budgets/privacy and C5 candidate evidence remain. A live canary with a segregated test credential/store is a C5 technical-acceptance blocker.
 - Pro remains outside active work. Its archive policy is documented in the canonical NCI context pack only.
 
 ## Next authorised continuation
 
-Complete C2 final browser acceptance alongside the C3 mock request path before marking C2 tested.
+Commit the C3 mock-only route/evidence increment after final source and changed-path audit, then begin C4 rate/budget and privacy controls. Do not create Pro.
