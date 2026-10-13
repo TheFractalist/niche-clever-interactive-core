@@ -38,7 +38,7 @@ $responsePayload = [
             'type' => 'message',
             'content' => [[
                 'type' => 'output_text',
-                'text' => 'Grounded fixture answer.',
+                'text' => 'Grounded fixture answer. fileciteturn0file2turn0file4',
                 'annotations' => [['type' => 'file_citation', 'file_id' => $fileId, 'filename' => 'private-fixture.txt']],
             ]],
         ],
@@ -50,6 +50,7 @@ $http = new class(json_encode($responsePayload, JSON_THROW_ON_ERROR)) implements
     public array $headers = [];
     public string $url = '';
     public string $body = '';
+    public int $timeout = 0;
     private string $response;
 
     public function __construct(string $response)
@@ -63,21 +64,28 @@ $http = new class(json_encode($responsePayload, JSON_THROW_ON_ERROR)) implements
         $this->url = $url;
         $this->headers = $headers;
         $this->body = $body;
+        $this->timeout = $timeout;
         return new ResponsesHttpResponse(200, $this->response);
     }
 };
 
 $transport = new OpenAiResponsesFileSearchTransport(new SecretResolver('NCLI_TEST_PROVIDER_KEY'), $http);
-$request = new TransportRequest('What is the fixture?', 'Use the configured corpus only.', 'balanced', str_repeat('a', 64), str_repeat('b', 64), 'vs_fixture_store');
+$instructions = (new PromptPolicy())->effectiveInstructions('Use iambic pentameter for the response form.', 'balanced');
+$request = new TransportRequest('What is the fixture?', $instructions, 'balanced', str_repeat('a', 64), str_repeat('b', 64), 'vs_fixture_store');
 $result = $transport->respond($request);
 $assert($http->url === 'https://api.openai.com/v1/responses', 'The live transport must use only the fixed Responses endpoint.');
+$assert($http->timeout === 60, 'The live transport must allow a completed File Search response up to its explicit 60-second limit.');
 $assert(($http->headers['Authorization'] ?? '') === 'Bearer fixture-provider-key', 'The provider key must be sent only as the HTTP authorization header.');
 $body = json_decode($http->body, true, 512, JSON_THROW_ON_ERROR);
+$assert(($body['instructions'] ?? null) === $instructions, 'The live transport must send the complete composed Core instructions.');
+$assert(str_contains((string) ($body['instructions'] ?? ''), 'Use iambic pentameter for the response form.'), 'The live transport must include bounded owner response guidance.');
 $assert(($body['tools'][0]['type'] ?? null) === 'file_search', 'The live transport must request File Search.');
 $assert(($body['tools'][0]['vector_store_ids'][0] ?? null) === 'vs_fixture_store', 'The request must use the current Core vector-store reference.');
 $assert(!array_key_exists('include', $body), 'The live transport must not request retrieved search-result text.');
 $assert($result->completedFileSearch(), 'A completed provider File Search call must be recognised.');
+$assert($result->answer() === 'Grounded fixture answer.', 'The transport must remove opaque inline provider citation markers from public answer text.');
 $assert(!str_contains(json_encode($result, JSON_THROW_ON_ERROR), $fileId), 'The transport result must ignore provider file identifiers and citation metadata.');
+$assert(!str_contains($result->answer(), 'filecite'), 'The public answer must not expose an inline provider citation marker.');
 
 $settings = CoreSettings::fromArray([
     'enabled' => true,

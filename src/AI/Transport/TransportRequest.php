@@ -7,16 +7,16 @@ namespace NicheCleverInteractive\Core\AI\Transport;
 final class TransportRequest
 {
     private string $question;
-    private string $fixedInstructions;
+    private string $instructions;
     private string $responsePreset;
     private string $policyFingerprint;
     private string $corpusFingerprint;
     private string $vectorStoreReference;
 
-    public function __construct(string $question, string $fixedInstructions, string $responsePreset, string $policyFingerprint, string $corpusFingerprint, string $vectorStoreReference = '')
+    public function __construct(string $question, string $instructions, string $responsePreset, string $policyFingerprint, string $corpusFingerprint, string $vectorStoreReference = '')
     {
         $this->question = $question;
-        $this->fixedInstructions = $fixedInstructions;
+        $this->instructions = $instructions;
         $this->responsePreset = $responsePreset;
         $this->policyFingerprint = $policyFingerprint;
         $this->corpusFingerprint = $corpusFingerprint;
@@ -28,9 +28,9 @@ final class TransportRequest
         return $this->question;
     }
 
-    public function fixedInstructions(): string
+    public function instructions(): string
     {
-        return $this->fixedInstructions;
+        return $this->instructions;
     }
 
     public function responsePreset(): string

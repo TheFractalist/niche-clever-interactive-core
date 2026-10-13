@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0-rc.7 — 13 October 2026
+
+Local-only bounded-response-guidance correction. The saved owner response guidance now composes into the OpenAI Responses instruction for public chat and administrator connection tests, where it can shape response style and format only. Concise, Balanced and Detailed now supply a Core-defined response-detail baseline, with specific owner presentation guidance taking priority where it does not conflict with Core requirements.
+
+Core retrieval, safety, privacy, disclosure, provider-tool and route rules remain non-negotiable. The policy and connection fingerprints now derive from the exact composed instruction supplied to the transport, so changing response guidance or the preset requires a fresh connection test. The Core-owned Responses transport now allows a completed File Search call up to 60 seconds, after a local live request showed that the earlier 20-second bound expired before a valid response returned. Opaque inline provider file-citation markers are removed before a public answer is returned. This candidate is not published, deployed, tagged or submitted to WordPress.org.
+
+## 1.0.0-rc.6 — 13 October 2026
+
+Local-only Core presentation correction. Public answers now render a constrained, DOM-built Markdown subset: headings, paragraphs, lists, quotations, code blocks and basic emphasis. Provider-returned HTML is never parsed, and Markdown links remain non-clickable text so Core still emits no public provider-derived navigation.
+
+The Core route, connection/readiness gate, provider transport, File Search validation, rate reservations and stored data boundary are unchanged. This candidate is not published, deployed, tagged or submitted to WordPress.org.
+
 ## 1.0.0-rc.5 — 12 October 2026
 
 Local-only Core boundary-correction candidate. Core now returns the bounded answer directly from the configured File Search corpus after a completed retrieval and current policy/corpus fingerprint checks. The approved-evidence map, its configuration screen, citation-token parsing, evidence-metadata extension seam and public source links have been removed. Legacy stored map data is ignored and dropped on the next settings save.

@@ -23,7 +23,20 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__turn { margin: .9rem 0; padding: .85rem; border: 1px solid var(--ncli-rule); border-radius: var(--ncli-radius); background: transparent; color: var(--ncli-ink); font-size: .95rem; line-height: 1.5; }
 .ncli-panel__turn:first-child { margin-top: 1rem; }
 .ncli-panel__question { margin: 0 0 .6rem; color: var(--ncli-muted); font-weight: 700; }
-.ncli-panel__answer { margin: 0; }
+.ncli-panel__answer > :first-child { margin-top: 0; }
+.ncli-panel__answer > :last-child { margin-bottom: 0; }
+.ncli-panel__answer p { margin: .55rem 0; }
+.ncli-panel__answer h3, .ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { margin: .95rem 0 .35rem; color: var(--ncli-ink); font-family: var(--ncli-heading-font); line-height: 1.2; }
+.ncli-panel__answer h3 { font-size: 1.12rem; }
+.ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { font-size: 1rem; }
+.ncli-panel__answer ul, .ncli-panel__answer ol { margin: .55rem 0; padding-left: 1.35rem; }
+.ncli-panel__answer li + li { margin-top: .2rem; }
+.ncli-panel__answer blockquote { margin: .75rem 0; padding: .1rem 0 .1rem .85rem; border-left: 3px solid var(--ncli-accent); color: var(--ncli-muted); }
+.ncli-panel__answer blockquote p { margin: .35rem 0; }
+.ncli-panel__answer pre { overflow-x: auto; margin: .75rem 0; padding: .7rem; border: 1px solid var(--ncli-rule); border-radius: calc(var(--ncli-radius) / 2); background: rgba(17, 24, 39, .06); font: .85em/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
+.ncli-panel__answer code { padding: .08em .25em; border-radius: 3px; background: rgba(17, 24, 39, .08); font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
+.ncli-panel__answer pre code { padding: 0; background: transparent; }
+.ncli-panel__answer hr { margin: .9rem 0; border: 0; border-top: 1px solid var(--ncli-rule); }
 .ncli-panel__footer { display: flex; justify-content: space-between; gap: 1rem; margin: 1.25rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--ncli-rule); color: var(--ncli-muted); font: 700 .72rem/1.35 var(--ncli-body-font); letter-spacing: .08em; text-transform: uppercase; }
 .ncli-limit-notice { max-width: var(--ncli-max); margin: 1rem auto; color: #3c434a; font-size: .95rem; }
 @media (max-width: 600px) { .ncli-panel__frame { padding: 1.25rem; } .ncli-panel__footer { flex-direction: column; } }

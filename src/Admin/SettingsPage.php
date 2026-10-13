@@ -206,7 +206,8 @@ final class SettingsPage
         }
 
         if ($tab === 'conversation') {
-            $this->textarea('instructions', 'Bounded owner instructions', (string) $values['instructions']);
+            $this->textarea('instructions', 'Owner response guidance', (string) $values['instructions']);
+            $this->descriptionRow('Applies to live answers after saving and passing a fresh connection test. It can shape response style and format only; Core retrieval, safety and disclosure rules always apply.');
             $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset']);
             $this->text('presentation_placeholder', 'Question placeholder', (string) $values['presentation']['placeholder']);
             $this->text('presentation_footer_left', 'Panel footer left label', (string) $values['presentation']['footer_left']);
@@ -255,7 +256,7 @@ final class SettingsPage
             : 'Save the vector-store reference and corpus version in AI & Corpus.';
         $testState = $settings->connectionTestStatus() === 'passed' && $readiness->isReady()
             ? 'The current configuration passed its File Search connection test.'
-            : 'Run a new test after changing the key, transport mode, vector store, corpus version or prompt policy.';
+            : 'Run a new test after changing the key, transport mode, vector store, corpus version, response guidance or response preset.';
         $placements = $this->publishedPlacements();
 
         echo '<section class="ncli-admin__get-started"><h2><span>Get started</span><span class="ncli-admin__get-started-count">4 Core steps</span></h2>';

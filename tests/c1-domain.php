@@ -81,6 +81,7 @@ foreach ([
     ['enabled' => 'yes'],
     ['profile' => ['id' => 'unknown']],
     ['response_preset' => 'unbounded'],
+    ['instructions' => str_repeat('x', 4001)],
     ['appearance' => ['panel_style' => 'unknown']],
 ] as $invalid) {
     try {
@@ -121,9 +122,21 @@ $deniedGuard = new AdminActionGuard(static fn (): bool => false, static fn (): b
 $assert(!$deniedGuard->allows('ncli_save_settings', 'valid-nonce'), 'Missing administrator capability must be rejected.');
 
 $policy = new PromptPolicy();
+$conciseInstructions = $policy->effectiveInstructions('Write in a warm voice.', 'concise');
+$balancedInstructions = $policy->effectiveInstructions('Write in a warm voice.', 'balanced');
+$detailedInstructions = $policy->effectiveInstructions('Write in a warm voice.', 'detailed');
+$blankInstructions = $policy->effectiveInstructions('', 'balanced');
+$assert(str_contains($balancedInstructions, $policy->fixedInstructions()), 'Effective instructions must retain the immutable Core requirements.');
+$assert(str_contains($balancedInstructions, 'Write in a warm voice.'), 'Effective instructions must include bounded owner response guidance.');
+$assert(str_contains($balancedInstructions, 'Core response-detail baseline:'), 'Effective instructions must include the Core response-detail baseline.');
+$assert(strpos($balancedInstructions, 'Write in a warm voice.') > strpos($balancedInstructions, 'Core response-detail baseline:'), 'Owner response guidance must follow the preset baseline as the more specific presentation instruction.');
+$assert(strpos($balancedInstructions, 'Priority reminder:') > strpos($balancedInstructions, 'Write in a warm voice.'), 'The immutable Core-priority reminder must follow owner guidance.');
+$assert(!str_contains($blankInstructions, 'BEGIN OWNER RESPONSE GUIDANCE'), 'Blank owner guidance must not add an empty guidance block.');
+$assert($conciseInstructions !== $balancedInstructions && $balancedInstructions !== $detailedInstructions, 'Each response preset must produce a distinct Core detail baseline.');
 $firstFingerprint = PolicyFingerprint::create($policy, 'Use the approved corpus.', 'concise');
 $secondFingerprint = PolicyFingerprint::create($policy, 'Use the approved corpus.', 'detailed');
 $assert($firstFingerprint !== $secondFingerprint, 'Response preset must affect policy fingerprint.');
+$assert($secondFingerprint !== PolicyFingerprint::create($policy, 'Write in iambic pentameter.', 'detailed'), 'Owner response guidance must affect policy fingerprint.');
 
 $publicError = (new PublicError('provider_failure'))->payload();
 $assert($publicError === ['code' => 'provider_failure', 'message' => 'The interactive service is temporarily unavailable.'], 'Public provider error must stay generic.');

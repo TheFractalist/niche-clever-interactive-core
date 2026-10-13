@@ -69,7 +69,7 @@ final class ChatService
         try {
             $result = $this->transport->respond(new TransportRequest(
                 $validated['question'],
-                $this->policy->fixedInstructions(),
+                $this->policy->effectiveInstructions($settings->instructions(), $validated['response_preset']),
                 $validated['response_preset'],
                 $profile->policyFingerprint(),
                 $profile->corpusFingerprint(),

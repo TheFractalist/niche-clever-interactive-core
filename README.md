@@ -1,6 +1,6 @@
 # Niche Clever Interactive Core
 
-This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only boundary-correction candidate is `1.0.0-rc.5`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
+This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only bounded-response-guidance candidate is `1.0.0-rc.7`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
 
 ## Current scope
 

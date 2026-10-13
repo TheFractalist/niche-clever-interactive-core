@@ -49,7 +49,7 @@ final class ConnectionTestService
         try {
             $request = new TransportRequest(
                 self::VERIFICATION_REQUEST,
-                $this->policy->fixedInstructions(),
+                $this->policy->effectiveInstructions($settings->instructions(), $settings->responsePreset()),
                 $settings->responsePreset(),
                 PolicyFingerprint::create($this->policy, $settings->instructions(), $settings->responsePreset()),
                 hash('sha256', $settings->corpusVersion()),

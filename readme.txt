@@ -4,7 +4,7 @@ Tags: interactive, retrieval, file-search
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0-rc.5
+Stable tag: 1.0.0-rc.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,14 @@ completed File Search validation. Provider use remains server-side and separatel
 3. Configure the Core workspace with a server-side credential, vector-store reference and corpus version, then run the administrator-only connection test before enabling public answers.
 
 == Changelog ==
+
+= 1.0.0-rc.7 =
+
+Local-only bounded-response-guidance correction: saved owner response guidance now affects only response style and format, while Core retrieval, safety and disclosure rules remain non-negotiable. Concise, Balanced and Detailed now provide Core-defined response-detail baselines. Changing either requires a fresh administrator connection test.
+
+= 1.0.0-rc.6 =
+
+Local-only presentation correction: answers now render a constrained, DOM-built Markdown subset without accepting provider HTML or creating provider-derived links.
 
 = 1.0.0-rc.5 =
 * Local-only Core boundary correction. Core now answers directly from the configured File Search corpus after a completed retrieval. The approved evidence map, citation metadata and public source links have been removed from Core.

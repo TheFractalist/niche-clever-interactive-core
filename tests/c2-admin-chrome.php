@@ -92,6 +92,14 @@ $assert(str_contains($setup, 'aria-label="NCI Core settings"'), 'The Core tab na
 $assert(str_contains($setup, '&lt;unsafe version&gt;'), 'Settings values must remain escaped in the new table layout.');
 $assert(!str_contains($setup, 'profile-picker'), 'The Core setup must not render a multi-profile picker.');
 
+$_GET = ['tab' => 'conversation'];
+ob_start();
+(new SettingsPage())->render();
+$conversation = (string) ob_get_clean();
+$assert(str_contains($conversation, 'Owner response guidance'), 'The Conversation tab must describe the owner setting as effective response guidance.');
+$assert(str_contains($conversation, 'It can shape response style and format only'), 'The Conversation tab must state the bounded owner-guidance scope.');
+$assert(str_contains($conversation, 'fresh connection test'), 'The Conversation tab must explain that changed guidance requires retesting.');
+
 $_GET = ['tab' => 'diagnostics'];
 ob_start();
 (new SettingsPage())->render();

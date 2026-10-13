@@ -95,13 +95,17 @@ $store = new class implements BucketStore {
 };
 
 $completed = new class implements ResponseTransport {
+    public ?TransportRequest $request = null;
+
     public function respond(TransportRequest $request): TransportResult {
+        $this->request = $request;
         return new TransportResult('discarded answer', true, $request->policyFingerprint(), $request->corpusFingerprint());
     }
 };
 $service = new ConnectionTestService($completed, $secrets, new BudgetGate($store), $policy, TransportMode::MOCK);
 $outcome = $service->test($settings);
 $assert($outcome->passed(), 'A completed File Search transport result must pass the administrator connection test.');
+$assert($completed->request instanceof TransportRequest && $completed->request->instructions() === $policy->effectiveInstructions($settings->instructions(), $settings->responsePreset()), 'The connection test must send the same effective instructions used for public chat.');
 $assert(!str_contains(json_encode($outcome, JSON_THROW_ON_ERROR), 'discarded'), 'The test result must not retain answer or citation content.');
 $keys = implode('|', array_keys($store->rows));
 $assert(str_contains($keys, 'provider:'), 'The connection test must reserve the global provider bucket.');

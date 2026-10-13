@@ -10,6 +10,11 @@ assert(source.includes("window.fetch(route"), 'The public panel must call only t
 assert(source.includes("credentials: 'same-origin'"), 'The public panel must keep requests same-origin.');
 assert(source.includes('textContent'), 'The transcript must use text nodes for public values.');
 assert(!source.includes('innerHTML'), 'The transcript must not insert public values as HTML.');
+assert(source.includes('function renderAnswerMarkdown'), 'The public panel must provide its bounded answer formatter.');
+assert(source.includes('answerElement.appendChild(renderAnswerMarkdown(answer))'), 'Answers must be rendered through the bounded formatter.');
+assert(source.includes("document.createElement('strong')") && source.includes("document.createElement('em')"), 'The formatter must support basic emphasis without parsing HTML.');
+assert(source.includes("document.createElement(unordered ? 'ul' : 'ol')"), 'The formatter must support ordered and unordered Markdown lists.');
+assert(!source.includes("document.createElement('a')"), 'The public panel must not turn provider output into clickable source links.');
 assert(!/localStorage|sessionStorage|document\.cookie/.test(source), 'The public panel must not persist a transcript or identifier.');
 assert(source.includes("textarea.focus()"), 'The public panel must restore keyboard focus after a request.');
 assert(source.includes('clearTranscript'), 'The public panel must provide a session-only transcript reset.');

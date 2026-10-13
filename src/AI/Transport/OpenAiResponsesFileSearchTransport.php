@@ -12,7 +12,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
 {
     private const RESPONSES_URL = 'https://api.openai.com/v1/responses';
     private const DEFAULT_MODEL = 'gpt-6-astra';
-    private const TIMEOUT_SECONDS = 20;
+    private const TIMEOUT_SECONDS = 60;
 
     private SecretResolver $secrets;
     private ResponsesHttpClient $http;
@@ -40,7 +40,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         try {
             $body = json_encode([
                 'model' => $this->model,
-                'instructions' => $request->fixedInstructions(),
+                'instructions' => $request->instructions(),
                 'input' => $request->question(),
                 'tools' => [[
                     'type' => 'file_search',
@@ -79,7 +79,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
     {
         return [
             'model' => $model,
-            'instructions' => $request->fixedInstructions(),
+            'instructions' => $request->instructions(),
             'input' => $request->question(),
             'tools' => [[
                 'type' => 'file_search',
@@ -124,10 +124,17 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         }
 
         return new TransportResult(
-            trim(implode("\n", $answerParts)),
+            $this->publicAnswerText(implode("\n", $answerParts)),
             $completedFileSearch,
             $request->policyFingerprint(),
             $request->corpusFingerprint()
         );
+    }
+
+    private function publicAnswerText(string $text): string
+    {
+        $withoutCitations = preg_replace('/\\s*\\x{E200}filecite\\x{E202}[^\\s\\x{E201}]+(?:\\x{E202}[^\\s\\x{E201}]+)*\\x{E201}/u', '', $text);
+
+        return trim(is_string($withoutCitations) ? $withoutCitations : $text);
     }
 }

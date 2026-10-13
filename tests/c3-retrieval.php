@@ -52,6 +52,20 @@ $assert($normal['ok'] === true, 'A completed deterministic File Search response 
 $assert($normal['answer'] === 'Niche Clever Interactive is a Core-first development programme.', 'Only the public mock answer should be returned.');
 $assert(!array_key_exists('evidence', $normal), 'The public payload must not expose evidence-map metadata or citation links.');
 
+$capturing = new class implements ResponseTransport {
+    public ?TransportRequest $request = null;
+
+    public function respond(TransportRequest $request): TransportResult
+    {
+        $this->request = $request;
+        return new TransportResult('Captured answer.', true, $request->policyFingerprint(), $request->corpusFingerprint());
+    }
+};
+$captured = (new ChatService($capturing, new SecretResolver('NCLI_NOT_A_SECRET')))->handle(['question' => 'What is NCI?'], $settings)->payload();
+$expectedInstructions = (new PromptPolicy())->effectiveInstructions($settings->instructions(), $settings->responsePreset());
+$assert($captured['ok'] === true, 'A captured completed response must remain eligible for public output.');
+$assert($capturing->request instanceof TransportRequest && $capturing->request->instructions() === $expectedInstructions, 'Public chat must pass the complete effective instructions to its transport.');
+
 $incomplete = $service->handle(['question' => 'Return incomplete retrieval'], $settings)->payload();
 $assert($incomplete['error']['code'] === 'evidence_failure', 'Historical answers require a completed File Search result.');
 $timeout = $service->handle(['question' => 'Simulate provider timeout'], $settings)->payload();
