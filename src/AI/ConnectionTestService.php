@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\AI;
 
+use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
@@ -53,7 +54,8 @@ final class ConnectionTestService
                 $settings->responsePreset(),
                 PolicyFingerprint::create($this->policy, $settings->instructions(), $settings->responsePreset()),
                 hash('sha256', $settings->corpusVersion()),
-                $settings->vectorStoreReference()
+                $settings->vectorStoreReference(),
+                RequestOptions::fromSettings($settings)
             );
             $dispatched = true;
             $result = $this->transport->respond($request);

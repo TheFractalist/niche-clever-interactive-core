@@ -33,6 +33,8 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c4-connection-test.php
     & 'C:\xampp\php\php.exe' tests/c5-live-transport.php
     & 'C:\xampp\php\php.exe' tests/c5-package.php
+    & 'C:\xampp\php\php.exe' tests/c6-model-config.php
+    node --check assets/js/admin.js
     node --check assets/js/public.js
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }

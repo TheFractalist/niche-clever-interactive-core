@@ -14,7 +14,7 @@ The administrator-only connection test also reserves the global provider bucket,
 
 Core emits the bounded answer only. It does not configure, store, validate or publish an approved-evidence map, source link or citation metadata. The browser therefore never follows provider-derived source URLs.
 
-The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends no retrieved File Search result text in its request, retains no provider payload and ignores provider file-citation metadata. The public response never contains a provider citation, vector-store reference, provider payload or credential.
+The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends the owner-selected model, optional reasoning effort, retrieval depth and output limit as non-personal request parameters, sends no retrieved File Search result text in its request, retains no provider payload and ignores provider file-citation metadata. The public response never contains a provider citation, vector-store reference, provider payload or credential.
 
 ## Lifecycle
 

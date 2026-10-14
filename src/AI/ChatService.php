@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\AI;
 
 use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
@@ -73,7 +74,8 @@ final class ChatService
                 $validated['response_preset'],
                 $profile->policyFingerprint(),
                 $profile->corpusFingerprint(),
-                $settings->vectorStoreReference()
+                $settings->vectorStoreReference(),
+                RequestOptions::fromSettings($settings)
             ));
         } catch (\Throwable $exception) {
             // A request may already have reached a provider; retain the reservation

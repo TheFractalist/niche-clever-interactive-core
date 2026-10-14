@@ -11,22 +11,14 @@ use RuntimeException;
 final class OpenAiResponsesFileSearchTransport implements ResponseTransport
 {
     private const RESPONSES_URL = 'https://api.openai.com/v1/responses';
-    private const DEFAULT_MODEL = 'gpt-6-astra';
-    private const TIMEOUT_SECONDS = 60;
 
     private SecretResolver $secrets;
     private ResponsesHttpClient $http;
-    private string $model;
 
-    public function __construct(?SecretResolver $secrets = null, ?ResponsesHttpClient $http = null, string $model = self::DEFAULT_MODEL)
+    public function __construct(?SecretResolver $secrets = null, ?ResponsesHttpClient $http = null)
     {
-        if (preg_match('/^[A-Za-z0-9._-]{1,128}$/', $model) !== 1) {
-            throw new RuntimeException('The configured model is invalid.');
-        }
-
         $this->secrets = $secrets ?? new SecretResolver();
         $this->http = $http ?? new WordPressResponsesHttpClient();
-        $this->model = $model;
     }
 
     public function respond(TransportRequest $request): TransportResult
@@ -38,16 +30,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         }
 
         try {
-            $body = json_encode([
-                'model' => $this->model,
-                'instructions' => $request->instructions(),
-                'input' => $request->question(),
-                'tools' => [[
-                    'type' => 'file_search',
-                    'vector_store_ids' => [$vectorStore],
-                    'max_num_results' => 5,
-                ]],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            $body = json_encode(self::requestPayloadFor($request), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         } catch (JsonException $exception) {
             throw new RuntimeException('The live provider request could not be prepared.');
         }
@@ -55,7 +38,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         $response = $this->http->post(self::RESPONSES_URL, [
             'Authorization' => 'Bearer ' . $key,
             'Content-Type' => 'application/json',
-        ], $body, self::TIMEOUT_SECONDS);
+        ], $body, $request->options()->timeoutSeconds());
 
         if ($response->statusCode() < 200 || $response->statusCode() >= 300) {
             throw new RuntimeException('The live provider request was unsuccessful.');
@@ -75,18 +58,27 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
     }
 
     /** @return array<string, mixed> */
-    public static function requestPayloadFor(TransportRequest $request, string $model = self::DEFAULT_MODEL): array
+    public static function requestPayloadFor(TransportRequest $request): array
     {
-        return [
-            'model' => $model,
+        $options = $request->options();
+        $payload = [
+            'model' => $options->model(),
             'instructions' => $request->instructions(),
             'input' => $request->question(),
             'tools' => [[
                 'type' => 'file_search',
                 'vector_store_ids' => [$request->vectorStoreReference()],
-                'max_num_results' => 5,
+                'max_num_results' => $options->retrievalDepth(),
             ]],
+            'max_output_tokens' => $options->maxOutputTokens(),
         ];
+
+        $effort = $options->effortToSend();
+        if ($effort !== null) {
+            $payload['reasoning'] = ['effort' => $effort];
+        }
+
+        return $payload;
     }
 
     /**

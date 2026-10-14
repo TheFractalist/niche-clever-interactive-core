@@ -21,6 +21,7 @@ final class ConnectionFingerprint
             'vector_store' => $settings->vectorStoreReference(),
             'corpus_version' => $settings->corpusVersion(),
             'policy' => PolicyFingerprint::create($policy, $settings->instructions(), $settings->responsePreset()),
+            'model' => $settings->model(),
             'core_version' => defined('NCLI_CORE_VERSION') ? NCLI_CORE_VERSION : 'development',
         ];
 

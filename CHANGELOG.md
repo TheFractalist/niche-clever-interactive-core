@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.9 — 14 October 2026
+
+Local-only model-cost configuration candidate. AI & Corpus now offers a curated model dropdown (GPT-6 Luna, GPT-6.1 Sol, GPT-6 Astra as the default, and the previous GPT-5.6), reasoning effort where valid for the chosen model, retrieval depth, a bounded maximum answer length and a request-timeout preset (default 60 seconds), with an accessible comparison table and a Help Centre section on how each choice affects cost. No cost estimate or price is shown. Every new setting joins the connection fingerprint, so changing one, and installing this version, requires a fresh successful connection test. The public route, secret boundary, stored data and Pro boundary are unchanged. This candidate is not published, deployed, tagged or submitted to WordPress.org.
+
 ## 1.0.0-rc.8 — 14 October 2026
 
 Local-only WordPress.org submission-readiness candidate. The public plugin identity is now Niche Clever Interactive, with a `niche-clever-interactive` text domain and translatable fixed administrator, public-panel and REST error strings. The administrator Help tab now provides setup, corpus, provider, safe-use, troubleshooting and FAQ guidance, plus an accessible comparison of NCI Core and the planned separately supplied NCI Pro. It makes no availability claim or external sales link.

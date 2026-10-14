@@ -102,6 +102,21 @@ $assert(str_contains($conversation, 'Owner response guidance'), 'The Conversatio
 $assert(str_contains($conversation, 'It can shape response style and format only'), 'The Conversation tab must state the bounded owner-guidance scope.');
 $assert(str_contains($conversation, 'fresh connection test'), 'The Conversation tab must explain that changed guidance requires retesting.');
 
+$_GET = ['tab' => 'ai-corpus'];
+ob_start();
+(new SettingsPage())->render();
+$aiCorpus = (string) ob_get_clean();
+$assert(str_contains($aiCorpus, 'name="model_id"'), 'AI & Corpus must offer the curated model dropdown.');
+foreach (['gpt-6-luna', 'gpt-6.1-sol', 'gpt-6-astra', 'gpt-5.6'] as $modelId) {
+    $assert(str_contains($aiCorpus, 'value="' . $modelId . '"'), 'The model dropdown must include ' . $modelId . '.');
+}
+$assert(str_contains($aiCorpus, 'value="gpt-6-astra" data-efforts="low,medium,high,xhigh,max" selected'), 'Astra must be the selected default model.');
+$assert(str_contains($aiCorpus, 'aria-controls="ncli-help-model_id"'), 'The model dropdown must have an accessible help control.');
+$assert(str_contains($aiCorpus, 'ncli-admin__model-table'), 'The model help must contain the comparison table.');
+$assert(str_contains($aiCorpus, 'name="model_reasoning_effort"') && str_contains($aiCorpus, 'name="model_retrieval_depth"') && str_contains($aiCorpus, 'name="model_max_output_tokens"') && str_contains($aiCorpus, 'name="model_timeout_seconds"'), 'AI & Corpus must offer effort, depth, answer-length and timeout settings.');
+$assert(str_contains($aiCorpus, '<option value="60" selected>'), 'The timeout must default to 60 seconds.');
+$assert(!preg_match('/\$\s?\d/', $aiCorpus), 'The model settings must not show prices.');
+
 $_GET = ['tab' => 'diagnostics'];
 ob_start();
 (new SettingsPage())->render();
@@ -116,6 +131,9 @@ $help = (string) ob_get_clean();
 $assert(str_contains($help, 'Help Centre'), 'The Help tab must provide the tailored Help Centre.');
 $assert(str_contains($help, 'OpenAI File Search documentation'), 'The Help Centre must link to the official provider documentation.');
 $assert(str_contains($help, 'ncli-admin__comparison-table'), 'The Help Centre must provide the Core and planned-Pro comparison table.');
+$assert(str_contains($help, 'Choosing a model and managing cost'), 'The Help Centre must explain model cost drivers.');
+$assert(str_contains($help, 'ncli-admin__model-table') && str_contains($help, 'OpenAI API pricing'), 'The Help Centre must show the model table and link to provider pricing without quoting prices.');
+$assert(!preg_match('/\$\s?\d/', $help), 'The Help Centre must not quote prices.');
 $assert(str_contains($help, 'makes no availability claim'), 'The comparison must not imply that NCI Pro is currently available.');
 
 if ($failures !== []) {

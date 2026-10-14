@@ -46,7 +46,7 @@ A visitor question and relevant current-browser conversation context are sent to
 
 = Why is the panel unavailable after a settings change? =
 
-Changing the key, transport mode, vector-store reference, corpus version, response guidance or response preset requires a fresh successful connection test before public answers are available again.
+Changing the key, transport mode, vector-store reference, corpus version, response guidance, response preset, model, reasoning effort, retrieval depth, answer length or timeout requires a fresh successful connection test before public answers are available again.
 
 = Does Niche Clever Interactive have a Premium edition? =
 
@@ -60,6 +60,10 @@ NCI Pro is planned as a separately supplied extension. This package includes no 
 4. Classic, Minimal and Dark public panel styles.
 
 == Changelog ==
+
+= 1.0.0-rc.9 =
+
+* Local-only model-cost configuration: curated model choice, reasoning effort, retrieval depth, maximum answer length and request timeout in AI & Corpus, with qualitative Help Centre cost guidance and no prices. All new settings require a fresh connection test.
 
 = 1.0.0-rc.8 =
 
