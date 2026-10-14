@@ -3,6 +3,7 @@
 ## Candidate
 
 - Candidate: `1.0.0-rc.8`, local Test-Site only.
+- Source commit: `9286cdfd83ea7315ec6bc5bb7a249688f26b3822` (`feat(core): prepare rc8 submission readiness`).
 - Package: `C:\Software Dev\NCI Core Candidate Artifacts\2026-10-14-rc8\niche-clever-interactive-1.0.0-rc.8.zip`.
 - SHA-256: `852daa2fca09c2c6d7f31a3aed4531f55cc79735e920ff3a6829e7dd444c8cbc`.
 - Package audit: 66 portable runtime files; package script denylist and source allowlist checks passed. `wordpress-org-assets/` is not in the ZIP.
