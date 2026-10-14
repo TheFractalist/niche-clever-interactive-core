@@ -11,8 +11,8 @@ if ($output.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'Candidate output must be outside the Core repository.'
 }
 
-$version = '1.0.0-rc.7'
-$packageName = 'niche-clever-interactive-core'
+$version = '1.0.0-rc.8'
+$packageName = 'niche-clever-interactive'
 $archiveName = "$packageName-$version.zip"
 $stage = Join-Path $output "$packageName-$version-staging"
 $packageRoot = Join-Path $stage $packageName
@@ -47,6 +47,7 @@ $allowedAssetFiles = @(
     'assets/css/public.css',
     'assets/images/ncli-admin-banner.png',
     'assets/images/ncli-logo.png',
+    'assets/js/admin.js',
     'assets/js/public.js'
 )
 $actualAssetFiles = Get-ChildItem -LiteralPath (Join-Path $packageRoot 'assets') -Recurse -File | ForEach-Object {
@@ -63,7 +64,7 @@ foreach ($asset in $allowedAssetFiles) {
     }
 }
 
-$denyPath = '(?i)(^|/)(\.git|tests|fixtures|docs|provenance|scripts|vendor|node_modules|artifacts)(/|$)|wpip|askfolio|\.env|\.sql$'
+$denyPath = '(?i)(^|/)(\.git|tests|fixtures|docs|provenance|scripts|vendor|node_modules|artifacts|wordpress-org-assets)(/|$)|wpip|askfolio|\.env|\.sql$'
 $denyContent = @('wpip_', 'wp-interactive-portfolio', 'askfolio.php', 'sk-', 'BEGIN OPENAI')
 $filesInPackage = Get-ChildItem -LiteralPath $packageRoot -Recurse -File
 foreach ($file in $filesInPackage) {

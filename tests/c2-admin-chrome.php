@@ -88,7 +88,9 @@ $assert(str_contains($setup, 'form="ncli-connection-test"'), 'The Setup tab shou
 $assert(str_contains($setup, 'Visitor availability'), 'The Setup tab should retain a Core-safe availability control.');
 $assert(str_contains($setup, 'ncli-admin__form-table'), 'The Setup tab should render grouped field rows.');
 $assert(str_contains($setup, 'ncli-admin__save-bar'), 'The Setup tab should render the blue save treatment.');
-$assert(str_contains($setup, 'aria-label="NCI Core settings"'), 'The Core tab navigation should remain labelled.');
+$assert(str_contains($setup, 'aria-label="Niche Clever Interactive settings"'), 'The public tab navigation should remain labelled.');
+$assert(str_contains($setup, 'ncli-admin__help-toggle'), 'Technical fields must expose the accessible question-mark help controls.');
+$assert(str_contains($setup, 'aria-controls="ncli-help-enabled"'), 'The availability control must associate its help button with a labelled help note.');
 $assert(str_contains($setup, '&lt;unsafe version&gt;'), 'Settings values must remain escaped in the new table layout.');
 $assert(!str_contains($setup, 'profile-picker'), 'The Core setup must not render a multi-profile picker.');
 
@@ -106,6 +108,15 @@ ob_start();
 $diagnostics = (string) ob_get_clean();
 $assert(str_contains($diagnostics, 'ncli-admin__tab-panel'), 'Read-only Core tabs should share the workspace frame.');
 $assert(!str_contains($diagnostics, 'ncli-admin__save-bar'), 'Read-only Core tabs should not render a settings save control.');
+
+$_GET = ['tab' => 'help'];
+ob_start();
+(new SettingsPage())->render();
+$help = (string) ob_get_clean();
+$assert(str_contains($help, 'Help Centre'), 'The Help tab must provide the tailored Help Centre.');
+$assert(str_contains($help, 'OpenAI File Search documentation'), 'The Help Centre must link to the official provider documentation.');
+$assert(str_contains($help, 'ncli-admin__comparison-table'), 'The Help Centre must provide the Core and planned-Pro comparison table.');
+$assert(str_contains($help, 'makes no availability claim'), 'The comparison must not imply that NCI Pro is currently available.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

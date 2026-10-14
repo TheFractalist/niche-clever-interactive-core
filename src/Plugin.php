@@ -20,6 +20,7 @@ use NicheCleverInteractive\Core\Rest\ChatRoute;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
 use NicheCleverInteractive\Core\AI\ConnectionTestService;
+use NicheCleverInteractive\Core\Support\Translator;
 
 final class Plugin
 {
@@ -65,6 +66,10 @@ final class Plugin
         $this->interactivePanel->register();
         $this->chatRoute->register();
 
+        if (function_exists('add_action')) {
+            add_action('admin_init', [$this, 'registerPrivacyContent']);
+        }
+
         if (function_exists('do_action')) {
             do_action('ncli_core_api_v1_ready', $this->extensions);
         }
@@ -105,6 +110,19 @@ final class Plugin
         }
 
         return Readiness::evaluate(CoreSettings::fromArray($settings), $this->secrets);
+    }
+
+    public function registerPrivacyContent(): void
+    {
+        if (!function_exists('wp_add_privacy_policy_content')) {
+            return;
+        }
+
+        $content = '<p>' . $this->escapeHtml(Translator::text('Niche Clever Interactive sends a visitor question and the relevant current-browser conversation context to OpenAI when the site administrator has enabled the public panel. OpenAI File Search may use material in the administrator-selected vector store to generate an answer.')) . '</p>'
+            . '<p>' . $this->escapeHtml(Translator::text('The plugin does not store the OpenAI API key in WordPress options and does not create a server-side archive of public questions or answers. To enforce daily limits it stores a server-secret HMAC of the visitor network scope, rather than a raw IP address.')) . '</p>'
+            . '<p>' . $this->escapeHtml(Translator::text('Site owners are responsible for their own OpenAI account, provider terms, billing, retention choices and privacy information.')) . '</p>';
+
+        wp_add_privacy_policy_content(Translator::text('Niche Clever Interactive'), wp_kses_post($content));
     }
 
     private function transport(): ResponseTransport
@@ -149,5 +167,10 @@ final class Plugin
         ) {$collate} ENGINE=InnoDB;";
 
         dbDelta($sql);
+    }
+
+    private function escapeHtml(string $value): string
+    {
+        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 }

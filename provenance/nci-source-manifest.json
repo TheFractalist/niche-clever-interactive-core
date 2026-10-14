@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-12-core-evidence-map-removal.1",
+  "manifest_version": "2026-10-14-rc8-submission-readiness.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -176,6 +176,28 @@
       "method_scope": "NCI-only Classic, Minimal and Dark frame, input, answer-only transcript and session-reset presentation; reconstructed without source-line copying",
       "decision_reference": "2026-10-12-NCI-CORE-VISUAL-PARITY-CORRECTION-AND-CODEX-BRIEF.md; 2026-10-12 owner direction to remove Core approved-evidence mapping",
       "test_evidence": ["tests/c2-public-panel.php", "tests/c5-public-js.mjs", "visual-parity-matrix", "package-audit"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "rc8-submission-readiness",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "public metadata, Help Centre, translation support, privacy-policy suggestion and accessibility controls",
+      "method_scope": "new NCI-authored WordPress.org readiness work only; no Pro implementation, external sales link or legacy source copy",
+      "decision_reference": "Jacob-approved NCI RC8 submission-readiness plan, 14 October 2026",
+      "test_evidence": ["tests/c2-admin-chrome.php", "tests/c2-render.php", "tests/c5-package.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "rc8-directory-assets",
+      "kind": "new-authored",
+      "owner": "NCI owner",
+      "licence": "owner-authored draft directory assets",
+      "target": "wordpress-org-assets/banner-1544x500.png, banner-772x250.png, icon-256x256.png and icon-128x128.png",
+      "method_scope": "draft WordPress.org directory staging assets only; excluded from Core runtime and release ZIP",
+      "decision_reference": "Jacob-approved NCI RC8 submission-readiness plan, 14 October 2026",
+      "test_evidence": ["tests/c5-package.php", "package-audit"],
       "direct_incorporation": false
     }
   ]

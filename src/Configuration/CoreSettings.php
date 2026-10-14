@@ -51,12 +51,12 @@ final class CoreSettings
                 'panel_style' => 'classic',
             ],
             'presentation' => [
-                'title' => 'Ask Niche Clever',
-                'headline' => 'Inform your ideas, and methods',
+                'title' => 'Ask a question',
+                'headline' => 'Explore the material behind this site.',
                 'introduction' => '',
-                'placeholder' => 'Ask a question…',
-                'footer_left' => 'Context is everything',
-                'footer_right' => 'Get better answers',
+                'placeholder' => 'What would you like to know?',
+                'footer_left' => 'PREPARED KNOWLEDGE',
+                'footer_right' => 'GROUNDED ANSWERS',
             ],
             'diagnostics' => [
                 'connection_test' => [

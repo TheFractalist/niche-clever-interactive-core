@@ -163,8 +163,7 @@ foreach ($iterator as $file) {
 }
 $assert(substr_count($source, 'register_rest_route') === 2, 'C3 must contain one guarded registration for Core’s sole REST route.');
 $assert(str_contains($source, "register_rest_route('ncli/v1', '/chat'"), 'C3 must register only the Core chat route namespace.');
-foreach (['OpenAIProvider', 'Responses API'] as $forbidden) {
-    $assert(!str_contains($source, $forbidden), sprintf('Core source does not implement live %s in mock-only C3.', $forbidden));
-}
+$assert(!str_contains($source, 'OpenAIProvider'), 'Core source does not retain the retired generic OpenAIProvider abstraction.');
+$assert(str_contains($source, 'OpenAiResponsesFileSearchTransport'), 'Core source retains the separately tested Core-owned File Search transport boundary.');
 
 echo sprintf("PASS: %d pure contract checks\n", $checks);

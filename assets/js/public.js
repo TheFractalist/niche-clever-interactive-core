@@ -1,6 +1,11 @@
 (function () {
   'use strict';
 
+  function text(key, fallback) {
+    var strings = window.NCLI_CORE_CHAT && window.NCLI_CORE_CHAT.strings;
+    return strings && typeof strings[key] === 'string' ? strings[key] : fallback;
+  }
+
   function setStatus(panel, message) {
     var status = panel.querySelector('.ncli-panel__status');
     if (status) {
@@ -186,7 +191,7 @@
       return;
     }
     clearTranscript(panel);
-    setStatus(panel, 'Conversation reset for this browser session.');
+    setStatus(panel, text('conversationReset', 'Conversation reset for this browser session.'));
     var textarea = panel.querySelector('textarea[name="question"]');
     if (textarea) {
       textarea.focus();
@@ -205,13 +210,13 @@
     var route = window.NCLI_CORE_CHAT && window.NCLI_CORE_CHAT.route;
     if (!panel || !textarea || !route || !window.fetch) {
       if (panel) {
-        setStatus(panel, 'This interactive service is unavailable.');
+        setStatus(panel, text('unavailable', 'This interactive service is unavailable.'));
       }
       return;
     }
     var question = textarea.value.trim();
     if (!question) {
-      setStatus(panel, 'Please enter a valid question.');
+      setStatus(panel, text('invalidQuestion', 'Please enter a valid question.'));
       textarea.focus();
       return;
     }
@@ -220,7 +225,7 @@
     if (button) {
       button.disabled = true;
     }
-    setStatus(panel, 'Finding a verified answer…');
+    setStatus(panel, text('findingAnswer', 'Finding a verified answer…'));
     window.fetch(route, {
       method: 'POST',
       credentials: 'same-origin',
@@ -232,15 +237,15 @@
       if (!payload || payload.ok !== true || typeof payload.answer !== 'string') {
         var message = payload && payload.error && typeof payload.error.message === 'string'
           ? payload.error.message
-          : 'This interactive service is temporarily unavailable.';
+          : text('temporaryFailure', 'This interactive service is temporarily unavailable.');
         setStatus(panel, message);
         return;
       }
       addTurn(panel, question, payload.answer);
       textarea.value = '';
-      setStatus(panel, 'Verified answer added to this session.');
+      setStatus(panel, text('answerAdded', 'Verified answer added to this session.'));
     }).catch(function () {
-      setStatus(panel, 'This interactive service is temporarily unavailable.');
+      setStatus(panel, text('temporaryFailure', 'This interactive service is temporarily unavailable.'));
     }).finally(function () {
       textarea.disabled = false;
       panel.removeAttribute('aria-busy');

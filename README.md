@@ -1,6 +1,6 @@
-# Niche Clever Interactive Core
+# Niche Clever Interactive
 
-This public repository holds Niche Clever Interactive Core, a non-production Core-first programme. Its current local-only bounded-response-guidance candidate is `1.0.0-rc.7`; it is not a public release and must not be represented as accepted NCI Core 1.0.0.
+This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.0-rc.8` candidate is local-only and is not a WordPress.org submission, directory listing or public 1.0.0 release. The repository's internal architecture remains Core-first; no NCI Pro implementation is included.
 
 ## Current scope
 

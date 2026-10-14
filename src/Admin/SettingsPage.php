@@ -12,6 +12,7 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
+use NicheCleverInteractive\Core\Support\Translator;
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All dynamic markup uses the tested escapeHtml()/escapeAttribute() wrappers, which keep this PHP 8.1-compatible class usable in pure tests.
 // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- AdminActionGuard centralises capability and nonce verification before this class reads a request.
@@ -47,8 +48,8 @@ final class SettingsPage
     {
         if (function_exists('add_menu_page')) {
             add_menu_page(
-                'Niche Clever Interactive Core',
-                'NCI Core',
+                $this->t('Niche Clever Interactive'),
+                $this->t('NCI Interactive'),
                 'manage_options',
                 self::PAGE_SLUG,
                 [$this, 'render'],
@@ -60,11 +61,12 @@ final class SettingsPage
 
     public function enqueueAssets(string $hook): void
     {
-        if ($hook !== 'toplevel_page_' . self::PAGE_SLUG || !function_exists('wp_enqueue_style') || !function_exists('plugins_url')) {
+        if ($hook !== 'toplevel_page_' . self::PAGE_SLUG || !function_exists('wp_enqueue_style') || !function_exists('wp_enqueue_script') || !function_exists('plugins_url')) {
             return;
         }
 
         wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
+        wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
     }
 
     public function render(): void
@@ -78,20 +80,20 @@ final class SettingsPage
         $tab = $this->currentTab();
         $readiness = Readiness::evaluate($settings, new SecretResolver());
         $tabs = [
-            'setup' => 'Setup',
-            'profile' => 'Profile',
-            'ai-corpus' => 'AI & Corpus',
-            'conversation' => 'Conversation',
-            'appearance-limits' => 'Appearance & Limits',
-            'placement' => 'Placement',
-            'diagnostics' => 'Diagnostics',
-            'help' => 'Help',
+            'setup' => $this->t('Setup'),
+            'profile' => $this->t('Profile'),
+            'ai-corpus' => $this->t('AI & Corpus'),
+            'conversation' => $this->t('Conversation'),
+            'appearance-limits' => $this->t('Appearance & Limits'),
+            'placement' => $this->t('Placement'),
+            'diagnostics' => $this->t('Diagnostics'),
+            'help' => $this->t('Help'),
         ];
 
         echo '<div class="wrap ncli-admin ncli-admin--workspace">';
-        echo '<h1 class="screen-reader-text">Niche Clever Interactive Core workspace</h1>';
+        echo '<h1 class="screen-reader-text">' . $this->escapeHtml($this->t('Niche Clever Interactive workspace')) . '</h1>';
         echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="NCI Core settings">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute($this->t('Niche Clever Interactive settings')) . '">';
         foreach ($tabs as $id => $label) {
             $class = $id === $tab ? ' nav-tab-active' : '';
             $url = $this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => $id]);
@@ -102,10 +104,10 @@ final class SettingsPage
         $notice = $this->currentNotice();
         if ($notice !== '') {
             $messages = [
-                'saved' => 'Core settings saved.',
-                'invalid' => 'Core settings could not be saved. Review the bounded field values and try again.',
-                'connection-passed' => 'Connection test passed. Public chat can become ready when the other Core requirements are met.',
-                'connection-failed' => 'Connection test did not complete. Check server configuration and try again without exposing provider details here.',
+                'saved' => $this->t('Settings saved.'),
+                'invalid' => $this->t('Settings could not be saved. Review the field values and try again.'),
+                'connection-passed' => $this->t('Connection test passed. Public chat can become ready when the other requirements are met.'),
+                'connection-failed' => $this->t('Connection test did not complete. Check server configuration and try again without exposing provider details here.'),
             ];
             $success = in_array($notice, ['saved', 'connection-passed'], true);
             echo '<div class="notice ' . ($success ? 'notice-success' : 'notice-error') . '"><p>' . $this->escapeHtml($messages[$notice]) . '</p></div>';
@@ -116,7 +118,7 @@ final class SettingsPage
         } elseif ($tab === 'help') {
             $this->renderHelp();
         } elseif ($tab === 'placement') {
-            echo '<section class="ncli-admin__tab-panel"><h2>Placement</h2><p>Use the <code>[ncli_interactive]</code> shortcode or the NCI Interactive block. Contextual and collection placement belongs to Pro.</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NCI Interactive block. Contextual and collection placement is planned for NCI Pro.')) . '</p></section>';
         } else {
             $this->renderForm($settings, $tab);
         }
@@ -186,92 +188,113 @@ final class SettingsPage
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         if ($tab === 'setup' || $tab === 'profile') {
             if ($tab === 'setup') {
-                $this->select('enabled', 'Visitor availability', ['0' => 'Unavailable', '1' => 'Available after a current connection test'], (bool) $values['enabled'] ? '1' : '0');
+                $this->select('enabled', 'Visitor availability', ['0' => 'Unavailable', '1' => 'Available after a current connection test'], (bool) $values['enabled'] ? '1' : '0', 'Public answers remain unavailable until this setting is enabled and the current configuration has passed a connection test.');
             } else {
                 echo '<input type="hidden" name="enabled" value="0">';
-                $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled']);
+                $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled'], 'Enable this only when the saved configuration is ready for public visitors. A current connection test is also required.');
             }
-            $this->text('corpus_version', 'Corpus version', (string) $values['profile']['corpus_version']);
+            $this->text('corpus_version', 'Corpus version', (string) $values['profile']['corpus_version'], 'Use your own short version or date label for the prepared material in the connected vector store. Updating it makes the existing connection test stale.');
         }
 
         if ($tab === 'profile') {
-            $this->text('presentation_title', 'Panel title', (string) $values['presentation']['title']);
-            $this->text('presentation_headline', 'Panel headline', (string) $values['presentation']['headline']);
-            $this->textarea('presentation_introduction', 'Panel introduction', (string) $values['presentation']['introduction']);
+            $this->text('presentation_title', 'Panel title', (string) $values['presentation']['title'], 'The visible title above the public question panel. Keep it short and identify what visitors can ask about.');
+            $this->text('presentation_headline', 'Panel headline', (string) $values['presentation']['headline'], 'A short supporting line under the title. It should set expectations without promising that every question can be answered.');
+            $this->textarea('presentation_introduction', 'Panel introduction', (string) $values['presentation']['introduction'], 'Optional introductory copy shown before the question box. Do not include confidential information, credentials or unpublished source material.');
         }
 
         if ($tab === 'ai-corpus') {
-            $this->text('vector_store_reference', 'Vector store reference', (string) $values['profile']['vector_store_reference']);
-            $this->descriptionRow('Core answers directly from the configured File Search corpus. It does not publish source links or citation metadata.');
+            $this->text('vector_store_reference', 'Vector store reference', (string) $values['profile']['vector_store_reference'], 'Enter the identifier for an existing OpenAI File Search vector store that you control. NCI does not create, upload to or manage the store. Changing it requires a new connection test.');
+            $this->descriptionRow('NCI answers directly from the configured File Search corpus. It does not publish source links or citation metadata.');
         }
 
         if ($tab === 'conversation') {
-            $this->textarea('instructions', 'Owner response guidance', (string) $values['instructions']);
-            $this->descriptionRow('Applies to live answers after saving and passing a fresh connection test. It can shape response style and format only; Core retrieval, safety and disclosure rules always apply.');
-            $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset']);
-            $this->text('presentation_placeholder', 'Question placeholder', (string) $values['presentation']['placeholder']);
-            $this->text('presentation_footer_left', 'Panel footer left label', (string) $values['presentation']['footer_left']);
-            $this->text('presentation_footer_right', 'Panel footer right label', (string) $values['presentation']['footer_right']);
+            $this->textarea('instructions', 'Owner response guidance', (string) $values['instructions'], 'Use this for tone, format and level of detail. It cannot override NCI retrieval, safety, privacy or disclosure rules. Editing it requires a new successful connection test.');
+            $this->descriptionRow('Applies to live answers after saving and passing a fresh connection test. It can shape response style and format only; retrieval, safety and disclosure rules always apply.');
+            $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset'], 'Choose the default answer length. Owner response guidance can refine presentation but cannot remove Core safeguards. Changing this setting requires a new connection test.');
+            $this->text('presentation_placeholder', 'Question placeholder', (string) $values['presentation']['placeholder'], 'Hint text displayed inside the visitor question field. It should invite suitable questions without exposing internal instructions.');
+            $this->text('presentation_footer_left', 'Panel footer left label', (string) $values['presentation']['footer_left'], 'Optional short label displayed in the left side of the panel footer.');
+            $this->text('presentation_footer_right', 'Panel footer right label', (string) $values['presentation']['footer_right'], 'Optional short label displayed in the right side of the panel footer.');
         }
 
         if ($tab === 'appearance-limits') {
-            $this->select('panel_style', 'Panel style', ['classic' => 'Classic', 'minimal' => 'Minimal', 'dark' => 'Dark'], (string) $values['appearance']['panel_style']);
-            $this->number('visitor_requests_per_day', 'Visitor requests per day', (int) $values['limits']['visitor_requests_per_day']);
-            $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day']);
+            $this->select('panel_style', 'Panel style', ['classic' => 'Classic', 'minimal' => 'Minimal', 'dark' => 'Dark'], (string) $values['appearance']['panel_style'], 'Choose one of the three built-in panel treatments. All styles keep the same Core question-and-answer behaviour.');
+            $this->number('visitor_requests_per_day', 'Visitor requests per day', (int) $values['limits']['visitor_requests_per_day'], 'Maximum successful or attempted public questions for one privacy-bounded visitor scope in a UTC day. Use this to protect availability and API spend.');
+            $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day'], 'Maximum provider requests across the whole site in a UTC day, including administrator connection tests. Keep this within your OpenAI budget.');
         }
 
         echo '</tbody></table>';
 
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-corpus' || $tab === 'conversation' || $tab === 'appearance-limits') {
-            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">Save Core settings</button><a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="Niche Clever" width="180" height="35"></a></div>';
+            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Save settings')) . '</button><a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute($this->t('Niche Clever')) . '" width="180" height="35"></a></div>';
         }
         echo '</form>';
     }
 
     private function renderDiagnostics(Readiness $readiness): void
     {
-        echo '<section class="ncli-admin__tab-panel"><h2>Diagnostics</h2>';
-        echo '<p>Readiness: <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
+        echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Diagnostics')) . '</h2>';
+        echo '<p>' . $this->escapeHtml($this->t('Readiness:')) . ' <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
         $settings = $this->load();
         $status = $settings->connectionTestStatus();
         $time = $settings->connectionTestTime();
-        echo '<p>Connection test: <strong>' . $this->escapeHtml($status) . '</strong>' . ($time !== '' ? ' (UTC ' . $this->escapeHtml($time) . ')' : '') . '</p>';
-        echo '<p>No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.</p></section>';
+        echo '<p>' . $this->escapeHtml($this->t('Connection test:')) . ' <strong>' . $this->escapeHtml($status) . '</strong>' . ($time !== '' ? ' (' . $this->escapeHtml($this->t('UTC')) . ' ' . $this->escapeHtml($time) . ')' : '') . '</p>';
+        echo '<p>' . $this->escapeHtml($this->t('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.')) . '</p></section>';
     }
 
     private function renderHelp(): void
     {
-        echo '<section class="ncli-admin__tab-panel"><h2>Help</h2>';
-        echo '<p>Core provides one default profile. Configure the corpus version and vector-store reference before enabling responses.</p>';
-        echo '<p>OpenAI Responses and File Search are external services. Provider configuration remains server-side and public responses contain the bounded answer only.</p></section>';
+        $fileSearchUrl = 'https://platform.openai.com/docs/guides/tools-file-search';
+        $vectorStoreUrl = 'https://platform.openai.com/docs/api-reference/vector-stores';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__help"><h2>' . $this->escapeHtml($this->t('Help Centre')) . '</h2>';
+        echo '<h3>' . $this->escapeHtml($this->t('What Niche Clever Interactive is for')) . '</h3>';
+        echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive adds one configurable question-and-answer panel to a WordPress site. It uses the OpenAI Responses API and File Search against an existing vector store selected by the site administrator. It is designed for material you have prepared for visitors to explore.')) . '</p>';
+        echo '<h3>' . $this->escapeHtml($this->t('Before you connect')) . '</h3>';
+        echo '<ol><li>' . $this->escapeHtml($this->t('You need a WordPress site where you can install and configure plugins.')) . '</li><li>' . $this->escapeHtml($this->t('You need your own OpenAI API account, billing controls and API key.')) . '</li><li>' . $this->escapeHtml($this->t('Keep the API key in server configuration, using NCLI_OPENAI_API_KEY_DEFAULT. Niche Clever Interactive does not provide a field for entering or storing it in WordPress.')) . '</li><li>' . $this->escapeHtml($this->t('Prepare an existing File Search vector store containing material suitable for public answers.')) . '</li></ol>';
+        echo '<h3>' . $this->escapeHtml($this->t('Prepare a useful corpus')) . '</h3>';
+        echo '<p>' . $this->escapeHtml($this->t('Use material that is accurate, current enough for the questions you expect, and appropriate to share through a public question interface. The plugin does not decide whether a document is suitable, current or complete. Review your source material before you connect it.')) . '</p>';
+        echo '<h3>' . $this->escapeHtml($this->t('Create and connect a vector store')) . '</h3>';
+        echo '<p>' . $this->escapeHtml($this->t('Create or select a vector store in your own OpenAI Platform project, add approved files there and wait for indexing to complete. Then enter the existing store reference and a corpus version in AI & Corpus, save the settings and run the connection test.')) . '</p>';
+        echo '<p><a href="' . $this->escapeAttribute($fileSearchUrl) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('OpenAI File Search documentation')) . '</a> · <a href="' . $this->escapeAttribute($vectorStoreUrl) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('OpenAI vector store documentation')) . '</a></p>';
+        echo '<h3>' . $this->escapeHtml($this->t('Safe public use')) . '</h3>';
+        echo '<p>' . $this->escapeHtml($this->t('Public questions and relevant conversation context are sent to OpenAI to generate an answer. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.')) . '</p>';
+        echo '<h3>' . $this->escapeHtml($this->t('What it does not do')) . '</h3>';
+        echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, publish provider citations or source links, or maintain a server-side public conversation archive.')) . '</p>';
+        echo '<h3>' . $this->escapeHtml($this->t('Frequently asked questions')) . '</h3>';
+        echo '<details><summary>' . $this->escapeHtml($this->t('Where does the API key go?')) . '</summary><p>' . $this->escapeHtml($this->t('Define NCLI_OPENAI_API_KEY_DEFAULT in wp-config.php or equivalent secure server configuration. Never add the key to the plugin settings, page content or a public repository.')) . '</p></details>';
+        echo '<details><summary>' . $this->escapeHtml($this->t('Why did my connection test fail?')) . '</summary><p>' . $this->escapeHtml($this->t('Check the server-side key, transport configuration, vector store reference, corpus version and your provider account. The diagnostic screen intentionally does not reveal provider payloads or credentials.')) . '</p></details>';
+        echo '<details><summary>' . $this->escapeHtml($this->t('Why is the public panel unavailable after changing settings?')) . '</summary><p>' . $this->escapeHtml($this->t('A changed key, vector store, corpus version, response guidance or response preset requires a fresh successful connection test before public answers are enabled again.')) . '</p></details>';
+        echo '<details><summary>' . $this->escapeHtml($this->t('Does the plugin upload or index my documents?')) . '</summary><p>' . $this->escapeHtml($this->t('No. It connects to an existing vector store that you manage through your own OpenAI account.')) . '</p></details>';
+        echo '<h3>' . $this->escapeHtml($this->t('Free and planned NCI Pro')) . '</h3>';
+        $this->renderComparisonTable();
+        echo '<p class="ncli-admin__comparison-note">' . $this->escapeHtml($this->t('NCI Pro is a planned separately supplied extension. This Core release makes no availability claim and includes no Pro implementation.')) . '</p></section>';
     }
 
     private function renderSetupChecklist(CoreSettings $settings): void
     {
         $readiness = Readiness::evaluate($settings, new SecretResolver());
         $secrets = new SecretResolver();
-        $keyState = $secrets->isAvailable() ? 'The server-side constant is available.' : 'Add the constant to the server configuration before testing.';
+        $keyState = $secrets->isAvailable() ? $this->t('The server-side constant is available.') : $this->t('Add the constant to the server configuration before testing.');
         $corpusState = $settings->vectorStoreReference() !== '' && $settings->corpusVersion() !== ''
-            ? 'A vector-store reference and corpus version are saved.'
-            : 'Save the vector-store reference and corpus version in AI & Corpus.';
+            ? $this->t('A vector-store reference and corpus version are saved.')
+            : $this->t('Save the vector-store reference and corpus version in AI & Corpus.');
         $testState = $settings->connectionTestStatus() === 'passed' && $readiness->isReady()
-            ? 'The current configuration passed its File Search connection test.'
-            : 'Run a new test after changing the key, transport mode, vector store, corpus version, response guidance or response preset.';
+            ? $this->t('The current configuration passed its File Search connection test.')
+            : $this->t('Run a new test after changing the key, transport mode, vector store, corpus version, response guidance or response preset.');
         $placements = $this->publishedPlacements();
 
-        echo '<section class="ncli-admin__get-started"><h2><span>Get started</span><span class="ncli-admin__get-started-count">4 Core steps</span></h2>';
-        echo '<p>Core serves one carefully bounded public profile. It does not expose provider details or add Pro-only workspace controls.</p>';
+        echo '<section class="ncli-admin__get-started"><h2><span>' . $this->escapeHtml($this->t('Get started')) . '</span><span class="ncli-admin__get-started-count">' . $this->escapeHtml($this->t('4 Core steps')) . '</span></h2>';
+        echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive serves one carefully bounded public profile. It does not expose provider details or add Pro-only workspace controls.')) . '</p>';
         echo '<ol class="ncli-admin__checklist">';
-        echo '<li><span class="ncli-admin__check">1</span><div><strong>Add your API key</strong><p>' . $this->escapeHtml($keyState) . ' Configure <code>NCLI_OPENAI_API_KEY_DEFAULT</code> in server configuration only, for example <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.</p></div></li>';
-        echo '<li><span class="ncli-admin__check">2</span><div><strong>Choose your vector store</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">Open AI &amp; Corpus</a>.</p></div></li>';
-        echo '<li><span class="ncli-admin__check">3</span><div><strong>Test your connection</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">Test connection</button></div></li>';
-        echo '<li><span class="ncli-admin__check">4</span><div><strong>Place your conversation</strong><p>';
+        echo '<li><span class="ncli-admin__check">1</span><div><strong>' . $this->escapeHtml($this->t('Add your API key')) . '</strong><p>' . $this->escapeHtml($keyState) . ' ' . $this->escapeHtml($this->t('Configure')) . ' <code>NCLI_OPENAI_API_KEY_DEFAULT</code> ' . $this->escapeHtml($this->t('in server configuration only, for example')) . ' <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">2</span><div><strong>' . $this->escapeHtml($this->t('Choose your vector store')) . '</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">' . $this->escapeHtml($this->t('Open AI & Corpus')) . '</a>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">3</span><div><strong>' . $this->escapeHtml($this->t('Test your connection')) . '</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">' . $this->escapeHtml($this->t('Test connection')) . '</button></div></li>';
+        echo '<li><span class="ncli-admin__check">4</span><div><strong>' . $this->escapeHtml($this->t('Place your conversation')) . '</strong><p>';
         if ($placements === []) {
-            echo 'Add the NCI Interactive block or <code>[ncli_interactive]</code> shortcode to a published page.';
+            echo $this->escapeHtml($this->t('Add the NCI Interactive block or')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode to a published page.'));
         } else {
-            echo 'Detected placement: ' . implode(', ', $placements) . '.';
+            echo $this->escapeHtml($this->t('Detected placement:')) . ' ' . implode(', ', $placements) . '.';
         }
-        echo ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">Open placement guidance</a>.</p></div></li>';
+        echo ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">' . $this->escapeHtml($this->t('Open placement guidance')) . '</a>.</p></div></li>';
         echo '</ol></section>';
     }
 
@@ -308,7 +331,7 @@ final class SettingsPage
             if (!$isPlaced) {
                 continue;
             }
-            $title = is_string($post->post_title) && $post->post_title !== '' ? $post->post_title : 'Published page';
+            $title = is_string($post->post_title) && $post->post_title !== '' ? $post->post_title : $this->t('Published page');
             $url = function_exists('get_edit_post_link') ? get_edit_post_link((int) $post->ID, 'raw') : false;
             $placements[] = is_string($url) && $url !== '' ? '<a href="' . $this->escapeAttribute($url) . '">' . $this->escapeHtml($title) . '</a>' : $this->escapeHtml($title);
         }
@@ -373,42 +396,77 @@ final class SettingsPage
         return is_string($value) && in_array($value, $valid, true) ? $value : 'setup';
     }
 
-    private function checkbox(string $name, string $label, bool $checked): void
+    private function checkbox(string $name, string $label, bool $checked, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->escapeHtml($label) . '</th><td><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> Enable public answers for the default Core profile.</label></td></tr>';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help, false) . '</th><td><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($this->t('Enable public answers for the default Core profile.')) . '</label></td></tr>';
     }
 
-    private function text(string $name, string $label, string $value): void
+    private function text(string $name, string $label, string $value, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><input id="ncli-' . $this->escapeAttribute($name) . '" class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></td></tr>';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><input id="ncli-' . $this->escapeAttribute($name) . '" class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></td></tr>';
     }
 
-    private function textarea(string $name, string $label, string $value): void
+    private function textarea(string $name, string $label, string $value, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><textarea id="ncli-' . $this->escapeAttribute($name) . '" class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></td></tr>';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><textarea id="ncli-' . $this->escapeAttribute($name) . '" class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></td></tr>';
     }
 
     /**
      * @param array<string, string> $options
      */
-    private function select(string $name, string $label, array $options, string $selected): void
+    private function select(string $name, string $label, array $options, string $selected, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><select id="ncli-' . $this->escapeAttribute($name) . '" name="' . $this->escapeAttribute($name) . '">';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><select id="ncli-' . $this->escapeAttribute($name) . '" name="' . $this->escapeAttribute($name) . '">';
         foreach ($options as $value => $text) {
             $optionValue = (string) $value;
-            echo '<option value="' . $this->escapeAttribute($optionValue) . '"' . ($selected === $optionValue ? ' selected' : '') . '>' . $this->escapeHtml($text) . '</option>';
+            echo '<option value="' . $this->escapeAttribute($optionValue) . '"' . ($selected === $optionValue ? ' selected' : '') . '>' . $this->escapeHtml($this->t($text)) . '</option>';
         }
         echo '</select></td></tr>';
     }
 
-    private function number(string $name, string $label, int $value): void
+    private function number(string $name, string $label, int $value, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($label) . '</label></th><td><input id="ncli-' . $this->escapeAttribute($name) . '" type="number" min="1" name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></td></tr>';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><input id="ncli-' . $this->escapeAttribute($name) . '" type="number" min="1" name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></td></tr>';
     }
 
     private function descriptionRow(string $message): void
     {
-        echo '<tr class="ncli-admin__field ncli-admin__field--description"><th scope="row"></th><td><p class="description">' . $this->escapeHtml($message) . '</p></td></tr>';
+        echo '<tr class="ncli-admin__field ncli-admin__field--description"><th scope="row"></th><td><p class="description">' . $this->escapeHtml($this->t($message)) . '</p></td></tr>';
+    }
+
+    private function fieldLabel(string $name, string $label, string $help, bool $forControl = true): string
+    {
+        $id = 'ncli-help-' . $name;
+        $labelMarkup = $forControl
+            ? '<label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($this->t($label)) . '</label>'
+            : '<span>' . $this->escapeHtml($this->t($label)) . '</span>';
+
+        return '<span class="ncli-admin__field-label">' . $labelMarkup
+            . '<button type="button" class="ncli-admin__help-toggle" aria-controls="' . $this->escapeAttribute($id) . '" aria-expanded="false" aria-label="' . $this->escapeAttribute($this->t('Help for ') . $this->t($label)) . '"><span aria-hidden="true">?</span><span class="screen-reader-text">' . $this->escapeHtml($this->t('Help for ') . $this->t($label)) . '</span></button>'
+            . '<span id="' . $this->escapeAttribute($id) . '" class="ncli-admin__field-help" role="note" hidden>' . $this->escapeHtml($this->t($help)) . '</span></span>';
+    }
+
+    private function renderComparisonTable(): void
+    {
+        $rows = [
+            ['One knowledge profile and public Q&A panel', true, true],
+            ['Bounded owner response guidance and response presets', true, true],
+            ['Three built-in panel styles and request safeguards', true, true],
+            ['Multiple knowledge profiles', false, true],
+            ['Chronology and authored questions or collections', false, true],
+            ['Contextual placement and reusable content routes', false, true],
+            ['Approved-answer cache and conversation archive facilities', false, true],
+        ];
+
+        echo '<table class="widefat striped ncli-admin__comparison-table"><thead><tr><th scope="col">' . $this->escapeHtml($this->t('Feature')) . '</th><th scope="col">' . $this->escapeHtml($this->t('NCI Core')) . '</th><th scope="col">' . $this->escapeHtml($this->t('Planned NCI Pro')) . '</th></tr></thead><tbody>';
+        foreach ($rows as $row) {
+            echo '<tr><th scope="row">' . $this->escapeHtml($this->t($row[0])) . '</th>';
+            foreach ([$row[1], $row[2]] as $included) {
+                echo '<td class="' . ($included ? 'ncli-admin__comparison-yes' : 'ncli-admin__comparison-no') . '"><span aria-hidden="true">' . ($included ? '&#10003;' : '&#10005;') . '</span><span class="screen-reader-text">' . $this->escapeHtml($included ? $this->t('Included') : $this->t('Not included')) . '</span></td>';
+            }
+            echo '</tr>';
+        }
+        echo '</tbody></table>';
     }
 
     private function redirect(array $query): void
@@ -423,7 +481,7 @@ final class SettingsPage
     private function deny(): void
     {
         if (function_exists('wp_die')) {
-            wp_die('You are not permitted to change NCI Core settings.');
+            wp_die($this->t('You are not permitted to change NCI Core settings.'));
         }
     }
 
@@ -464,5 +522,10 @@ final class SettingsPage
     private function escapeAttribute(string $value): string
     {
         return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private function t(string $text): string
+    {
+        return Translator::text($text);
     }
 }

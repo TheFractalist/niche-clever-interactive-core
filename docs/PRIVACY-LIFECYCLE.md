@@ -21,3 +21,9 @@ The C5-only OpenAI Responses/File Search transport is selected solely by a serve
 Activation creates only fresh NCI settings, the NCI schema marker and the prefixed rate-bucket table. Deactivation preserves them for recoverability. This Core release has no uninstall deletion behaviour, archive, transcript persistence or visitor-record export. Existing AskFolio/WPIP options, transients, constants and tables are neither read nor changed.
 
 These controls do not replace a site's own privacy notice. A later Pro archive, if separately authorised after Core technical acceptance, owns its opt-in archive and scoped erasure policy.
+
+## WordPress privacy-policy suggestion
+
+RC8 registers a suggested privacy-policy section through WordPress's privacy-policy helper. It states the actual Core boundary: public questions and relevant current-browser conversation context are sent to OpenAI; File Search may use material in the administrator-selected vector store; Core does not store the API key in WordPress options or keep a server-side public conversation archive; and daily visitor limits use a server-secret HMAC rather than a raw IP address.
+
+The suggested text is not a legal determination or a replacement for the site owner's privacy notice, OpenAI account terms, billing, retention decisions or applicable data-protection obligations.

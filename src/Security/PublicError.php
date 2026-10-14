@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Security;
 
 use InvalidArgumentException;
+use NicheCleverInteractive\Core\Support\Translator;
 
 final class PublicError
 {
@@ -33,6 +34,6 @@ final class PublicError
      */
     public function payload(): array
     {
-        return ['code' => $this->code, 'message' => self::MESSAGES[$this->code]];
+        return ['code' => $this->code, 'message' => Translator::text(self::MESSAGES[$this->code])];
     }
 }

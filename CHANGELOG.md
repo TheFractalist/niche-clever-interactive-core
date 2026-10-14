@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.8 — 14 October 2026
+
+Local-only WordPress.org submission-readiness candidate. The public plugin identity is now Niche Clever Interactive, with a `niche-clever-interactive` text domain and translatable fixed administrator, public-panel and REST error strings. The administrator Help tab now provides setup, corpus, provider, safe-use, troubleshooting and FAQ guidance, plus an accessible comparison of NCI Core and the planned separately supplied NCI Pro. It makes no availability claim or external sales link.
+
+Technical and operational fields now have keyboard- and screen-reader-accessible question-mark guidance. RC8 registers a suggested privacy-policy statement reflecting Core's actual OpenAI, rate-limit and no-archive boundaries. Draft WordPress.org listing assets are source-side only and excluded from the plugin ZIP. The Core route, configuration schema, `ncli_` identifiers, public shortcodes, block name, provider boundary and Pro exclusion remain unchanged.
+
 ## 1.0.0-rc.7 — 13 October 2026
 
 Local-only bounded-response-guidance correction. The saved owner response guidance now composes into the OpenAI Responses instruction for public chat and administrator connection tests, where it can shape response style and format only. Concise, Balanced and Detailed now supply a Core-defined response-detail baseline, with specific owner presentation guidance taking priority where it does not conflict with Core requirements.

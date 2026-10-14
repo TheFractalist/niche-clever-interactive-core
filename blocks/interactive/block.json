@@ -3,8 +3,8 @@
   "name": "ncli/interactive",
   "title": "NCI Interactive",
   "category": "widgets",
-  "description": "Displays the Niche Clever Interactive Core question panel.",
-  "textdomain": "niche-clever-interactive-core",
+  "description": "Displays the Niche Clever Interactive question panel.",
+  "textdomain": "niche-clever-interactive",
   "attributes": {
     "title": {
       "type": "string",

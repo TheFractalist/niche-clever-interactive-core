@@ -7,6 +7,7 @@ namespace NicheCleverInteractive\Core\Frontend;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Support\Translator;
 
 final class InteractivePanel
 {
@@ -34,7 +35,17 @@ final class InteractivePanel
         wp_register_style('ncli-core-public', plugins_url('assets/css/public.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
         wp_register_script('ncli-core-public', plugins_url('assets/js/public.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
         if (function_exists('wp_add_inline_script') && function_exists('rest_url') && function_exists('wp_json_encode')) {
-            wp_add_inline_script('ncli-core-public', 'window.NCLI_CORE_CHAT = ' . wp_json_encode(['route' => rest_url('ncli/v1/chat')]) . ';', 'before');
+            wp_add_inline_script('ncli-core-public', 'window.NCLI_CORE_CHAT = ' . wp_json_encode([
+                'route' => rest_url('ncli/v1/chat'),
+                'strings' => [
+                    'conversationReset' => Translator::text('Conversation reset for this browser session.'),
+                    'unavailable' => Translator::text('This interactive service is unavailable.'),
+                    'invalidQuestion' => Translator::text('Please enter a valid question.'),
+                    'findingAnswer' => Translator::text('Finding a verified answer…'),
+                    'temporaryFailure' => Translator::text('This interactive service is temporarily unavailable.'),
+                    'answerAdded' => Translator::text('Verified answer added to this session.'),
+                ],
+            ]) . ';', 'before');
         }
     }
 
@@ -59,7 +70,7 @@ final class InteractivePanel
         $title = isset($attributes['title']) && is_string($attributes['title']) && trim($attributes['title']) !== ''
             ? $attributes['title']
             : $presentation['title'];
-        $status = $readiness->isReady() ? 'Ready for a verified answer.' : 'This interactive service is not available yet.';
+        $status = $readiness->isReady() ? Translator::text('Ready for a verified answer.') : Translator::text('This interactive service is not available yet.');
         $disabled = $readiness->isReady() ? '' : ' disabled';
 
         return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" aria-labelledby="ncli-panel-title">'
@@ -69,10 +80,10 @@ final class InteractivePanel
             . ($presentation['introduction'] !== '' ? '<p class="ncli-panel__introduction">' . $this->html($presentation['introduction']) . '</p>' : '')
             . '</header>'
             . '<form class="ncli-panel__form" data-ncli-interactive="1">'
-            . '<label class="screen-reader-text" for="ncli-question">Ask a question</label>'
+            . '<label class="screen-reader-text" for="ncli-question">' . $this->html(Translator::text('Ask a question')) . '</label>'
             . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="' . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
-            . '<button type="submit" aria-label="Submit question"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">Ask</span></button></div>'
-            . '<button class="ncli-panel__reset" type="button" hidden>Reset conversation</button>'
+            . '<button type="submit" aria-label="' . $this->attr(Translator::text('Submit question')) . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">' . $this->html(Translator::text('Ask')) . '</span></button></div>'
+            . '<button class="ncli-panel__reset" type="button" hidden>' . $this->html(Translator::text('Reset conversation')) . '</button>'
             . '</form>'
             . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
@@ -88,7 +99,7 @@ final class InteractivePanel
     {
         $message = isset($attributes['message']) && is_string($attributes['message'])
             ? $attributes['message']
-            : 'Question limits help keep this service available.';
+            : Translator::text('Question limits help keep this service available.');
 
         return '<p class="ncli-limit-notice" role="status">' . $this->html($message) . '</p>';
     }
