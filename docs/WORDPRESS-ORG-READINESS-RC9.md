@@ -29,3 +29,15 @@ Since RC5 `Plugin` passed the budget gate as a sixth argument to a five-paramete
 | Plugin deletion with the option off and on | Requires verification |
 | Plugin Check 2.1.0 on the canonical ZIP | **Not run.** The development container cannot reach wordpress.org or GitHub downloads and has no running Docker daemon. Requires the Windows fixture. |
 | Live provider behaviour | Not tested by the agent; owner tests manually |
+
+## Plugin Check: RC8 baseline supplied 15 October 2026
+
+A Plugin Check report generated on 15 October 2026 (14:14:32) was supplied from the Test-Site install. The owner confirmed it was run on **RC8**. It lists one error (`trunk_stable_tag`) and five warnings (the OpenAI `DirectIntegration` warning and four `UnescapedDBParameter` warnings at `WordPressBucketStore.php` lines 23, 28, 35 and 56), identical to the RC8 record in `docs/WORDPRESS-ORG-READINESS-RC8.md`. It is a baseline and **is not RC9 evidence**; Plugin Check on RC9 remains outstanding.
+
+What to expect on RC9 (a prediction, not a result):
+
+- The same `trunk_stable_tag` error and OpenAI warning, both deliberate: the release-candidate readme keeps `Stable tag: trunk` until a final numeric release, and the Responses API is used directly with the WordPress AI Client roadmap-only.
+- The same four rate-store warnings.
+- Probably similar `UnescapedDBParameter` warnings for `WordPressConversationStore` and the `DROP TABLE` in `uninstall.php`, which build SQL with an interpolated table name in the same way as the rate store.
+
+If those new warnings appear, the available remedy is the `%i` identifier placeholder (supported from WordPress 6.2; the plugin requires 6.5), tested against a real MariaDB before committing because the rate limiter is security-sensitive. That change has not been made.
