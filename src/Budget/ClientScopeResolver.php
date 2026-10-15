@@ -8,17 +8,58 @@ final class ClientScopeResolver
 {
     private string $secretConstant;
     private string $trustedProxyConstant;
+    /** @var (callable(): ?string)|null */
+    private $saltProvider;
 
-    public function __construct(string $secretConstant = 'NCLI_CORE_SCOPE_SECRET', string $trustedProxyConstant = 'NCLI_CORE_TRUSTED_PROXY_CIDRS')
+    /**
+     * @param (callable(): ?string)|null $saltProvider Test seam; defaults to the WordPress authentication salt.
+     */
+    public function __construct(string $secretConstant = 'NCLI_CORE_SCOPE_SECRET', string $trustedProxyConstant = 'NCLI_CORE_TRUSTED_PROXY_CIDRS', ?callable $saltProvider = null)
     {
         $this->secretConstant = $secretConstant;
         $this->trustedProxyConstant = $trustedProxyConstant;
+        $this->saltProvider = $saltProvider;
+    }
+
+    /**
+     * Whether a server-side secret is available, so a visitor scope can be derived.
+     * No setup is required on a normal WordPress site (see secret()).
+     */
+    public function isAvailable(): bool
+    {
+        return $this->secret() !== null;
+    }
+
+    /**
+     * An explicitly configured NCLI_CORE_SCOPE_SECRET always wins. Otherwise the secret
+     * is derived from the site's own WordPress authentication salt, which lives in
+     * wp-config.php, never in the database, and is domain-separated so it is not the
+     * salt itself. Rotating the salts only resets visitors' daily counts.
+     */
+    private function secret(): ?string
+    {
+        if (defined($this->secretConstant) && is_string(constant($this->secretConstant)) && trim((string) constant($this->secretConstant)) !== '') {
+            return trim((string) constant($this->secretConstant));
+        }
+
+        $salt = null;
+        if ($this->saltProvider !== null) {
+            $salt = ($this->saltProvider)();
+        } elseif (function_exists('wp_salt')) {
+            $salt = wp_salt('auth');
+        }
+        if (!is_string($salt) || trim($salt) === '') {
+            return null;
+        }
+
+        return hash_hmac('sha256', 'ncli-core-visitor-scope-secret', $salt);
     }
 
     /** @param array<string, mixed> $server */
     public function hash(array $server): ?string
     {
-        if (!defined($this->secretConstant) || !is_string(constant($this->secretConstant)) || trim((string) constant($this->secretConstant)) === '') {
+        $secret = $this->secret();
+        if ($secret === null) {
             return null;
         }
 
@@ -35,7 +76,7 @@ final class ClientScopeResolver
             }
         }
 
-        return hash_hmac('sha256', 'visitor:' . $client, trim((string) constant($this->secretConstant)));
+        return hash_hmac('sha256', 'visitor:' . $client, $secret);
     }
 
     private function isTrustedProxy(string $address): bool

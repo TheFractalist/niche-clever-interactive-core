@@ -266,7 +266,11 @@ $assert(str_contains($profile, 'name="presentation_unavailable_message"') && str
 $help = $renderTab('help');
 $assert(str_contains($help, 'earlier questions in the same conversation are not sent'), 'Help must state accurately that only the current question is sent.');
 $assert(!str_contains($help, 'relevant conversation context'), 'Help must no longer claim that conversation context is sent.');
-$assert(str_contains($help, 'Earlier turns sent as context for follow-up questions'), 'The comparison must record earlier-turn context as a Pro capability.');
+$_GET = ['tab' => 'help', 'help' => 'premium'];
+ob_start();
+$settingsPage->render();
+$premiumHelp = (string) ob_get_clean();
+$assert(str_contains($premiumHelp, 'Earlier turns sent as context for follow-up questions'), 'The comparison must record earlier-turn context as a Premium capability.');
 $assert(!str_contains($help . $conversation . $appearance, 'NCI Interactive block') && !str_contains($help . $conversation . $appearance, '>NCI Interactive<'), 'User-facing copy must say "NC Interactive", not "NCI Interactive".');
 
 $save = static function (array $data) use ($settingsPage): string {

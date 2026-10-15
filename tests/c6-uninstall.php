@@ -46,10 +46,11 @@ echo json_encode($GLOBALS['log']);
 PHP;
     $file = tempnam(sys_get_temp_dir(), 'ncli-uninstall');
     file_put_contents($file, $harness);
-    $env = 'NCLI_UNINSTALL=' . escapeshellarg($root . '/uninstall.php')
-        . ' NCLI_MULTISITE=' . ($multisite ? '1' : '0')
-        . ' NCLI_SETTINGS=' . escapeshellarg(json_encode($multisite ? $siteSettings : ['1' => $settings]));
-    $output = shell_exec($env . ' ' . escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($file) . ' 2>&1');
+    // putenv keeps the child process portable across POSIX and Windows shells.
+    putenv('NCLI_UNINSTALL=' . $root . '/uninstall.php');
+    putenv('NCLI_MULTISITE=' . ($multisite ? '1' : '0'));
+    putenv('NCLI_SETTINGS=' . json_encode($multisite ? $siteSettings : ['1' => $settings]));
+    $output = shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($file) . ' 2>&1');
     unlink($file);
     $decoded = json_decode((string) $output, true);
     return is_array($decoded) ? $decoded : ['unparsed:' . $output];
@@ -66,6 +67,7 @@ $log = $run(['lifecycle' => ['delete_on_uninstall' => true]]);
 sort($log);
 $expected = [
     'clear_cron:1:ncli_core_purge_conversations',
+    'delete_option:1:ncli_core_last_failure',
     'delete_option:1:ncli_core_schema_version',
     'delete_option:1:ncli_core_settings',
     'sql:DROP TABLE IF EXISTS wp_ncli_core_conversation_turns',

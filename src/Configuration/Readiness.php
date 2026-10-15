@@ -9,6 +9,7 @@ final class Readiness
     public const READY = 'ready';
     public const DISABLED = 'disabled';
     public const MISSING_SECRET = 'missing_secret';
+    public const MISSING_SCOPE_SECRET = 'missing_scope_secret';
     public const MISSING_VECTOR_STORE = 'missing_vector_store';
     public const MISSING_CORPUS_VERSION = 'missing_corpus_version';
     public const MISSING_CONNECTION_TEST = 'missing_connection_test';
@@ -30,6 +31,12 @@ final class Readiness
         $mode = TransportMode::current();
         if ($mode === TransportMode::UNAVAILABLE || ($mode !== TransportMode::MOCK && !$secrets->isAvailable())) {
             return new self(self::MISSING_SECRET);
+        }
+
+        // Without a visitor-scope secret no allowance can be reserved. Report it as a
+        // configuration fault rather than as a visitor having used their allowance.
+        if (!(new \NicheCleverInteractive\Core\Budget\ClientScopeResolver())->isAvailable()) {
+            return new self(self::MISSING_SCOPE_SECRET);
         }
 
         if ($settings->vectorStoreReference() === '') {

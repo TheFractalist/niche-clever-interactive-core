@@ -24,7 +24,8 @@ final class WordPressResponsesHttpClient implements ResponsesHttpClient
         ]);
 
         if (function_exists('is_wp_error') && is_wp_error($response)) {
-            throw new RuntimeException('The provider request failed.');
+            // Only the closed reason is kept; the error text is never stored or shown.
+            throw ProviderFailure::fromTransportError((string) $response->get_error_message());
         }
 
         return new ResponsesHttpResponse(

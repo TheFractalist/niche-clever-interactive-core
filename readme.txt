@@ -58,24 +58,27 @@ There is an optional "Powered by NC Interactive" link under the panel. It is off
 
 = Why is the panel unavailable after a settings change? =
 
-Changing the key, transport mode, vector-store reference, corpus version, response guidance or response preset requires a fresh successful connection test before public answers are available again.
+Changing the key, transport mode, vector-store reference, corpus version, response guidance, response preset, model, reasoning effort, retrieval depth, answer length or timeout requires a fresh successful connection test before public answers are available again.
 
 = Does Niche Clever Interactive have a Premium edition? =
 
-NCI Pro is planned as a separately supplied extension. This package includes no Pro implementation and makes no availability claim.
+NCI Premium is planned as a separately supplied edition. This package includes no Premium implementation and makes no availability or pricing claim.
 
 == Screenshots ==
 
 1. Niche Clever Interactive Setup tab and readiness checklist.
 2. AI & Corpus configuration with accessible field guidance.
-3. Help Centre with the Core and planned NCI Pro comparison.
+3. Help Centre with an overview, frequently asked questions and a Core and planned NCI Premium comparison.
 4. Classic, Minimal and Dark public panel styles.
 
 == Changelog ==
 
 = 1.0.0-rc.9 =
 
-* Local-only candidate: optional conversation history (off by default) with a Conversations screen, delete-one, delete-selected and delete-all controls, configurable retention and an owner-controlled uninstall routine; panel width, accent colour and an opt-in credit line; an editable unavailable message; the administrator menu is now "NC Interactive". Corrects a wiring defect from RC5 that left the public route without its daily request limits.
+* The Help Centre now has Overview, Frequently asked questions and NCI Premium sections, with a fuller comparison of Core and the planned Premium edition.
+* Diagnostics show the latest provider problem as a plain reason (for example a timeout) with a suggestion, without storing any question, answer or provider message.
+* The visitor request allowance needs no extra setup: its server-side secret is derived from WordPress's own salts unless the optional NCLI_CORE_SCOPE_SECRET constant is defined.\n* Local-only candidate: optional conversation history (off by default) with a Conversations screen, delete-one, delete-selected and delete-all controls, configurable retention and an owner-controlled uninstall routine; panel width, accent colour and an opt-in credit line; an editable unavailable message; the administrator menu is now "NC Interactive". Corrects a wiring defect from RC5 that left the public route without its daily request limits.
+* Local-only model-cost configuration: curated model choice, reasoning effort, retrieval depth, maximum answer length and request timeout in AI & Corpus, with qualitative Help Centre cost guidance and no prices. All new settings require a fresh connection test.
 
 = 1.0.0-rc.8 =
 

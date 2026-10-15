@@ -22,6 +22,14 @@ assert(!source.includes('payload.evidence'), 'The public panel must not render e
 assert(source.includes("panel.setAttribute('aria-busy', 'true')"), 'The public panel must expose loading state to assistive technology.');
 assert(source.includes("panel.removeAttribute('aria-busy')"), 'The public panel must clear loading state after a request.');
 
+assert(source.includes('function addPendingTurn') && source.includes('function completeTurn') && source.includes('function discardTurn'), 'Each question must appear at once and its answer must fill a separate block.');
+assert(source.indexOf('addPendingTurn(panel, question)') < source.indexOf('window.fetch(route'), 'The question must be shown before the request is sent.');
+assert(source.includes("ncli-panel__answer ncli-panel__answer--pending"), 'A waiting answer must be marked as pending.');
+assert(source.includes('textarea.value = question') && source.includes('failTurn'), 'A failed question must leave no empty entry and return its text to the input.');
+assert(source.includes('prefers-reduced-motion') && source.includes('scrollIntoView'), 'The newest turn must be brought into view, respecting reduced motion.');
+assert(source.includes("hiddenLabel(text('questionLabel'") && source.includes("hiddenLabel(text('answerLabel'"), 'Question and answer blocks must carry hidden labels for assistive technology.');
+assert(source.includes('isConnected'), 'A reset during a request must not resurrect a cleared turn.');
+
 if (failures.length) {
   console.error(`FAIL\n- ${failures.join('\n- ')}`);
   process.exit(1);

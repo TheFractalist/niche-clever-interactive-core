@@ -34,10 +34,22 @@ $assert(abs(PanelAppearance::contrastRatio('#000000', '#ffffff') - 21.0) < 0.01,
 $assert(PanelAppearance::contrastRatio('#777777', '#777777') === 1.0, 'Identical colours must have 1:1 contrast.');
 $assert(PanelAppearance::effectiveAccent('classic', '') === '', 'No accent means the style colour.');
 $assert(PanelAppearance::effectiveAccent('classic', '#C2410C') === '#c2410c', 'A readable accent must be kept, in lower case.');
-$assert(PanelAppearance::effectiveAccent('classic', '#f5f5f5') === '', 'A near-white accent on the white panel must fall back to the style colour.');
-$assert(PanelAppearance::effectiveAccent('minimal', '#fefefe') === '', 'A near-white accent on the Minimal panel must fall back.');
-$assert(PanelAppearance::effectiveAccent('dark', '#111111') === '', 'A near-black accent on the Dark panel must fall back.');
-$assert(PanelAppearance::effectiveAccent('dark', '#7dd3fc') === '#7dd3fc', 'The Dark panel must keep a light accent.');
+foreach (['classic', 'minimal', 'dark'] as $everyStyle) {
+    foreach (['#ff8040', '#f5f5f5', '#fefefe', '#111111', '#7dd3fc', '#C2410C'] as $everyColour) {
+        $assert(PanelAppearance::effectiveAccent($everyStyle, $everyColour) === strtolower($everyColour), 'The owner accent must apply in every style and be kept whatever its brightness: ' . $everyStyle . ' ' . $everyColour);
+    }
+}
+// Readability is protected without discarding the owner's choice.
+$assert(PanelAppearance::inlineStyle('classic', 'standard', '#ff8040') === '--ncli-accent:#ff8040;--ncli-on-accent:#111111;--ncli-focus:#111111;--ncli-edge:#111111', 'A pale accent on Classic must still apply, with a button edge and a safe focus colour.');
+$assert(PanelAppearance::inlineStyle('minimal', 'standard', '#ff8040') === '--ncli-accent:#ff8040;--ncli-on-accent:#111111;--ncli-focus:#2563eb;--ncli-edge:#1f2937', 'A pale accent on Minimal must still apply, with a button edge and the style focus colour.');
+$assert(PanelAppearance::inlineStyle('dark', 'standard', '#ff8040') === '--ncli-accent:#ff8040;--ncli-on-accent:#111111', 'An accent that already contrasts with the Dark panel needs no extra protection.');
+$assert(PanelAppearance::inlineStyle('dark', 'standard', '#111111') === '--ncli-accent:#111111;--ncli-on-accent:#ffffff;--ncli-focus:#7dd3fc;--ncli-edge:#e8eaed', 'A near-black accent on Dark must still apply, with an edge so the button stays visible.');
+foreach (['classic', 'minimal', 'dark'] as $everyStyle) {
+    foreach (['narrow', 'standard', 'wide'] as $everyWidth) {
+        $declared = PanelAppearance::inlineStyle($everyStyle, $everyWidth, '#ff8040');
+        $assert(str_contains($declared, '--ncli-accent:#ff8040') && ($everyWidth === 'standard' || str_contains($declared, '--ncli-max:')), 'The accent must apply in every style at every width: ' . $everyStyle . ' ' . $everyWidth);
+    }
+}
 $assert(PanelAppearance::onAccent('#ffffff') === '#111111' && PanelAppearance::onAccent('#111111') === '#ffffff', 'Button text must contrast with the accent.');
 $assert(PanelAppearance::onAccent('#c2410c') === '#ffffff', 'A strong orange accent should take white text.');
 $assert(PanelAppearance::defaultAccent('minimal') === '#2563eb' && PanelAppearance::defaultAccent('unknown') === '#111111', 'Style accents must match the public stylesheet.');
@@ -53,6 +65,7 @@ $assert(PanelAppearance::inlineStyle('classic', 'narrow', '') === '--ncli-max:36
 $assert(PanelAppearance::inlineStyle('classic', 'wide', '') === '--ncli-max:64rem', 'Wide width must set the maximum width.');
 $assert(PanelAppearance::inlineStyle('classic', 'bogus', '') === '', 'An unknown width must add nothing.');
 $assert(PanelAppearance::inlineStyle('dark', 'standard', '#7dd3fc') === '--ncli-accent:#7dd3fc;--ncli-on-accent:#111111', 'An accent must set both the accent and its text colour.');
+$assert(str_contains($css, 'var(--ncli-focus, var(--ncli-accent))') && str_contains($css, 'inset 0 0 0 1px var(--ncli-edge, transparent)'), 'The stylesheet must use the focus colour and button edge when they are supplied.');
 $assert(PanelAppearance::inlineStyle('classic', 'standard', 'red;background:url(x)') === '', 'A non-hex accent must never reach the style attribute.');
 
 // Public rendering.
@@ -76,7 +89,7 @@ $ncliPanelOptions[CoreSettings::OPTION_NAME] = CoreSettings::fromArray([
     'appearance' => ['panel_style' => 'dark', 'accent_color' => '#111111'],
 ])->toArray();
 $lowContrast = $panel->renderInteractive();
-$assert(!str_contains($lowContrast, '--ncli-accent'), 'A low-contrast saved accent must not be applied to the panel.');
+$assert(str_contains($lowContrast, '--ncli-accent:#111111') && str_contains($lowContrast, '--ncli-edge:#e8eaed'), 'A low-contrast saved accent must still be applied, with an edge for visibility.');
 
 $ncliPanelOptions[CoreSettings::OPTION_NAME] = CoreSettings::fromArray(['presentation' => ['unavailable_message' => '']])->toArray();
 $assert(str_contains($panel->renderInteractive(), CoreSettings::DEFAULT_UNAVAILABLE_MESSAGE), 'A blank unavailable message must fall back to the default wording.');

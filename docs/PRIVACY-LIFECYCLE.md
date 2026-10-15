@@ -4,7 +4,7 @@
 
 Core's public route uses only a server-secret HMAC of the canonical client address for its daily visitor bucket. It never stores a raw IP address, visitor identifier, cookie, question, answer, retrieved text, provider payload or credential in the rate table.
 
-`NCLI_CORE_SCOPE_SECRET` is required in server configuration before an enabled route can reserve a visitor allowance. The key is never stored in a WordPress option or request. If a deployment is behind a proxy, `NCLI_CORE_TRUSTED_PROXY_CIDRS` may contain an explicit comma-separated CIDR allowlist. Core reads `X-Forwarded-For` only when `REMOTE_ADDR` is within that allowlist; otherwise it ignores the header. This prevents a client from choosing its own rate-bucket identity.
+A server-only secret is needed to reserve a visitor allowance. It is automatic: `NCLI_CORE_SCOPE_SECRET` in server configuration is used if defined, otherwise a domain-separated value derived from WordPress's authentication salt. Neither is stored in a WordPress option or request. If a deployment is behind a proxy, `NCLI_CORE_TRUSTED_PROXY_CIDRS` may contain an explicit comma-separated CIDR allowlist. Core reads `X-Forwarded-For` only when `REMOTE_ADDR` is within that allowlist; otherwise it ignores the header. This prevents a client from choosing its own rate-bucket identity.
 
 The `ncli_core_rate_buckets` table uses InnoDB transactions and a unique `(kind, scope_hash, period_start)` key. A reservation increments `reserved_count`; a settled request moves it to `committed_count`; a pre-dispatch cancellation releases it. UTC midnight creates a new period. Core does not auto-retry an ambiguous attempted provider request, and it retains that accounting outcome.
 
@@ -14,7 +14,7 @@ The administrator-only connection test also reserves the global provider bucket,
 
 Core emits the bounded answer only. It does not configure, store, validate or publish an approved-evidence map, source link or citation metadata. The browser therefore never follows provider-derived source URLs.
 
-The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends no retrieved File Search result text in its request, retains no provider payload and ignores provider file-citation metadata. The public response never contains a provider citation, vector-store reference, provider payload or credential.
+The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends the owner-selected model, optional reasoning effort, retrieval depth and output limit as non-personal request parameters, sends no retrieved File Search result text in its request, retains no provider payload and ignores provider file-citation metadata. The public response never contains a provider citation, vector-store reference, provider payload or credential.
 
 ## Conversation history (RC9)
 
@@ -29,6 +29,10 @@ Because visitors can type personal information into a question and no identifier
 Activation creates only fresh NCI settings, the NCI schema marker, the prefixed rate-bucket table and the prefixed conversation table, and schedules a daily retention purge. Deactivation preserves all data for recoverability and stops only the scheduled purge. `uninstall.php` deletes nothing by default; if the owner has enabled "Delete data on uninstall" it removes exactly the NCI options, the two NCI tables and the purge event. This Core release has no visitor-record export. Existing AskFolio/WPIP options, transients, constants and tables are neither read nor changed.
 
 These controls do not replace a site's own privacy notice. A later Pro extension, if separately authorised, adds governance (export, retention schedules, scoped erasure) over Core's conversation table; it does not create a second archive.
+
+## Provider diagnostics
+
+Core keeps one small, non-autoloaded option, `ncli_core_last_failure`, holding only the most recent provider problem: a closed reason code (for example `timeout`, `http_429`, `empty_answer`), whether it came from a public question or the connection test, a UTC time and a duration in seconds. It stores no question, answer, address, provider message, payload, header, credential or identifier, and visitors never see the reason. It is shown on the Diagnostics tab and removed by `uninstall.php` only when the owner has enabled "Delete data on uninstall".
 
 ## WordPress privacy-policy suggestion
 

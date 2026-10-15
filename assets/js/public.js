@@ -6,10 +6,15 @@
     return strings && typeof strings[key] === 'string' ? strings[key] : fallback;
   }
 
-  function setStatus(panel, message) {
+  // A quiet message is still announced to assistive technology but is not shown on screen,
+  // so a normal answer does not leave a line of status text under the thread.
+  function setStatus(panel, message, quiet) {
     var status = panel.querySelector('.ncli-panel__status');
     if (status) {
       status.textContent = message;
+      if (status.classList) {
+        status.classList.toggle('screen-reader-text', quiet === true);
+      }
     }
   }
 
@@ -148,25 +153,60 @@
     return fragment;
   }
 
-  function addTurn(panel, question, answer) {
+  function hiddenLabel(value) {
+    var label = document.createElement('span');
+    label.className = 'screen-reader-text';
+    label.textContent = value + ' ';
+    return label;
+  }
+
+  function scrollIntoViewGently(element) {
+    if (!element || typeof element.scrollIntoView !== 'function') {
+      return;
+    }
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    element.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+  }
+
+  // The thread reads top to bottom: each question appears at once in its own shaded block and
+  // its answer arrives in a separate bordered block beneath it. The input stays below the thread.
+  function addPendingTurn(panel, question) {
     var transcript = panel.querySelector('.ncli-panel__transcript');
     if (!transcript) {
-      return;
+      return null;
     }
     var turn = document.createElement('article');
     turn.className = 'ncli-panel__turn';
     var questionElement = document.createElement('p');
     questionElement.className = 'ncli-panel__question';
-    questionElement.textContent = question;
+    questionElement.appendChild(hiddenLabel(text('questionLabel', 'Question:')));
+    questionElement.appendChild(document.createTextNode(question));
     var answerElement = document.createElement('div');
-    answerElement.className = 'ncli-panel__answer';
-    answerElement.appendChild(renderAnswerMarkdown(answer));
+    answerElement.className = 'ncli-panel__answer ncli-panel__answer--pending';
+    answerElement.textContent = text('findingAnswer', 'Finding a verified answer…');
     turn.appendChild(questionElement);
     turn.appendChild(answerElement);
     transcript.appendChild(turn);
     var reset = panel.querySelector('.ncli-panel__reset');
     if (reset) {
       reset.hidden = false;
+    }
+    scrollIntoViewGently(turn);
+    return { turn: turn, answer: answerElement };
+  }
+
+  function completeTurn(pending, answer) {
+    var answerElement = pending.answer;
+    answerElement.className = 'ncli-panel__answer';
+    answerElement.textContent = '';
+    answerElement.appendChild(hiddenLabel(text('answerLabel', 'Answer:')));
+    answerElement.appendChild(renderAnswerMarkdown(answer));
+    scrollIntoViewGently(pending.turn);
+  }
+
+  function discardTurn(pending) {
+    if (pending && pending.turn && pending.turn.parentNode) {
+      pending.turn.parentNode.removeChild(pending.turn);
     }
   }
 
@@ -203,6 +243,10 @@
     if (reset) {
       reset.hidden = true;
     }
+  }
+
+  function hasTurns(panel) {
+    return !!panel.querySelector('.ncli-panel__turn');
   }
 
   document.addEventListener('click', function (event) {
@@ -249,7 +293,9 @@
     if (button) {
       button.disabled = true;
     }
-    setStatus(panel, text('findingAnswer', 'Finding a verified answer…'));
+    setStatus(panel, '');
+    var pending = addPendingTurn(panel, question);
+    textarea.value = '';
     window.fetch(route, {
       method: 'POST',
       credentials: 'same-origin',
@@ -258,25 +304,45 @@
     }).then(function (response) {
       return response.json();
     }).then(function (payload) {
+      var detached = pending && !pending.turn.isConnected;
       if (!payload || payload.ok !== true || typeof payload.answer !== 'string') {
         var message = payload && payload.error && typeof payload.error.message === 'string'
           ? payload.error.message
           : text('temporaryFailure', 'This interactive service is temporarily unavailable.');
-        setStatus(panel, message);
+        failTurn(message);
         return;
       }
-      addTurn(panel, question, payload.answer);
-      textarea.value = '';
-      setStatus(panel, text('answerAdded', 'Verified answer added to this session.'));
+      if (pending && !detached) {
+        completeTurn(pending, payload.answer);
+        setStatus(panel, text('answerAdded', 'Verified answer added to this session.'), true);
+      }
     }).catch(function () {
-      setStatus(panel, text('temporaryFailure', 'This interactive service is temporarily unavailable.'));
+      failTurn(text('temporaryFailure', 'This interactive service is temporarily unavailable.'));
     }).finally(function () {
       textarea.disabled = false;
       panel.removeAttribute('aria-busy');
       if (button) {
         button.disabled = false;
       }
-      textarea.focus();
+      if (textarea.focus) {
+        textarea.focus({ preventScroll: true });
+      }
     });
+
+    // A failed question leaves no empty thread entry and returns the text for another try.
+    function failTurn(message) {
+      var stillThere = pending && pending.turn.isConnected;
+      discardTurn(pending);
+      if (stillThere) {
+        textarea.value = question;
+        if (!hasTurns(panel)) {
+          var resetButton = panel.querySelector('.ncli-panel__reset');
+          if (resetButton) {
+            resetButton.hidden = true;
+          }
+        }
+      }
+      setStatus(panel, message);
+    }
   });
 }());

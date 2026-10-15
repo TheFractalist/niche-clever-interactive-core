@@ -35,6 +35,10 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 $assert(str_contains($output, 'ncli-panel--classic'), 'Default panel style should be present.');
 $assert(str_contains($output, 'aria-live="polite"'), 'Panel should contain an accessible status region.');
 $assert(str_contains($output, 'ncli-panel__frame'), 'Panel should render the NCI frame.');
+$assert(strpos($output, 'ncli-panel__transcript') < strpos($output, '<form') && strpos($output, '<form') < strpos($output, 'ncli-panel__reset') && strpos($output, 'ncli-panel__reset') < strpos($output, '<footer'), 'The thread must come first, then the question input, the reset control and the footer.');
+$assert(str_contains($publicCss, '.ncli-panel__question {') && str_contains($publicCss, 'background: var(--ncli-surface)') && str_contains($publicCss, '.ncli-panel__answer {') && str_contains($publicCss, '.ncli-panel__transcript:empty'), 'Questions must be shaded blocks and answers separate bordered blocks, with no empty gaps.');
+$panelSource = (string) file_get_contents(dirname(__DIR__) . '/src/Frontend/InteractivePanel.php');
+$assert(str_contains($panelSource, "'questionLabel' => Translator::text('Question:')") && str_contains($panelSource, "'answerLabel' => Translator::text('Answer:')"), 'The panel must supply translatable hidden labels for question and answer blocks.');
 $assert(str_contains($output, 'ncli-panel__reset'), 'Panel should render the session-only reset control.');
 $assert(!str_contains($publicCss, '.ncli-panel__evidence'), 'The public panel must not retain evidence-link markup support.');
 $assert(str_contains($publicCss, '.ncli-panel__reset[hidden]'), 'The initial session reset state must remain hidden.');
@@ -59,7 +63,7 @@ $assert(str_contains($settingsPage, 'ncli-admin__form-table'), 'Editable Core se
 $assert(str_contains($settingsPage, 'ncli-admin__tab-panel'), 'Read-only Core tabs must retain the shared workspace panel frame.');
 $assert(str_contains($settingsPage, 'ncli-admin__save-bar'), 'Editable Core settings must retain the NCI save treatment.');
 $assert(str_contains($settingsPage, 'ncli-admin__help-toggle'), 'Technical settings must include reusable accessible question-mark guidance.');
-$assert(str_contains($settingsPage, 'renderComparisonTable'), 'The Help Centre must render a bounded Core and planned-Pro comparison.');
+$assert(str_contains($settingsPage, 'renderComparisonTable'), 'The Help Centre must render a bounded Core and planned-Premium comparison.');
 $assert(str_contains($settingsPage, "Translator::text"), 'Fixed administrator strings must pass through the NCI text domain.');
 $assert(!str_contains($settingsPage, 'profile-picker'), 'The Core workspace must not add a profile picker.');
 $assert(!str_contains($settingsPage, 'add-profile'), 'The Core workspace must not add profile creation controls.');

@@ -15,6 +15,7 @@ use NicheCleverInteractive\Core\Conversation\ConversationPurge;
 use NicheCleverInteractive\Core\Conversation\ConversationRecorder;
 use NicheCleverInteractive\Core\Conversation\ConversationTable;
 use NicheCleverInteractive\Core\Conversation\WordPressConversationStore;
+use NicheCleverInteractive\Core\Diagnostics\OptionFailureLog;
 use NicheCleverInteractive\Core\Frontend\InteractivePanel;
 use NicheCleverInteractive\Core\AI\ChatService;
 use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
@@ -45,11 +46,12 @@ final class Plugin
         $this->interactivePanel = new InteractivePanel();
         $transport = $this->transport();
         $budget = new BudgetGate(new WordPressBucketStore());
-        $this->settingsPage = new SettingsPage(null, new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current()));
+        $failureLog = new OptionFailureLog();
+        $this->settingsPage = new SettingsPage(null, new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current(), $failureLog));
         $conversationStore = new WordPressConversationStore();
         $this->conversationsPage = new ConversationsPage(null, $conversationStore);
         $this->conversationPurge = new ConversationPurge($conversationStore);
-        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore)));
+        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore), $failureLog));
     }
 
     public static function register(string $pluginFile): void

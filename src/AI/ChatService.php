@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\AI;
 
 use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\AI\Transport\ProviderFailure;
 use NicheCleverInteractive\Core\Conversation\ConversationRecorder;
+use NicheCleverInteractive\Core\Diagnostics\FailureLog;
 use NicheCleverInteractive\Core\Profile\DefaultProfileResolverV1;
 use NicheCleverInteractive\Core\Security\ChatRequestValidator;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
@@ -24,6 +27,7 @@ final class ChatService
     private ChatRequestValidator $requests;
     private ?BudgetGate $budgets;
     private ?ConversationRecorder $conversations;
+    private ?FailureLog $failures;
 
     public function __construct(
         ResponseTransport $transport,
@@ -31,7 +35,8 @@ final class ChatService
         ?PromptPolicy $policy = null,
         ?ChatRequestValidator $requests = null,
         ?BudgetGate $budgets = null,
-        ?ConversationRecorder $conversations = null
+        ?ConversationRecorder $conversations = null,
+        ?FailureLog $failures = null
     ) {
         $this->transport = $transport;
         $this->secrets = $secrets ?? new SecretResolver();
@@ -39,6 +44,7 @@ final class ChatService
         $this->requests = $requests ?? new ChatRequestValidator();
         $this->budgets = $budgets;
         $this->conversations = $conversations;
+        $this->failures = $failures;
     }
 
     /** @param mixed $request */
@@ -70,6 +76,7 @@ final class ChatService
             }
         }
 
+        $started = microtime(true);
         try {
             $result = $this->transport->respond(new TransportRequest(
                 $validated['question'],
@@ -77,11 +84,13 @@ final class ChatService
                 $validated['response_preset'],
                 $profile->policyFingerprint(),
                 $profile->corpusFingerprint(),
-                $settings->vectorStoreReference()
+                $settings->vectorStoreReference(),
+                RequestOptions::fromSettings($settings)
             ));
         } catch (\Throwable $exception) {
             // A request may already have reached a provider; retain the reservation
             // and do not retry automatically when that outcome cannot be proved.
+            $this->noteFailure(ProviderFailure::reasonFor($exception), $started);
             if (!$this->commitReservation($reservation)) {
                 return ChatOutcome::failure('provider_failure');
             }
@@ -90,6 +99,7 @@ final class ChatService
 
         $answer = trim($result->answer());
         if ($answer === '' || strlen($answer) > 5000) {
+            $this->noteFailure($answer === '' ? ProviderFailure::EMPTY_ANSWER : ProviderFailure::ANSWER_TOO_LONG, $started);
             if (!$this->commitReservation($reservation)) {
                 return ChatOutcome::failure('provider_failure');
             }
@@ -99,6 +109,7 @@ final class ChatService
         if (!$result->completedFileSearch()
             || !hash_equals($profile->policyFingerprint(), $result->policyFingerprint())
             || !hash_equals($profile->corpusFingerprint(), $result->corpusFingerprint())) {
+            $this->noteFailure(ProviderFailure::EVIDENCE_MISMATCH, $started);
             if (!$this->commitReservation($reservation)) {
                 return ChatOutcome::failure('provider_failure');
             }
@@ -123,6 +134,18 @@ final class ChatService
         }
 
         return ChatOutcome::success($answer);
+    }
+
+    private function noteFailure(string $reason, float $started): void
+    {
+        if ($this->failures === null) {
+            return;
+        }
+        try {
+            $this->failures->record('public', $reason, (int) round(microtime(true) - $started));
+        } catch (\Throwable $exception) {
+            // Diagnostics must never change the visitor's response.
+        }
     }
 
     /** @param mixed $reservation */

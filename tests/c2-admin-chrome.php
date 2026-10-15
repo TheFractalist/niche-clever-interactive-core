@@ -102,6 +102,21 @@ $assert(str_contains($conversation, 'Owner response guidance'), 'The Conversatio
 $assert(str_contains($conversation, 'It can shape response style and format only'), 'The Conversation tab must state the bounded owner-guidance scope.');
 $assert(str_contains($conversation, 'fresh connection test'), 'The Conversation tab must explain that changed guidance requires retesting.');
 
+$_GET = ['tab' => 'ai-corpus'];
+ob_start();
+(new SettingsPage())->render();
+$aiCorpus = (string) ob_get_clean();
+$assert(str_contains($aiCorpus, 'name="model_id"'), 'AI & Corpus must offer the curated model dropdown.');
+foreach (['gpt-6-luna', 'gpt-6.1-sol', 'gpt-6-astra', 'gpt-5.6'] as $modelId) {
+    $assert(str_contains($aiCorpus, 'value="' . $modelId . '"'), 'The model dropdown must include ' . $modelId . '.');
+}
+$assert(str_contains($aiCorpus, 'value="gpt-6-astra" data-efforts="low,medium,high,xhigh,max" selected'), 'Astra must be the selected default model.');
+$assert(str_contains($aiCorpus, 'aria-controls="ncli-help-model_id"'), 'The model dropdown must have an accessible help control.');
+$assert(str_contains($aiCorpus, 'ncli-admin__model-table'), 'The model help must contain the comparison table.');
+$assert(str_contains($aiCorpus, 'name="model_reasoning_effort"') && str_contains($aiCorpus, 'name="model_retrieval_depth"') && str_contains($aiCorpus, 'name="model_max_output_tokens"') && str_contains($aiCorpus, 'name="model_timeout_seconds"'), 'AI & Corpus must offer effort, depth, answer-length and timeout settings.');
+$assert(str_contains($aiCorpus, '<option value="60" selected>'), 'The timeout must default to 60 seconds.');
+$assert(!preg_match('/\$\s?\d/', $aiCorpus), 'The model settings must not show prices.');
+
 $_GET = ['tab' => 'diagnostics'];
 ob_start();
 (new SettingsPage())->render();
@@ -109,14 +124,37 @@ $diagnostics = (string) ob_get_clean();
 $assert(str_contains($diagnostics, 'ncli-admin__tab-panel'), 'Read-only Core tabs should share the workspace frame.');
 $assert(!str_contains($diagnostics, 'ncli-admin__save-bar'), 'Read-only Core tabs should not render a settings save control.');
 
-$_GET = ['tab' => 'help'];
-ob_start();
-(new SettingsPage())->render();
-$help = (string) ob_get_clean();
+$renderHelp = static function (?string $section): string {
+    $_GET = ['tab' => 'help'] + ($section === null ? [] : ['help' => $section]);
+    ob_start();
+    (new SettingsPage())->render();
+    return (string) ob_get_clean();
+};
+$help = $renderHelp(null);
 $assert(str_contains($help, 'Help Centre'), 'The Help tab must provide the tailored Help Centre.');
+$assert(str_contains($help, 'ncli-admin__subtabs') && str_contains($help, 'aria-label="Help sections"'), 'The Help Centre must offer its own labelled section tabs.');
+foreach (['Overview', 'Frequently asked questions', 'NCI Premium'] as $label) {
+    $assert(str_contains($help, '>' . $label . '</a>'), 'The Help Centre must offer a "' . $label . '" tab.');
+}
+$assert(str_contains($help, 'aria-current="page"') && str_contains($help, 'ncli-admin__subtab is-active'), 'The current Help section must be marked for assistive technology.');
 $assert(str_contains($help, 'OpenAI File Search documentation'), 'The Help Centre must link to the official provider documentation.');
-$assert(str_contains($help, 'ncli-admin__comparison-table'), 'The Help Centre must provide the Core and planned-Pro comparison table.');
-$assert(str_contains($help, 'makes no availability claim'), 'The comparison must not imply that NCI Pro is currently available.');
+$assert(!str_contains($help, 'ncli-admin__comparison-table') && !str_contains($help, '<details>'), 'The overview must not carry the FAQs or the Premium comparison.');
+$faq = $renderHelp('faq');
+$assert(str_contains($faq, '<details>') && str_contains($faq, 'Where does the API key go?') && str_contains($faq, 'Last provider problem') && str_contains($faq, 'question allowance has been reached'), 'The FAQ tab must carry the questions, including the current failure and allowance guidance.');
+$assert(!str_contains($faq, 'ncli-admin__model-table') && !str_contains($faq, 'ncli-admin__comparison-table'), 'The FAQ tab must not repeat the overview or the comparison.');
+$premium = $renderHelp('premium');
+$assert(str_contains($premium, 'ncli-admin__comparison-table'), 'The NCI Premium tab must provide the Core and planned-Premium comparison table.');
+$assert(substr_count($premium, 'scope="rowgroup"') === 2 && str_contains($premium, 'Included in NCI Core') && str_contains($premium, 'Planned for NCI Premium'), 'The comparison must be grouped into Core and planned Premium features.');
+foreach (['Multiple knowledge profiles', 'Approved public evidence links', 'Chronology records', 'Authored questions and shareable links', 'Ordered question collections', 'Protected profiles', 'Conversation governance', 'Approved-answer cache'] as $feature) {
+    $assert(str_contains($premium, $feature), 'The comparison must list the planned Premium feature: ' . $feature);
+}
+$assert(!str_contains($premium, 'NCI Pro') && !str_contains($help . $faq . $premium, '>Pro<'), 'User-facing Help must call the planned edition NCI Premium.');
+$assert(str_contains($premium, 'no availability or pricing claim'), 'The comparison must not imply that NCI Premium is currently available.');
+$unknown = $renderHelp('<script>');
+$assert(!str_contains($unknown, '<script>') && str_contains($unknown, 'What Niche Clever Interactive is for'), 'An unknown Help section must fall back to the overview.');
+$assert(str_contains($help, 'Choosing a model and managing cost'), 'The Help Centre must explain model cost drivers.');
+$assert(str_contains($help, 'ncli-admin__model-table') && str_contains($help, 'OpenAI API pricing'), 'The Help Centre must show the model table and link to provider pricing without quoting prices.');
+$assert(!preg_match('/\$\s?\d/', $help), 'The Help Centre must not quote prices.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

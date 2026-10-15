@@ -23,7 +23,7 @@ $assert(str_contains($readme, 'Tested up to: 7.1'), 'The package readme must rec
 $assert(str_contains($readme, 'License: GPLv2 or later'), 'The package readme must declare its GPL-compatible licence.');
 $assert(str_contains($readme, '=== Niche Clever Interactive ==='), 'The package readme must use the public plugin name.');
 $assert(str_contains($readme, 'Stable tag: trunk'), 'The RC readme must retain trunk until a final numeric release is frozen.');
-$assert(str_contains($readme, 'NCI Pro is planned as a separately supplied extension.'), 'The readme must not claim that NCI Pro is currently available.');
+$assert(str_contains($readme, 'NCI Premium is planned as a separately supplied edition.'), 'The readme must not claim that NCI Premium is currently available.');
 $assert(is_file($root . '/phpcs.xml.dist'), 'The candidate source must provide its deterministic WPCS configuration.');
 $assert(is_file($root . '/COPYING'), 'The candidate must provide the complete GPL v2 text.');
 $copying = is_file($root . '/COPYING') ? (string) file_get_contents($root . '/COPYING') : '';

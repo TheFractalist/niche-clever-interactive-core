@@ -48,6 +48,8 @@ final class InteractivePanel
                     'findingAnswer' => Translator::text('Finding a verified answer…'),
                     'temporaryFailure' => Translator::text('This interactive service is temporarily unavailable.'),
                     'answerAdded' => Translator::text('Verified answer added to this session.'),
+                    'questionLabel' => Translator::text('Question:'),
+                    'answerLabel' => Translator::text('Answer:'),
                 ],
             ]) . ';', 'before');
         }
@@ -87,14 +89,14 @@ final class InteractivePanel
             . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'
             . ($presentation['introduction'] !== '' ? '<p class="ncli-panel__introduction">' . $this->html($presentation['introduction']) . '</p>' : '')
             . '</header>'
+            . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
+            . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
             . '<form class="ncli-panel__form" data-ncli-interactive="1">'
             . '<label class="screen-reader-text" for="ncli-question">' . $this->html(Translator::text('Ask a question')) . '</label>'
             . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="' . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
             . '<button type="submit" aria-label="' . $this->attr(Translator::text('Submit question')) . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">' . $this->html(Translator::text('Ask')) . '</span></button></div>'
             . '<button class="ncli-panel__reset" type="button" hidden>' . $this->html(Translator::text('Reset conversation')) . '</button>'
             . '</form>'
-            . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
-            . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
             . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>' . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
             . '</div>'
             . $credit

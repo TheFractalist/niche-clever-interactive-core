@@ -28,6 +28,12 @@ final class PanelAppearance
         'dark' => '#0f1115',
     ];
 
+    private const STYLE_INKS = [
+        'classic' => '#111111',
+        'minimal' => '#1f2937',
+        'dark' => '#e8eaed',
+    ];
+
     private const MINIMUM_ACCENT_CONTRAST = 3.0;
 
     public static function isHexColour(string $value): bool
@@ -54,18 +60,14 @@ final class PanelAppearance
     }
 
     /**
-     * The owner accent only when it stays distinguishable from the panel
-     * background; otherwise an empty string, meaning "use the style accent".
+     * The owner's accent, lower-cased, whenever it is a valid colour; otherwise an
+     * empty string, meaning "use the style accent". The owner's choice is never
+     * discarded for being pale or dark: readability is protected instead by
+     * inlineStyle(), which adds a button edge and a safe focus colour when needed.
      */
     public static function effectiveAccent(string $style, string $accent): string
     {
-        if ($accent === '' || !self::isHexColour($accent)) {
-            return '';
-        }
-
-        $background = self::STYLE_BACKGROUNDS[$style] ?? self::STYLE_BACKGROUNDS['classic'];
-
-        return self::contrastRatio($accent, $background) >= self::MINIMUM_ACCENT_CONTRAST ? strtolower($accent) : '';
+        return self::isHexColour($accent) ? strtolower($accent) : '';
     }
 
     /**
@@ -92,6 +94,15 @@ final class PanelAppearance
         if ($effective !== '') {
             $declarations[] = '--ncli-accent:' . $effective;
             $declarations[] = '--ncli-on-accent:' . self::onAccent($effective);
+
+            // An accent too close to the panel background would make the button or the
+            // keyboard focus ring hard to see, so give the button an edge in the style's
+            // text colour and keep the style's own accent for the focus ring.
+            $background = self::STYLE_BACKGROUNDS[$style] ?? self::STYLE_BACKGROUNDS['classic'];
+            if (self::contrastRatio($effective, $background) < self::MINIMUM_ACCENT_CONTRAST) {
+                $declarations[] = '--ncli-focus:' . self::defaultAccent($style);
+                $declarations[] = '--ncli-edge:' . (self::STYLE_INKS[$style] ?? self::STYLE_INKS['classic']);
+            }
         }
 
         return implode(';', $declarations);

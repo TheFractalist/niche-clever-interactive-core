@@ -38,6 +38,9 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c6-admin-conversations.php
     & 'C:\xampp\php\php.exe' tests/c6-appearance.php
     & 'C:\xampp\php\php.exe' tests/c6-uninstall.php
+    & 'C:\xampp\php\php.exe' tests/c6-model-config.php
+    & 'C:\xampp\php\php.exe' tests/c6-failure-diagnostics.php
+    node --check assets/js/admin.js
     node --check assets/js/public.js
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }

@@ -69,6 +69,21 @@ $assert($untrusted === $direct, 'Forwarded headers from an untrusted remote must
 $assert($trusted !== null && $trusted !== $scopes->hash(['REMOTE_ADDR' => '127.0.0.1']), 'Configured trusted proxies may supply a validated client address.');
 $assert($untrusted !== null && !str_contains($untrusted, '203.0.113.10'), 'Only the server-secret hash, not a raw IP, is used as storage scope.');
 
+// Automatic secret: no constant is needed on a normal WordPress site.
+$noConstant = 'NCLI_TEST_UNDEFINED_SCOPE_SECRET';
+$derived = new ClientScopeResolver($noConstant, 'NCLI_TEST_UNDEFINED_PROXIES', static fn (): string => 'site-salt-one');
+$derivedHash = $derived->hash(['REMOTE_ADDR' => '203.0.113.10']);
+$assert($derived->isAvailable() && $derivedHash !== null, 'A visitor scope must derive from the WordPress salt when no constant is defined.');
+$assert($derivedHash === $derived->hash(['REMOTE_ADDR' => '203.0.113.10']), 'The derived scope must be stable for one address.');
+$assert($derivedHash !== $derived->hash(['REMOTE_ADDR' => '203.0.113.11']), 'Different addresses must derive different scopes.');
+$assert($derivedHash !== (new ClientScopeResolver($noConstant, 'NCLI_TEST_UNDEFINED_PROXIES', static fn (): string => 'site-salt-two'))->hash(['REMOTE_ADDR' => '203.0.113.10']), 'A different site salt must derive a different scope.');
+$assert($derivedHash !== $scopes->hash(['REMOTE_ADDR' => '203.0.113.10']), 'An explicit constant must take precedence over the salt-derived secret.');
+$assert($derivedHash !== null && !str_contains($derivedHash, 'site-salt-one') && !str_contains($derivedHash, '203.0.113.10'), 'The derived scope must expose neither the salt nor the address.');
+foreach ([null, '', '   '] as $badSalt) {
+    $unavailable = new ClientScopeResolver($noConstant, 'NCLI_TEST_UNDEFINED_PROXIES', static fn (): ?string => $badSalt);
+    $assert(!$unavailable->isAvailable() && $unavailable->hash(['REMOTE_ADDR' => '203.0.113.10']) === null, 'With neither a constant nor a usable salt the scope must fail closed.');
+}
+
 $gate = new BudgetGate($store, $scopes);
 $first = $gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']);
 $second = $gate->reserve($settings, ['REMOTE_ADDR' => '203.0.113.10']);

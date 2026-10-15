@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\AI;
 
+use NicheCleverInteractive\Core\AI\Transport\ProviderFailure;
+use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
@@ -11,6 +13,7 @@ use NicheCleverInteractive\Core\Configuration\ConnectionFingerprint;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Configuration\TransportMode;
+use NicheCleverInteractive\Core\Diagnostics\FailureLog;
 use NicheCleverInteractive\Core\Security\PolicyFingerprint;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
@@ -23,14 +26,16 @@ final class ConnectionTestService
     private BudgetGate $budget;
     private PromptPolicy $policy;
     private string $mode;
+    private ?FailureLog $failures;
 
-    public function __construct(ResponseTransport $transport, SecretResolver $secrets, BudgetGate $budget, ?PromptPolicy $policy = null, ?string $mode = null)
+    public function __construct(ResponseTransport $transport, SecretResolver $secrets, BudgetGate $budget, ?PromptPolicy $policy = null, ?string $mode = null, ?FailureLog $failures = null)
     {
         $this->transport = $transport;
         $this->secrets = $secrets;
         $this->budget = $budget;
         $this->policy = $policy ?? new PromptPolicy();
         $this->mode = $mode ?? TransportMode::current();
+        $this->failures = $failures;
     }
 
     public function test(CoreSettings $settings): ConnectionTestResult
@@ -46,6 +51,7 @@ final class ConnectionTestService
         }
 
         $dispatched = false;
+        $started = microtime(true);
         try {
             $request = new TransportRequest(
                 self::VERIFICATION_REQUEST,
@@ -53,7 +59,8 @@ final class ConnectionTestService
                 $settings->responsePreset(),
                 PolicyFingerprint::create($this->policy, $settings->instructions(), $settings->responsePreset()),
                 hash('sha256', $settings->corpusVersion()),
-                $settings->vectorStoreReference()
+                $settings->vectorStoreReference(),
+                RequestOptions::fromSettings($settings)
             );
             $dispatched = true;
             $result = $this->transport->respond($request);
@@ -61,6 +68,13 @@ final class ConnectionTestService
 
             return new ConnectionTestResult($result->completedFileSearch() ? ConnectionTestResult::PASSED : ConnectionTestResult::FAILED, $fingerprint);
         } catch (\Throwable $exception) {
+            if ($this->failures !== null) {
+                try {
+                    $this->failures->record('connection_test', ProviderFailure::reasonFor($exception), (int) round(microtime(true) - $started));
+                } catch (\Throwable $ignored) {
+                    // Diagnostics must never change the test outcome.
+                }
+            }
             if ($dispatched) {
                 $reservation->commit();
             } else {
