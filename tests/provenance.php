@@ -22,7 +22,7 @@ $assert(($manifest['policy']['whole_legacy_file_copy'] ?? true) === false, 'Whol
 $assert(($manifest['policy']['require_entry_before_adaptation'] ?? false) === true, 'Manifest entries must precede adaptation.');
 
 $seen = [];
-$approvedAssetIds = ['nci-logo', 'nci-admin-banner'];
+$approvedAssetIds = ['nci-logo'];
 $assetIds = [];
 
 foreach (($manifest['entries'] ?? []) as $entry) {
@@ -48,7 +48,18 @@ foreach (($manifest['entries'] ?? []) as $entry) {
 
 sort($assetIds);
 sort($approvedAssetIds);
-$assert($assetIds === $approvedAssetIds, 'Only the two owner-approved legacy visual assets may be listed.');
+$assert($assetIds === $approvedAssetIds, 'Only the one owner-approved legacy visual asset (the logo) may be listed.');
+
+$banner = null;
+foreach (($manifest['entries'] ?? []) as $entry) {
+    if (($entry['id'] ?? '') === 'nci-admin-banner') {
+        $banner = $entry;
+    }
+}
+$assert($banner !== null && ($banner['kind'] ?? '') === 'new-authored' && ($banner['direct_incorporation'] ?? true) === false, 'The administrator banner must be recorded as new-authored artwork, not a legacy incorporation.');
+$assert($banner !== null && ($banner['sha256'] ?? '') === hash_file('sha256', dirname(__DIR__) . '/assets/images/ncli-admin-banner.png'), 'The recorded banner SHA-256 must match the shipped file.');
+$assert($banner !== null && ($banner['supersedes_sha256'] ?? '') === 'ccf545900fd67304eb96ddeee43a9b1039ac17fba287152d3d70429147c3f4b8', 'The superseded legacy banner hash must stay on record.');
+$assert($banner !== null && is_string($banner['licence_declared'] ?? null) && $banner['licence_declared'] !== '' && !isset($banner['open_conditions']) && str_contains((string) ($banner['licence'] ?? ''), 'GPL-2.0-or-later'), 'The banner must record the owner licensing declaration and carry no open licensing condition.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

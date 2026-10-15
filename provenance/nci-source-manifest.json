@@ -141,16 +141,17 @@
     },
     {
       "id": "nci-admin-banner",
-      "kind": "owner-approved-asset",
-      "source_path": "plugins/wp-interactive-portfolio/assets/images/askfolio-admin-banner-1544x500.png",
-      "source_blob": "c215db3ecced1af3d16a45837adbb7ba262fc4c8",
-      "owner": "NCI owner grant",
-      "licence": "owner-granted NCI visual reuse",
+      "kind": "new-authored",
+      "owner": "Niche Clever (creator and rights holder)",
+      "licence": "GPL-2.0-or-later, by the owner's declaration of 15 October 2026 that Niche Clever is the creator and rights holder and releases the artwork under the plugin's licence",
       "target": "assets/images/ncli-admin-banner.png",
-      "method_scope": "Core administrator identity only",
-      "decision_reference": "NCI-CD-002; 2026-10-12 owner confirmation for Core visual-parity correction",
-      "test_evidence": ["asset-allowlist", "package-audit", "visual-parity-matrix"],
-      "direct_incorporation": true
+      "method_scope": "Core administrator masthead only (1544 x 500). New NCI artwork, not derived from the protected checkpoint's image: the owner supplied it from the context pack 2026-10-15-NCI-ADMIN-BANNER-REPLACEMENT (output/ncli-admin-banner-candidate-1544x500.png) and chose to use it knowing it is a redesign, not a pixel-preserving edit of the superseded legacy banner. It replaces the legacy binary (SHA-256 ccf545900fd67304eb96ddeee43a9b1039ac17fba287152d3d70429147c3f4b8, source blob c215db3ecced1af3d16a45837adbb7ba262fc4c8), which is no longer a direct-incorporation asset",
+      "decision_reference": "2026-10-15 owner decision to adopt the redesigned administrator masthead; supersedes the banner part of NCI-CD-002",
+      "sha256": "8cce4f63d628a7da81b6fa617788b9e552a1021db06a27c75cf4e67252ef2a89",
+      "supersedes_sha256": "ccf545900fd67304eb96ddeee43a9b1039ac17fba287152d3d70429147c3f4b8",
+      "licence_declared": "2026-10-15 owner declaration (Jacob, for Niche Clever): GPL-2.0-or-later; the image tool's own terms were not independently checked by the repository tooling",
+      "test_evidence": ["tests/provenance.php", "tests/c5-package.php", "asset-allowlist", "package-audit"],
+      "direct_incorporation": false
     },
     {
       "id": "core-visual-admin-reconstruction",
@@ -197,6 +198,17 @@
       "target": "wordpress-org-assets/banner-1544x500.png, banner-772x250.png, icon-256x256.png and icon-128x128.png",
       "method_scope": "draft WordPress.org directory staging assets only; excluded from Core runtime and release ZIP",
       "decision_reference": "Jacob-approved NCI RC8 submission-readiness plan, 14 October 2026",
+      "test_evidence": ["tests/c5-package.php", "package-audit"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "rc9-directory-screenshots",
+      "kind": "new-authored",
+      "owner": "NCI owner",
+      "licence": "GPL-2.0-or-later, by the owner's declaration of 15 October 2026 (screenshots of this plugin's own administrator interface, created by Niche Clever)",
+      "target": "wordpress-org-assets/screenshot-1.png to screenshot-4.png",
+      "method_scope": "draft WordPress.org directory screenshots only (Setup, Profile, AI & Corpus, Appearance & Limits tabs), captured by the owner from the local Test-Site with the NCI administrator banner of 2026-10-15; they show only this plugin's interface with no credential, vector-store identifier, provider data, visitor data or protected AskFolio imagery; excluded from Core runtime and release ZIP",
+      "decision_reference": "2026-10-15 owner supplied the four screenshots for the plugin listing",
       "test_evidence": ["tests/c5-package.php", "package-audit"],
       "direct_incorporation": false
     }

@@ -40,6 +40,7 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c6-uninstall.php
     & 'C:\xampp\php\php.exe' tests/c6-model-config.php
     & 'C:\xampp\php\php.exe' tests/c6-failure-diagnostics.php
+    & 'C:\xampp\php\php.exe' tests/c6-transport-mode.php
     node --check assets/js/admin.js
     node --check assets/js/public.js
     node tests/c5-public-js.mjs

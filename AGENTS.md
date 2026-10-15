@@ -11,7 +11,7 @@
 
 - This is non-production Core work. C0 has begun under the continuous Core-first authority; do not represent a completed phase as a release.
 - The AskFolio checkpoint is reference-only. Reconstruction requires a prior entry in provenance/nci-source-manifest.json, including pinned source blob, lawful ownership/licence, target method scope, decision reference and test evidence. Never copy a whole mixed legacy file, legacy test, vendor, build, migration, runtime data or corpus.
-- The two legacy visual assets specifically recorded in the provenance manifest are the sole asset exception. Do not add another legacy image, screenshot or WordPress.org asset without an owner decision and manifest entry.
+- The legacy logo recorded in the provenance manifest is the sole legacy-asset exception; the administrator banner is new owner-supplied NCI artwork (manifest id `nci-admin-banner`, adopted 15 October 2026, licensed GPL-2.0-or-later by the owner's declaration). Do not add another legacy image, screenshot or WordPress.org asset without an owner decision and manifest entry.
 - Do not add Pro implementation, a production credential/store, existing AskFolio access, release publication, remote tag, WordPress.org work or production deployment.
 - Preserve Core as the sole future owner of the public chat route, provider access, credential resolution, request ordering, final evidence validation and public errors. Pro compatibility is provisional and must fail closed.
 - Do not put private corpus content, visitor data, logs, provider identifiers or secrets in this repository.

@@ -349,7 +349,16 @@ final class ConversationsPage
 
     private function assetUrl(string $path): string
     {
-        return function_exists('plugins_url') ? plugins_url($path, dirname(__DIR__, 2) . '/niche-clever-interactive-core.php') : '';
+        if (!function_exists('plugins_url')) {
+            return '';
+        }
+
+        // Include the file's modification time so a replaced image is never served from a stale browser cache.
+        $url = plugins_url($path, dirname(__DIR__, 2) . '/niche-clever-interactive-core.php');
+        $file = dirname(__DIR__, 2) . '/' . $path;
+        $modified = is_file($file) ? (int) filemtime($file) : 0;
+
+        return $modified > 0 ? $url . (str_contains($url, '?') ? '&' : '?') . 'ver=' . $modified : $url;
     }
 
     private function adminUrl(array $query): string

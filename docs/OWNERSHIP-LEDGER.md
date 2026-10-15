@@ -16,4 +16,4 @@ No NCI component may use WPIP settings/transients/constants/tables, existing Ask
 
 ## Asset exception
 
-The manifest records only the owner-granted logo and administrator banner. They are not to be copied until their target phase requires them, and package audit must reject every other legacy image.
+The manifest records the owner-granted legacy logo and, as new owner-supplied artwork, the administrator banner. They are not to be copied until their target phase requires them, and package audit must reject every other legacy image.

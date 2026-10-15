@@ -18,6 +18,8 @@ The plugin is designed for organisations and practitioners who have prepared mat
 
 Niche Clever Interactive does not create or manage a vector store, upload documents, store an API key in WordPress options, or publish provider citations or source links. It keeps no record of visitor questions or answers unless you switch on the optional conversation history.
 
+Niche Clever is the creator of this plugin, including its administrator artwork and screenshots, and releases them under the same GPLv2 or later licence as the code.
+
 This RC9 package is a local release candidate. It is not a WordPress.org submission, directory listing or public 1.0.0 release.
 
 == Installation ==
@@ -38,7 +40,11 @@ No. Create and manage the vector store through your own OpenAI account, then ent
 
 = Where does the API key go? =
 
-Keep it in `NCLI_OPENAI_API_KEY_DEFAULT` in server configuration. The plugin does not store or display the key in WordPress.
+Keep it in `NCLI_OPENAI_API_KEY_DEFAULT` in server configuration. The plugin does not store or display the key in WordPress. Defining the key is all the server setup needed; there is no separate switch for live answers.
+
+= Can I switch the provider off without removing the key? =
+
+Yes. Set Visitor availability to Unavailable in the Setup tab, or untick Enable the Core profile in the Profile tab. A server administrator can also define `NCLI_CORE_LIVE_TRANSPORT` as `false` in `wp-config.php` to stop all provider requests while the key stays in place.
 
 = What information is sent to OpenAI? =
 
@@ -60,29 +66,77 @@ There is an optional "Powered by NC Interactive" link under the panel. It is off
 
 Changing the key, transport mode, vector-store reference, corpus version, response guidance, response preset, model, reasoning effort, retrieval depth, answer length or timeout requires a fresh successful connection test before public answers are available again.
 
+= What do I need before I start? =
+
+An OpenAI API account with billing controls and an API key, an OpenAI File Search vector store with your approved files indexed, WordPress 6.5 or later and PHP 8.1 or later.
+
+= Who pays for the answers, and how do I control cost? =
+
+Each public question is billed by OpenAI to your own account. The AI & Corpus tab lets you choose the model, reasoning effort, retrieval depth, maximum answer length and request timeout, and the Help Centre explains how each affects cost and speed. No prices are shown, so check OpenAI pricing and set a usage limit in your OpenAI dashboard as well as the plugin's daily request limits.
+
+= What is the corpus version? =
+
+A label you choose, such as v10, for the material in your vector store. Changing it requires a fresh connection test, so change it whenever you change the files in the store.
+
+= Does it show sources or citations? =
+
+No. The plugin does not publish provider citations or source links.
+
+= Can visitors ask follow-up questions? =
+
+Yes, but each question is answered on its own: earlier questions in the same conversation are not sent with it.
+
+= Are answers cached? =
+
+No. Each question is a fresh request to OpenAI.
+
+= Can visitors ask in other languages? =
+
+They can ask in any language the model understands. The interface text is translation-ready, and wording you write in the Profile and Conversation tabs appears exactly as you wrote it.
+
+= Why does the panel say the question allowance has been reached? =
+
+Either one visitor has used their daily questions or the whole site has used its daily allowance. Both limits are set in Appearance & Limits, count by UTC day and start again at UTC midnight. Visitors are counted with a privacy-bounded code and no address is stored.
+
+= Why does the panel say the service is temporarily unavailable? =
+
+The provider did not return a usable answer in time, most often because the reasoning effort is high. Diagnostics shows the latest provider problem in plain words, with a suggestion such as lowering the reasoning effort.
+
+= How do I review or delete stored conversations? =
+
+If you have turned history on, open NC Interactive > Conversations to view conversations and delete one, several or all. Records are also removed automatically after the retention period you choose.
+
+= How do I put the panel on a page, and can I use more than one? =
+
+Add the NC Interactive block or the `[ncli_interactive]` shortcode. You can place it on several pages, but every placement uses the same single profile.
+
+= Does it work with a keyboard and a screen reader? =
+
+The panel and the settings screens are built with labelled controls, keyboard operation, visible focus and announcements when an answer arrives, and they respect reduced-motion settings.
+
 = Does Niche Clever Interactive have a Premium edition? =
 
-NCI Premium is planned as a separately supplied edition. This package includes no Premium implementation and makes no availability or pricing claim.
+NCI Premium is a separately supplied edition from Niche Clever. It adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. This plugin contains no Premium code, and nothing in it is locked, limited or time-restricted.
 
 == Screenshots ==
 
-1. Niche Clever Interactive Setup tab and readiness checklist.
-2. AI & Corpus configuration with accessible field guidance.
-3. Help Centre with an overview, frequently asked questions and a Core and planned NCI Premium comparison.
-4. Classic, Minimal and Dark public panel styles.
+1. Setup tab with the guided checklist: server-side key, vector store, connection test and panel placement.
+2. Profile tab: panel title, headline, introduction and the unavailable message.
+3. AI & Corpus tab: vector store reference, model, retrieval depth, maximum answer length and request timeout, each with accessible guidance.
+4. Appearance & Limits tab: panel style and width, accent colour, optional credit line and daily request limits.
 
 == Changelog ==
 
 = 1.0.0-rc.9 =
 
-* The Help Centre now has Overview, Frequently asked questions and NCI Premium sections, with a fuller comparison of Core and the planned Premium edition.
+* The Help Centre now has Overview, Frequently asked questions and NCI Premium sections, with a fuller comparison of Core and NCI Premium.
 * Diagnostics show the latest provider problem as a plain reason (for example a timeout) with a suggestion, without storing any question, answer or provider message.
 * The visitor request allowance needs no extra setup: its server-side secret is derived from WordPress's own salts unless the optional NCLI_CORE_SCOPE_SECRET constant is defined.\n* Local-only candidate: optional conversation history (off by default) with a Conversations screen, delete-one, delete-selected and delete-all controls, configurable retention and an owner-controlled uninstall routine; panel width, accent colour and an opt-in credit line; an editable unavailable message; the administrator menu is now "NC Interactive". Corrects a wiring defect from RC5 that left the public route without its daily request limits.
 * Local-only model-cost configuration: curated model choice, reasoning effort, retrieval depth, maximum answer length and request timeout in AI & Corpus, with qualitative Help Centre cost guidance and no prices. All new settings require a fresh connection test.
 
 = 1.0.0-rc.8 =
 
-* Submission-readiness candidate: public Niche Clever Interactive identity, translation-ready interface strings, expanded Help Centre, accessible technical-field guidance, privacy-policy suggestion and a transparent Core/planned-Pro comparison without an availability claim.
+* Submission-readiness candidate: public Niche Clever Interactive identity, translation-ready interface strings, expanded Help Centre, accessible technical-field guidance, privacy-policy suggestion and a transparent Core and NCI Premium comparison.
 
 = 1.0.0-rc.7 =
 
