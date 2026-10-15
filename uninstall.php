@@ -32,7 +32,7 @@ function ncli_core_uninstall_current_site() {
 	// The table names are built only from the site prefix and fixed suffixes.
 	foreach ( array( 'ncli_core_rate_buckets', 'ncli_core_conversation_turns' ) as $suffix ) {
 		$table = $wpdb->prefix . $suffix;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Fixed plugin-owned table identifier; no user input.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Fixed plugin-owned table identifier; no user input; a DROP TABLE has nothing to cache.
 		$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
 	}
 
