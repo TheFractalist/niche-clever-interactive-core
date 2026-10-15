@@ -18,9 +18,14 @@ Since RC5 `Plugin` passed the budget gate as a sixth argument to a five-paramete
 
 | Item | State |
 | --- | --- |
-| Pure PHP/JavaScript checks, lint, source audit | Pass in the development container (PHP 8.3). PHP 8.1 syntax and PHPCS/WPCS have not been re-run for RC9. |
+| Pure PHP/JavaScript checks, lint, source audit | Pass in the development container (PHP 8.3). |
+| PHPCS 3.13.6 / WPCS 3.4.1 with the repo's `phpcs.xml.dist`, run on the extracted verification package (bootstrap, `src/`, `uninstall.php`) | Zero findings in the bootstrap and `src/`. One warning in `uninstall.php:36`: `DirectDatabaseQuery.NoCaching` on the `DROP TABLE` (the ignore comment omits that code). Benign, not yet changed; Plugin Check will likely report it too. |
+| PHPCompatibilityWP, `testVersion 8.1-` | Clean. This is static analysis; the code has not been executed on PHP 8.1. |
+| Informational WordPress-Extra security/i18n/prefix sniffs | Three `json_encode()` warnings, all in RC8-era files unchanged by RC9 (`PolicyFingerprint`, `ConnectionFingerprint`, `OpenAiResponsesFileSearchTransport`). Not a Plugin Check result. |
+| Verification package | Built from a clean `git archive` of `9d5b0d8` by a throwaway Python port of `package-core.ps1` (PowerShell is unavailable in the development container): 76 files (the 66 RC8 files plus 10 new), file list identical to the git allowlist, every file byte-identical to the committed source, no denylisted path or token, portable paths, logo/banner SHA-1 match the approved values, `php -l` clean on all 64 PHP files. SHA-256 `3736a14dccf18336ca4a3c6829090ae46c8a0e87393cf27563dbfacbdae1e24d`. **Not the canonical artefact:** it lives only in the ephemeral container and will not match a Windows build's checksum. |
+| Canonical package from `scripts/package-core.ps1` | Requires verification (run on the Windows machine) |
 | Table creation, SQL, scheduled purge, upgrade from RC8 on WordPress | Requires verification in the disposable fixture |
 | Administrator and public browser review (desktop and 390px, keyboard order) | Requires verification |
 | Plugin deletion with the option off and on | Requires verification |
-| Plugin Check, package build, denylist audit and checksum | Requires verification |
+| Plugin Check 2.1.0 on the canonical ZIP | **Not run.** The development container cannot reach wordpress.org or GitHub downloads and has no running Docker daemon. Requires the Windows fixture. |
 | Live provider behaviour | Not tested by the agent; owner tests manually |
