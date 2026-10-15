@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NicheCleverInteractive\Core\Conversation;
+
+use NicheCleverInteractive\Core\Api\V1\Support\CompletedTurnEligibilityV1;
+use NicheCleverInteractive\Core\Configuration\CoreSettings;
+
+/**
+ * Records a successfully validated provider answer when the owner has opted in.
+ * Storage is best-effort: a failure here must never change the visitor response.
+ */
+final class ConversationRecorder
+{
+    private ConversationStore $store;
+    /** @var callable */
+    private $clock;
+
+    public function __construct(ConversationStore $store, ?callable $clock = null)
+    {
+        $this->store = $store;
+        $this->clock = $clock ?? 'time';
+    }
+
+    /** @param mixed $conversationId */
+    public function recordProviderAnswer(
+        CoreSettings $settings,
+        $conversationId,
+        string $profileId,
+        string $question,
+        string $answer,
+        string $policyFingerprint
+    ): bool {
+        if (!$settings->conversationLogEnabled() || !CompletedTurnEligibilityV1::shouldRecord('provider')) {
+            return false;
+        }
+
+        try {
+            $this->store->record(new ConversationTurn(
+                ConversationId::isValid($conversationId) ? $conversationId : ConversationId::generate(),
+                $profileId,
+                $question,
+                $answer,
+                defined('NCLI_CORE_VERSION') ? NCLI_CORE_VERSION : 'development',
+                $settings->corpusVersion(),
+                $policyFingerprint,
+                gmdate('Y-m-d H:i:s', (int) call_user_func($this->clock))
+            ));
+        } catch (\Throwable $exception) {
+            return false;
+        }
+
+        return true;
+    }
+}

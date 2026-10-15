@@ -162,7 +162,7 @@ $wpdb = (object) [
 Plugin::activate();
 $assert(isset($ncliOptions[CoreSettings::OPTION_NAME]), 'Activation must create fresh NCI settings.');
 $assert(($ncliOptions[CoreSettings::SCHEMA_OPTION] ?? null) === CoreSettings::SCHEMA_VERSION, 'Activation must set the Core schema marker.');
-$assert(count($ncliSql) === 1 && str_contains($ncliSql[0], 'wp_ncli_core_rate_buckets'), 'Activation must create only the NCI rate bucket table.');
+$assert(count($ncliSql) === 2 && str_contains($ncliSql[0], 'wp_ncli_core_rate_buckets') && str_contains($ncliSql[1], 'wp_ncli_core_conversation_turns'), 'Activation must create only the two prefixed NCI tables.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

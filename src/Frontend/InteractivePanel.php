@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Frontend;
 
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Support\Translator;
 
 final class InteractivePanel
 {
+    /** Destination of the optional, opt-in credit line. */
+    private const CREDIT_URL = 'https://nicheclever.co.uk/';
+
     public function register(): void
     {
         if (!function_exists('add_shortcode')) {
@@ -39,7 +43,7 @@ final class InteractivePanel
                 'route' => rest_url('ncli/v1/chat'),
                 'strings' => [
                     'conversationReset' => Translator::text('Conversation reset for this browser session.'),
-                    'unavailable' => Translator::text('This interactive service is unavailable.'),
+                    'unavailable' => $this->load()->unavailableMessage(),
                     'invalidQuestion' => Translator::text('Please enter a valid question.'),
                     'findingAnswer' => Translator::text('Finding a verified answer…'),
                     'temporaryFailure' => Translator::text('This interactive service is temporarily unavailable.'),
@@ -62,7 +66,7 @@ final class InteractivePanel
     public function renderInteractive(array $attributes = []): string
     {
         $settings = $this->load();
-        $style = $settings->toArray()['appearance']['panel_style'];
+        $style = $settings->panelStyle();
         $readiness = Readiness::evaluate($settings, new SecretResolver());
         $this->enqueueRegisteredAssets();
 
@@ -70,10 +74,14 @@ final class InteractivePanel
         $title = isset($attributes['title']) && is_string($attributes['title']) && trim($attributes['title']) !== ''
             ? $attributes['title']
             : $presentation['title'];
-        $status = $readiness->isReady() ? Translator::text('Ready for a verified answer.') : Translator::text('This interactive service is not available yet.');
+        $status = $readiness->isReady() ? Translator::text('Ready for a verified answer.') : $settings->unavailableMessage();
+        $inlineStyle = PanelAppearance::inlineStyle($style, $settings->panelWidth(), $settings->accentColor());
+        $credit = $settings->showCredit()
+            ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(Translator::text('Powered by NC Interactive')) . '</a></p>'
+            : '';
         $disabled = $readiness->isReady() ? '' : ' disabled';
 
-        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" aria-labelledby="ncli-panel-title">'
+        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
             . '<div class="ncli-panel__frame">'
             . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . $this->html($title) . '</h2>'
             . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'
@@ -89,6 +97,7 @@ final class InteractivePanel
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
             . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>' . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
             . '</div>'
+            . $credit
             . '</section>';
     }
 

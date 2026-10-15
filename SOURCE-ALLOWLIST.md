@@ -14,7 +14,8 @@ The permitted set is limited to newly authored Core material, the machine-readab
 | docs/**, provenance/** | Architecture, ownership, UX/test records and provenance controls | Newly authored except manifest source metadata |
 | fixtures/** | Disposable local topology and instructions, without data snapshots | Newly authored |
 | niche-clever-interactive-core.php, src/** | Newly authored Core code | Newly authored or manifest-recorded reconstruction |
-| assets/js/admin.js | Newly authored accessible administrator help-control behaviour | Newly authored RC8 submission-readiness material |
+| assets/js/admin.js | Newly authored accessible administrator help-control and accent-picker behaviour | Newly authored RC8/RC9 material |
+| uninstall.php | Owner-controlled removal of exactly the NCI-owned options, tables and scheduled event | Newly authored RC9 material |
 | tests/** | Local deterministic checks | Newly authored |
 | scripts/package-core.ps1 | Local-only Core candidate packaging and denylist audit | Newly authored |
 | assets/images/ncli-logo.png, assets/images/ncli-admin-banner.png | Approved NCI visual identity only | Exact manifest entries nci-logo and nci-admin-banner |

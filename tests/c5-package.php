@@ -13,8 +13,8 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $assert(str_contains($bootstrap, "Plugin Name: Niche Clever Interactive"), 'The plugin header must use the public Niche Clever Interactive name.');
-$assert(str_contains($bootstrap, "Version: 1.0.0-rc.8"), 'The plugin header must identify the current local-only candidate version.');
-$assert(str_contains($bootstrap, "NCLI_CORE_VERSION = '1.0.0-rc.8'"), 'The runtime version must match the plugin header.');
+$assert(str_contains($bootstrap, "Version: 1.0.0-rc.9"), 'The plugin header must identify the current local-only candidate version.');
+$assert(str_contains($bootstrap, "NCLI_CORE_VERSION = '1.0.0-rc.9'"), 'The runtime version must match the plugin header.');
 $assert(str_contains($bootstrap, "Text Domain: niche-clever-interactive"), 'The plugin header must use the planned public text domain.');
 $assert(is_file($root . '/CHANGELOG.md'), 'The candidate must provide a changelog.');
 $assert(is_file($root . '/readme.txt'), 'The candidate must provide WordPress package metadata.');
@@ -32,6 +32,7 @@ $assert(str_contains($copying, 'Version 2, June 1991'), 'COPYING must contain th
 $assert(str_contains($copying, 'END OF TERMS AND CONDITIONS'), 'COPYING must contain the complete GPL v2 terms.');
 $assert(str_contains($script, 'Candidate output must be outside the Core repository.'), 'The package script must prohibit repository output.');
 $assert(str_contains($script, "'COPYING'"), 'The package allowlist must include the complete GPL v2 text.');
+$assert(str_contains($script, "'uninstall.php'"), 'The package allowlist must include the owner-scoped uninstall routine.');
 $assert(str_contains($script, "'assets', 'blocks', 'src'"), 'The package allowlist must include only Core runtime directories.');
 $assert(str_contains($script, '$allowedAssetFiles'), 'The package script must define an explicit Core asset allowlist.');
 $assert(str_contains($script, "'assets/images/ncli-logo.png'"), 'The package asset allowlist must name the approved NCI logo.');

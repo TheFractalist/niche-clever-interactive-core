@@ -40,6 +40,18 @@
     setOpen(button, true);
   });
 
+  // Choosing a colour means the owner no longer wants the panel style's own accent.
+  document.addEventListener('input', function (event) {
+    var picker = event.target;
+    if (!picker || !picker.matches('.ncli-admin__colour')) {
+      return;
+    }
+    var useDefault = document.getElementById('ncli-accent_color_default');
+    if (useDefault) {
+      useDefault.checked = false;
+    }
+  });
+
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape') {
       return;

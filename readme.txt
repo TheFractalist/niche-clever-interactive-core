@@ -14,21 +14,21 @@ Add a configurable question-and-answer panel grounded in material you prepare in
 
 Niche Clever Interactive adds one configurable public question-and-answer panel to a WordPress site. Visitors can ask questions in ordinary language and receive answers generated through the site administrator's own OpenAI Responses API and File Search configuration.
 
-The plugin is designed for organisations and practitioners who have prepared material that is suitable for visitors to explore. It provides one knowledge profile, three panel styles, configurable visitor-facing copy, bounded owner response guidance, a connection test and daily request safeguards.
+The plugin is designed for organisations and practitioners who have prepared material that is suitable for visitors to explore. It provides one knowledge profile, three panel styles with a choice of panel width and accent colour, configurable visitor-facing copy and unavailable message, bounded owner response guidance, a connection test, daily request safeguards and an optional, off-by-default conversation history that you can review and delete.
 
-Niche Clever Interactive does not create or manage a vector store, upload documents, store an API key in WordPress options, publish provider citations or source links, or maintain a server-side public conversation archive.
+Niche Clever Interactive does not create or manage a vector store, upload documents, store an API key in WordPress options, or publish provider citations or source links. It keeps no record of visitor questions or answers unless you switch on the optional conversation history.
 
-This RC8 package is a local release candidate. It is not a WordPress.org submission, directory listing or public 1.0.0 release.
+This RC9 package is a local release candidate. It is not a WordPress.org submission, directory listing or public 1.0.0 release.
 
 == Installation ==
 
 1. Install the plugin ZIP through the WordPress Plugins screen.
 2. Activate Niche Clever Interactive.
 3. Define `NCLI_OPENAI_API_KEY_DEFAULT` in `wp-config.php` or equivalent secure server configuration. Do not enter an API key into WordPress settings.
-4. In **NCI Interactive**, enter the reference for an existing OpenAI File Search vector store and a corpus version.
+4. In **NC Interactive**, enter the reference for an existing OpenAI File Search vector store and a corpus version.
 5. Save the settings and run the administrator-only connection test.
 6. Enable public answers once the current connection test has passed.
-7. Add the **NCI Interactive** block or `[ncli_interactive]` shortcode to a published page.
+7. Add the **NC Interactive** block or `[ncli_interactive]` shortcode to a published page.
 
 == Frequently Asked Questions ==
 
@@ -42,7 +42,19 @@ Keep it in `NCLI_OPENAI_API_KEY_DEFAULT` in server configuration. The plugin doe
 
 = What information is sent to OpenAI? =
 
-A visitor question and relevant current-browser conversation context are sent to OpenAI when the enabled public panel is used. File Search may use material in the configured vector store to generate the answer.
+Each visitor question is sent to OpenAI when the enabled public panel is used. Earlier questions in the same conversation are not sent with it. File Search may use material in the configured vector store to generate the answer.
+
+= Does it record what visitors ask? =
+
+Not unless you turn it on. Conversation history is off by default. When you enable it in the Conversation tab, each successfully answered question and its answer are stored in your WordPress database with a random conversation identifier and the time. No IP address, account or browser identifier is stored with them. You choose how long they are kept (30 days, 90 days, one year or until you delete them), and you can review them and delete one, several or all of them under NC Interactive > Conversations. Tell your visitors in your privacy notice if you keep questions and answers.
+
+= What happens to my data if I delete the plugin? =
+
+By default nothing is removed, so a reinstall can pick up your settings, request counters and stored conversations. If you turn on "Delete data on uninstall" in the Conversation tab, deleting the plugin from the Plugins screen removes all of them.
+
+= Can I show a credit link? =
+
+There is an optional "Powered by NC Interactive" link under the panel. It is off by default and appears only if you turn it on in Appearance & Limits.
 
 = Why is the panel unavailable after a settings change? =
 
@@ -60,6 +72,10 @@ NCI Pro is planned as a separately supplied extension. This package includes no 
 4. Classic, Minimal and Dark public panel styles.
 
 == Changelog ==
+
+= 1.0.0-rc.9 =
+
+* Local-only candidate: optional conversation history (off by default) with a Conversations screen, delete-one, delete-selected and delete-all controls, configurable retention and an owner-controlled uninstall routine; panel width, accent colour and an opt-in credit line; an editable unavailable message; the administrator menu is now "NC Interactive". Corrects a wiring defect from RC5 that left the public route without its daily request limits.
 
 = 1.0.0-rc.8 =
 

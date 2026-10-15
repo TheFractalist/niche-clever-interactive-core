@@ -16,14 +16,22 @@ Core emits the bounded answer only. It does not configure, store, validate or pu
 
 The C5-only OpenAI Responses/File Search transport is selected solely by a server constant in a disposable fixture. It sends no retrieved File Search result text in its request, retains no provider payload and ignores provider file-citation metadata. The public response never contains a provider citation, vector-store reference, provider payload or credential.
 
+## Conversation history (RC9)
+
+Off by default and enabled only by the site owner in the Conversation tab. When on, each successfully validated answer is stored as one turn in `ncli_core_conversation_turns`: displayed question, displayed answer, an opaque conversation identifier generated in the visitor's browser per page session, the profile identifier, Core version, corpus version, policy fingerprint and UTC timestamp. Nothing else is stored: no IP address (raw or hashed), user or account identifier, cookie, header, nonce, provider payload, citation, retrieved text, credential or administrator test. Refusals, invalid requests and failures are not stored.
+
+Retention is the owner's choice of 30, 90 or 365 days or indefinite (90 by default once enabled). A daily scheduled event deletes older turns, including after recording has been switched off. The owner can review conversations and delete one, several or all of them under NC Interactive > Conversations. Deleted rows may persist in database backups; restoring an older backup can reintroduce them, so scoped deletion should be repeated after a restore.
+
+Because visitors can type personal information into a question and no identifier is stored, a stored conversation cannot be matched to a person automatically. The registered WordPress exporter and eraser therefore return an explanatory message and nothing else. Owners should state in their own privacy notice that questions and answers are kept, why, and for how long.
+
 ## Lifecycle
 
-Activation creates only fresh NCI settings, the NCI schema marker and the prefixed rate-bucket table. Deactivation preserves them for recoverability. This Core release has no uninstall deletion behaviour, archive, transcript persistence or visitor-record export. Existing AskFolio/WPIP options, transients, constants and tables are neither read nor changed.
+Activation creates only fresh NCI settings, the NCI schema marker, the prefixed rate-bucket table and the prefixed conversation table, and schedules a daily retention purge. Deactivation preserves all data for recoverability and stops only the scheduled purge. `uninstall.php` deletes nothing by default; if the owner has enabled "Delete data on uninstall" it removes exactly the NCI options, the two NCI tables and the purge event. This Core release has no visitor-record export. Existing AskFolio/WPIP options, transients, constants and tables are neither read nor changed.
 
-These controls do not replace a site's own privacy notice. A later Pro archive, if separately authorised after Core technical acceptance, owns its opt-in archive and scoped erasure policy.
+These controls do not replace a site's own privacy notice. A later Pro extension, if separately authorised, adds governance (export, retention schedules, scoped erasure) over Core's conversation table; it does not create a second archive.
 
 ## WordPress privacy-policy suggestion
 
-RC8 registers a suggested privacy-policy section through WordPress's privacy-policy helper. It states the actual Core boundary: public questions and relevant current-browser conversation context are sent to OpenAI; File Search may use material in the administrator-selected vector store; Core does not store the API key in WordPress options or keep a server-side public conversation archive; and daily visitor limits use a server-secret HMAC rather than a raw IP address.
+RC9 registers a suggested privacy-policy section through WordPress's privacy-policy helper. It states the actual Core boundary: each public question is sent to OpenAI and earlier questions in the conversation are not; File Search may use material in the administrator-selected vector store; Core does not store the API key in WordPress options; daily visitor limits use a server-secret HMAC rather than a raw IP address; and conversation history is off by default but, if enabled, stores questions and answers with a random conversation identifier until deleted or the retention period ends. The earlier RC8 statement that conversation context is sent was inaccurate (the client sends only the current question) and has been corrected.
 
 The suggested text is not a legal determination or a replacement for the site owner's privacy notice, OpenAI account terms, billing, retention decisions or applicable data-protection obligations.

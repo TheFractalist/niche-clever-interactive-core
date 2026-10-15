@@ -11,6 +11,7 @@ use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Conversation\ConversationRecorder;
 use NicheCleverInteractive\Core\Profile\DefaultProfileResolverV1;
 use NicheCleverInteractive\Core\Security\ChatRequestValidator;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
@@ -22,19 +23,22 @@ final class ChatService
     private PromptPolicy $policy;
     private ChatRequestValidator $requests;
     private ?BudgetGate $budgets;
+    private ?ConversationRecorder $conversations;
 
     public function __construct(
         ResponseTransport $transport,
         ?SecretResolver $secrets = null,
         ?PromptPolicy $policy = null,
         ?ChatRequestValidator $requests = null,
-        ?BudgetGate $budgets = null
+        ?BudgetGate $budgets = null,
+        ?ConversationRecorder $conversations = null
     ) {
         $this->transport = $transport;
         $this->secrets = $secrets ?? new SecretResolver();
         $this->policy = $policy ?? new PromptPolicy();
         $this->requests = $requests ?? new ChatRequestValidator();
         $this->budgets = $budgets;
+        $this->conversations = $conversations;
     }
 
     /** @param mixed $request */
@@ -104,6 +108,20 @@ final class ChatService
         if (!$this->commitReservation($reservation)) {
             return ChatOutcome::failure('provider_failure');
         }
+
+        // Optional, opt-in and best-effort: only a fully validated answer is logged,
+        // and a storage failure never alters the public response.
+        if ($this->conversations !== null) {
+            $this->conversations->recordProviderAnswer(
+                $settings,
+                $validated['conversation_id'],
+                $profile->id()->value(),
+                $validated['question'],
+                $answer,
+                $profile->policyFingerprint()
+            );
+        }
+
         return ChatOutcome::success($answer);
     }
 

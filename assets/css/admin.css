@@ -54,3 +54,14 @@
 .ncli-admin__brand { display: block; flex: 0 0 auto; line-height: 0; }
 .ncli-admin__brand img { display: block; width: auto; height: 36px; max-width: min(180px, 42vw); }
 @media screen and (max-width: 782px) { .ncli-admin { margin-right: 10px; } .ncli-admin__workspace, .ncli-admin__tab-panel { padding: 8px 14px 18px; } .ncli-admin__tabs .nav-tab { margin-bottom: 0; } .ncli-admin__form-table, .ncli-admin__form-table tbody, .ncli-admin__form-table tr, .ncli-admin__form-table th, .ncli-admin__form-table td { display: block; width: auto; } .ncli-admin__form-table th { padding: 16px 0 6px; } .ncli-admin__form-table td { padding: 0 0 16px; } .ncli-admin__form-table tr + tr th, .ncli-admin__form-table tr + tr td { border-top: 0; } .ncli-admin__form-table tr + tr th { border-top: 1px solid #eef1f3; } .ncli-admin__save-bar { gap: 12px; padding: 10px 14px; } .ncli-admin__brand img { height: 32px; } .ncli-admin__comparison-table thead th:nth-child(n+2), .ncli-admin__comparison-table td { width: 88px; } }
+.ncli-admin__section-row td { padding: 26px 0 4px; border-top: 1px solid #d5dbe0; }
+.ncli-admin__section-row h3 { margin: 0 0 6px; color: #123b5a; font-size: 16px; }
+.ncli-admin__colour { width: 56px; height: 34px; padding: 2px; border: 1px solid #8c98a1; border-radius: 6px; background: #fff; vertical-align: middle; }
+.ncli-admin__conversations h2 { margin-bottom: 14px; }
+.ncli-admin__conversation-table { margin: 14px 0; }
+.ncli-admin__conversation-table th.check-column, .ncli-admin__conversation-table td.check-column { padding: 8px 0 0 8px; }
+.ncli-admin__conversation-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ncli-admin__turn { max-width: 820px; margin: 14px 0; padding: 12px 16px; border: 1px solid #d5dbe0; border-radius: 6px; background: #f7fafc; overflow-wrap: anywhere; }
+.ncli-admin__turn-meta { margin: 0 0 6px; color: #5b6770; font-size: 12px; }
+.ncli-admin__turn-question, .ncli-admin__turn-answer { margin: 8px 0; }
+.ncli-admin__pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

@@ -1,6 +1,6 @@
 # Niche Clever Interactive
 
-This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.0-rc.8` candidate is local-only and is not a WordPress.org submission, directory listing or public 1.0.0 release. The repository's internal architecture remains Core-first; no NCI Pro implementation is included.
+This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.0-rc.9` candidate is local-only and is not a WordPress.org submission, directory listing or public 1.0.0 release. The repository's internal architecture remains Core-first; no NCI Pro implementation is included.
 
 ## Current scope
 
@@ -11,6 +11,7 @@ This public repository holds the Niche Clever Interactive WordPress plugin. The 
 - C2 Core-only settings workspace, settings save boundary, shortcodes, block metadata and a responsive public panel.
 - A visual-parity correction reconstructs the single-profile workspace and Classic, Minimal and Dark public panels in NCI code. Only the manifest-recorded NCI logo and administrator banner are directly incorporated; all other visual work is reconstruction.
 - C3's sole public route, POST /ncli/v1/chat, validates a request before the Core-owned completed-File-Search boundary. A newly authored OpenAI Responses/File Search adapter is available only when an explicit server constant enables it in a disposable fixture; no credential, vector-store reference or provider payload is committed.
+- RC9 adds an optional, off-by-default conversation history (new prefixed table, Conversations screen, delete one/selected/all, retention purge), panel width, accent colour, an opt-in credit line, an editable unavailable message, the "NC Interactive" menu and an owner-controlled `uninstall.php`. See `docs/ARCHITECTURE.md` and `docs/PRIVACY-LIFECYCLE.md`.
 - C4's Core-only daily visitor/provider reservations and server-secret scope hashing with a trusted-proxy boundary. See `docs/PRIVACY-LIFECYCLE.md`.
 
 Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, completed-File-Search validation and public answer construction. Pro integration is not implemented or tested here.
@@ -33,6 +34,10 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/c4-connection-test.php
     & 'C:\xampp\php\php.exe' tests/c5-live-transport.php
     & 'C:\xampp\php\php.exe' tests/c5-package.php
+    & 'C:\xampp\php\php.exe' tests/c6-conversation-log.php
+    & 'C:\xampp\php\php.exe' tests/c6-admin-conversations.php
+    & 'C:\xampp\php\php.exe' tests/c6-appearance.php
+    & 'C:\xampp\php\php.exe' tests/c6-uninstall.php
     node --check assets/js/public.js
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }

@@ -2,13 +2,13 @@
 
 ## Core-owned implementation
 
-Core owns the plugin lifecycle, one default profile, fresh ncli_core_settings, schema marker, rate-bucket table, secret resolution, readiness, public route, request order, provider transport, completed-File-Search validation, final answer construction and public error construction. It owns the Core administration workspace and default public panel.
+Core owns the plugin lifecycle, one default profile, fresh ncli_core_settings, schema marker, rate-bucket table, secret resolution, readiness, public route, request order, provider transport, completed-File-Search validation, final answer construction and public error construction. It owns the Core administration workspace and default public panel. From RC9 it also owns the optional conversation history: the `ncli_core_conversation_turns` table, its recording at the end of the validated request path, the Conversations screen, basic deletion, retention purge and `uninstall.php`.
 
 Core API v1 is an extension boundary, not shared implementation. Only its five declared seams may be registered. Core validates all seam output and remains the sole route/provider/credential/retrieval owner.
 
 ## Pro-owned implementation
 
-Pro owns additional profiles, chronology, authored questions and collections, contextual placement, Viewer bridge, cache and archive. It has independent settings, schema and storage. Its future placement must never select a Core profile by fallback, and it must remain inert when Core is unavailable or incompatible.
+Pro owns additional profiles, chronology, authored questions and collections, contextual placement, Viewer bridge, cache and conversation-history governance (export, retention schedules, per-profile scope and audited erasure) layered over Core's table rather than a second archive. It has independent settings and schema for its own features; it will need a Core seam to send earlier turns as provider context. Its future placement must never select a Core profile by fallback, and it must remain inert when Core is unavailable or incompatible.
 
 ## Excluded and retired material
 

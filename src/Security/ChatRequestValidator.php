@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Security;
 
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Conversation\ConversationId;
 
 final class ChatRequestValidator
 {
@@ -17,7 +18,7 @@ final class ChatRequestValidator
 
     /**
      * @param mixed $request
-     * @return array{question: string, profile_id: string, response_preset: string}|null
+     * @return array{question: string, profile_id: string, response_preset: string, conversation_id: ?string}|null
      */
     public function validate($request, CoreSettings $settings): ?array
     {
@@ -40,10 +41,16 @@ final class ChatRequestValidator
             return null;
         }
 
+        $conversation = $request['conversation_id'] ?? null;
+        if ($conversation !== null && !ConversationId::isValid($conversation)) {
+            return null;
+        }
+
         return [
             'question' => $question,
             'profile_id' => $profile,
             'response_preset' => $preset,
+            'conversation_id' => $conversation,
         ];
     }
 }

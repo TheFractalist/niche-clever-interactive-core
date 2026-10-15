@@ -69,7 +69,8 @@ $assert(str_contains($adminCss, 'margin: 16px 0 20px'), 'Administrator chrome mu
 $assert(str_contains($adminCss, '.ncli-admin__save-bar { position: sticky'), 'The blue save treatment must remain sticky.');
 $assert(str_contains($adminCss, 'background: #123b5a'), 'Administrator chrome must retain the dashboard blue treatment.');
 $assert(is_file(dirname(__DIR__) . '/tests/c2-admin-chrome.php'), 'The administrator Chrome must have a focused rendered-markup test.');
-$assert(!str_contains($settingsPage, 'ncli-archive'), 'The Core workspace must not add archive controls.');
+$assert(!str_contains($settingsPage, 'profile_id'), 'The Core workspace must not expose profile selection.');
+$assert(!str_contains($settingsPage, 'Content-Disposition'), 'The Core workspace must not add conversation file export; governance export is Pro.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

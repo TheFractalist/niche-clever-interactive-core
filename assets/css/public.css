@@ -38,6 +38,9 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__answer pre code { padding: 0; background: transparent; }
 .ncli-panel__answer hr { margin: .9rem 0; border: 0; border-top: 1px solid var(--ncli-rule); }
 .ncli-panel__footer { display: flex; justify-content: space-between; gap: 1rem; margin: 1.25rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--ncli-rule); color: var(--ncli-muted); font: 700 .72rem/1.35 var(--ncli-body-font); letter-spacing: .08em; text-transform: uppercase; }
+.ncli-panel__credit { margin: .6rem 0 0; color: var(--ncli-muted); font: 400 .78rem/1.4 var(--ncli-body-font); text-align: right; }
+.ncli-panel__credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.ncli-panel__credit a:focus-visible { outline: 3px solid var(--ncli-accent); outline-offset: 2px; }
 .ncli-limit-notice { max-width: var(--ncli-max); margin: 1rem auto; color: #3c434a; font-size: .95rem; }
 @media (max-width: 600px) { .ncli-panel__frame { padding: 1.25rem; } .ncli-panel__footer { flex-direction: column; } }
 @media (prefers-reduced-motion: reduce) { .ncli-panel *, .ncli-panel *::before, .ncli-panel *::after { scroll-behavior: auto; transition: none !important; } }

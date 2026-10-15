@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0-rc.9 — 15 October 2026
+
+Local-only candidate. Adds an optional conversation history to Core: off by default, stored in a new prefixed `ncli_core_conversation_turns` table, with a Conversations administrator screen (list, detail, delete one, delete selected, delete all with confirmation), an owner-chosen retention period (30, 90 or 365 days, or indefinite) applied by a daily scheduled purge, and WordPress privacy-policy, exporter and eraser registration that states plainly that no identifier is stored. Only successfully validated answers are recorded; refusals and failures never are, and a storage failure cannot change the visitor's response. The public client sends an optional in-memory `conversation_id` so turns can be grouped.
+
+Adds `uninstall.php`, which removes nothing by default and removes exactly the NCI-owned options, tables and scheduled event only when the owner has switched on "Delete data on uninstall". Adds panel width and accent colour (with a contrast safeguard), an opt-in "Powered by NC Interactive" credit line (off by default), and an editable unavailable message. The administrator menu is now "NC Interactive" with Settings and Conversations entries. Help, readme and privacy wording now state accurately that only the current question is sent to OpenAI; sending earlier turns as context is reserved for a future Pro extension.
+
+Corrects a defect present since RC5: `Plugin` passed the budget gate as a sixth argument to a five-parameter `ChatService` constructor, so PHP silently discarded it and the public chat route applied no visitor or provider daily limits. The administrator connection test, which receives its gate separately, was unaffected. A regression test now fails if the gate is not bound. Because the plugin version is part of the connection fingerprint, the administrator connection test must be run again after installing this candidate. No Pro implementation, provider payload change or release is included.
+
 ## 1.0.0-rc.8 — 14 October 2026
 
 Local-only WordPress.org submission-readiness candidate. The public plugin identity is now Niche Clever Interactive, with a `niche-clever-interactive` text domain and translatable fixed administrator, public-panel and REST error strings. The administrator Help tab now provides setup, corpus, provider, safe-use, troubleshooting and FAQ guidance, plus an accessible comparison of NCI Core and the planned separately supplied NCI Pro. It makes no availability claim or external sales link.

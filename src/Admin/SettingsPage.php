@@ -9,6 +9,7 @@ use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
@@ -19,7 +20,7 @@ use NicheCleverInteractive\Core\Support\Translator;
 // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- requestInput() unslashes values and CoreSettings performs bounded validation after AdminActionGuard admits the request.
 final class SettingsPage
 {
-    private const PAGE_SLUG = 'ncli-core';
+    public const PAGE_SLUG = 'ncli-core';
     private const SAVE_ACTION = 'ncli_save_settings';
     private const CONNECTION_TEST_ACTION = 'ncli_test_connection';
 
@@ -49,12 +50,25 @@ final class SettingsPage
         if (function_exists('add_menu_page')) {
             add_menu_page(
                 $this->t('Niche Clever Interactive'),
-                $this->t('NCI Interactive'),
+                $this->t('NC Interactive'),
                 'manage_options',
                 self::PAGE_SLUG,
                 [$this, 'render'],
                 'dashicons-format-chat',
                 58
+            );
+        }
+
+        if (function_exists('add_submenu_page')) {
+            // The first submenu entry shares the parent slug so WordPress labels it "Settings"
+            // instead of repeating the top-level menu title.
+            add_submenu_page(
+                self::PAGE_SLUG,
+                $this->t('Niche Clever Interactive'),
+                $this->t('Settings'),
+                'manage_options',
+                self::PAGE_SLUG,
+                [$this, 'render']
             );
         }
     }
@@ -118,7 +132,7 @@ final class SettingsPage
         } elseif ($tab === 'help') {
             $this->renderHelp();
         } elseif ($tab === 'placement') {
-            echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NCI Interactive block. Contextual and collection placement is planned for NCI Pro.')) . '</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NC Interactive block. Contextual and collection placement is planned for NCI Pro.')) . '</p></section>';
         } else {
             $this->renderForm($settings, $tab);
         }
@@ -200,6 +214,7 @@ final class SettingsPage
             $this->text('presentation_title', 'Panel title', (string) $values['presentation']['title'], 'The visible title above the public question panel. Keep it short and identify what visitors can ask about.');
             $this->text('presentation_headline', 'Panel headline', (string) $values['presentation']['headline'], 'A short supporting line under the title. It should set expectations without promising that every question can be answered.');
             $this->textarea('presentation_introduction', 'Panel introduction', (string) $values['presentation']['introduction'], 'Optional introductory copy shown before the question box. Do not include confidential information, credentials or unpublished source material.');
+            $this->text('presentation_unavailable_message', 'Unavailable message', (string) $values['presentation']['unavailable_message'], 'Shown to visitors in place of the question box while the service is not ready, for example before a passing connection test. Plain text, up to 240 characters. Leave blank to use the default wording.');
         }
 
         if ($tab === 'ai-corpus') {
@@ -214,10 +229,20 @@ final class SettingsPage
             $this->text('presentation_placeholder', 'Question placeholder', (string) $values['presentation']['placeholder'], 'Hint text displayed inside the visitor question field. It should invite suitable questions without exposing internal instructions.');
             $this->text('presentation_footer_left', 'Panel footer left label', (string) $values['presentation']['footer_left'], 'Optional short label displayed in the left side of the panel footer.');
             $this->text('presentation_footer_right', 'Panel footer right label', (string) $values['presentation']['footer_right'], 'Optional short label displayed in the right side of the panel footer.');
+            $this->sectionRow('Conversation history', 'Optionally keep a record of the questions visitors ask and the answers they receive, so you can review and delete them. Nothing is recorded unless you turn this on. No IP address, account or browser identifier is stored with a conversation.');
+            $this->checkbox('conversation_log_enabled', 'Record conversations', (bool) $values['conversation_log']['enabled'], 'When on, each successfully answered public question and its answer are stored in a table on this site. Refused, failed and administrator test requests are never stored. Tell visitors in your privacy notice that questions and answers are kept.', 'Keep a record of public questions and answers on this site.', true);
+            $this->select('conversation_retention_days', 'Keep conversations for', ['30' => '30 days', '90' => '90 days', '365' => '1 year', '0' => 'Until I delete them'], (string) $values['conversation_log']['retention_days'], 'Older conversations are removed automatically once a day. Choose the shortest period that meets your needs. The setting also applies to conversations already stored if you later switch recording off.');
+            $this->checkbox('delete_on_uninstall', 'Delete data on uninstall', (bool) $values['lifecycle']['delete_on_uninstall'], 'By default, deleting the plugin leaves your settings, request counters and conversations in the database so a reinstall can pick them up. Turn this on to remove all of them when the plugin is deleted from the Plugins screen.', 'Delete all Niche Clever Interactive settings, counters and conversations when the plugin is deleted.', true);
+            echo '<tr class="ncli-admin__field"><th scope="row"><span>' . $this->escapeHtml($this->t('Conversation history')) . '</span></th><td><a class="button button-secondary" href="' . $this->escapeAttribute($this->adminUrl(['page' => ConversationsPage::PAGE_SLUG])) . '">' . $this->escapeHtml($this->t('View conversation history')) . '</a></td></tr>';
         }
 
         if ($tab === 'appearance-limits') {
             $this->select('panel_style', 'Panel style', ['classic' => 'Classic', 'minimal' => 'Minimal', 'dark' => 'Dark'], (string) $values['appearance']['panel_style'], 'Choose one of the three built-in panel treatments. All styles keep the same Core question-and-answer behaviour.');
+            $this->select('panel_width', 'Panel width', ['narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide'], (string) $values['appearance']['panel_width'], 'The maximum width of the public panel. It always shrinks to fit narrower screens.');
+            $style = (string) $values['appearance']['panel_style'];
+            $accent = (string) $values['appearance']['accent_color'];
+            $this->accentRow($style, $accent);
+            $this->checkbox('show_credit', 'Credit line', (bool) $values['appearance']['show_credit'], 'Adds a small "Powered by NC Interactive" link under the public panel. It is off by default and appears only if you turn it on.', 'Show "Powered by NC Interactive" under the panel.', true);
             $this->number('visitor_requests_per_day', 'Visitor requests per day', (int) $values['limits']['visitor_requests_per_day'], 'Maximum successful or attempted public questions for one privacy-bounded visitor scope in a UTC day. Use this to protect availability and API spend.');
             $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day'], 'Maximum provider requests across the whole site in a UTC day, including administrator connection tests. Keep this within your OpenAI budget.');
         }
@@ -256,9 +281,9 @@ final class SettingsPage
         echo '<p>' . $this->escapeHtml($this->t('Create or select a vector store in your own OpenAI Platform project, add approved files there and wait for indexing to complete. Then enter the existing store reference and a corpus version in AI & Corpus, save the settings and run the connection test.')) . '</p>';
         echo '<p><a href="' . $this->escapeAttribute($fileSearchUrl) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('OpenAI File Search documentation')) . '</a> · <a href="' . $this->escapeAttribute($vectorStoreUrl) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('OpenAI vector store documentation')) . '</a></p>';
         echo '<h3>' . $this->escapeHtml($this->t('Safe public use')) . '</h3>';
-        echo '<p>' . $this->escapeHtml($this->t('Public questions and relevant conversation context are sent to OpenAI to generate an answer. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.')) . '</p>';
+        echo '<p>' . $this->escapeHtml($this->t('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.')) . '</p>';
         echo '<h3>' . $this->escapeHtml($this->t('What it does not do')) . '</h3>';
-        echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, publish provider citations or source links, or maintain a server-side public conversation archive.')) . '</p>';
+        echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, or publish provider citations or source links. It keeps no record of visitor conversations unless you switch on the optional conversation history in the Conversation tab.')) . '</p>';
         echo '<h3>' . $this->escapeHtml($this->t('Frequently asked questions')) . '</h3>';
         echo '<details><summary>' . $this->escapeHtml($this->t('Where does the API key go?')) . '</summary><p>' . $this->escapeHtml($this->t('Define NCLI_OPENAI_API_KEY_DEFAULT in wp-config.php or equivalent secure server configuration. Never add the key to the plugin settings, page content or a public repository.')) . '</p></details>';
         echo '<details><summary>' . $this->escapeHtml($this->t('Why did my connection test fail?')) . '</summary><p>' . $this->escapeHtml($this->t('Check the server-side key, transport configuration, vector store reference, corpus version and your provider account. The diagnostic screen intentionally does not reveal provider payloads or credentials.')) . '</p></details>';
@@ -290,7 +315,7 @@ final class SettingsPage
         echo '<li><span class="ncli-admin__check">3</span><div><strong>' . $this->escapeHtml($this->t('Test your connection')) . '</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">' . $this->escapeHtml($this->t('Test connection')) . '</button></div></li>';
         echo '<li><span class="ncli-admin__check">4</span><div><strong>' . $this->escapeHtml($this->t('Place your conversation')) . '</strong><p>';
         if ($placements === []) {
-            echo $this->escapeHtml($this->t('Add the NCI Interactive block or')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode to a published page.'));
+            echo $this->escapeHtml($this->t('Add the NC Interactive block or')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode to a published page.'));
         } else {
             echo $this->escapeHtml($this->t('Detected placement:')) . ' ' . implode(', ', $placements) . '.';
         }
@@ -372,7 +397,19 @@ final class SettingsPage
                 'visitor_requests_per_day' => $this->intPost('visitor_requests_per_day', $existing['limits']['visitor_requests_per_day']),
                 'provider_requests_per_day' => $this->intPost('provider_requests_per_day', $existing['limits']['provider_requests_per_day']),
             ],
-            'appearance' => ['panel_style' => $this->stringPost('panel_style', $existing['appearance']['panel_style'])],
+            'appearance' => [
+                'panel_style' => $this->stringPost('panel_style', $existing['appearance']['panel_style']),
+                'panel_width' => $this->stringPost('panel_width', $existing['appearance']['panel_width']),
+                'accent_color' => $this->accentPost($existing['appearance']['accent_color']),
+                'show_credit' => isset($_POST['show_credit']) ? $_POST['show_credit'] === '1' : $existing['appearance']['show_credit'],
+            ],
+            'conversation_log' => [
+                'enabled' => isset($_POST['conversation_log_enabled']) ? $_POST['conversation_log_enabled'] === '1' : $existing['conversation_log']['enabled'],
+                'retention_days' => $this->intPost('conversation_retention_days', $existing['conversation_log']['retention_days']),
+            ],
+            'lifecycle' => [
+                'delete_on_uninstall' => isset($_POST['delete_on_uninstall']) ? $_POST['delete_on_uninstall'] === '1' : $existing['lifecycle']['delete_on_uninstall'],
+            ],
             'presentation' => [
                 'title' => $this->stringPost('presentation_title', $existing['presentation']['title']),
                 'headline' => $this->stringPost('presentation_headline', $existing['presentation']['headline']),
@@ -380,6 +417,7 @@ final class SettingsPage
                 'placeholder' => $this->stringPost('presentation_placeholder', $existing['presentation']['placeholder']),
                 'footer_left' => $this->stringPost('presentation_footer_left', $existing['presentation']['footer_left']),
                 'footer_right' => $this->stringPost('presentation_footer_right', $existing['presentation']['footer_right']),
+                'unavailable_message' => $this->stringPost('presentation_unavailable_message', $existing['presentation']['unavailable_message']),
             ],
             'diagnostics' => $existing['diagnostics'],
         ];
@@ -396,9 +434,27 @@ final class SettingsPage
         return is_string($value) && in_array($value, $valid, true) ? $value : 'setup';
     }
 
-    private function checkbox(string $name, string $label, bool $checked, string $help): void
+    private function checkbox(string $name, string $label, bool $checked, string $help, ?string $boxLabel = null, bool $postUnchecked = false): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help, false) . '</th><td><label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($this->t('Enable public answers for the default Core profile.')) . '</label></td></tr>';
+        $boxLabel = $boxLabel ?? 'Enable public answers for the default Core profile.';
+        // An unchecked box posts nothing; the hidden zero lets an owner switch an option off.
+        $hidden = $postUnchecked ? '<input type="hidden" name="' . $this->escapeAttribute($name) . '" value="0">' : '';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help, false) . '</th><td>' . $hidden . '<label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($this->t($boxLabel)) . '</label></td></tr>';
+    }
+
+    private function sectionRow(string $title, string $description): void
+    {
+        echo '<tr class="ncli-admin__section-row"><td colspan="2"><h3>' . $this->escapeHtml($this->t($title)) . '</h3><p class="description">' . $this->escapeHtml($this->t($description)) . '</p></td></tr>';
+    }
+
+    private function accentRow(string $style, string $accent): void
+    {
+        $picker = $accent !== '' ? $accent : PanelAppearance::defaultAccent($style);
+        $help = 'Overrides the highlight colour of the question button and focus outline. The colour must stay clearly visible against the panel background; if it does not, the style\'s own colour is used instead.';
+        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('accent_color', 'Accent colour', $help) . '</th><td>'
+            . '<input id="ncli-accent_color" class="ncli-admin__colour" type="color" name="accent_color" value="' . $this->escapeAttribute($picker) . '"> '
+            . '<label><input id="ncli-accent_color_default" type="checkbox" name="accent_color_default" value="1"' . ($accent === '' ? ' checked' : '') . '> ' . $this->escapeHtml($this->t('Use the panel style\'s own colour')) . '</label>'
+            . '</td></tr>';
     }
 
     private function text(string $name, string $label, string $value, string $help): void
@@ -455,7 +511,11 @@ final class SettingsPage
             ['Multiple knowledge profiles', false, true],
             ['Chronology and authored questions or collections', false, true],
             ['Contextual placement and reusable content routes', false, true],
-            ['Approved-answer cache and conversation archive facilities', false, true],
+            ['Panel width, accent colour and an optional credit line', true, true],
+            ['Optional conversation history with view and delete controls', true, true],
+            ['Conversation governance: export, retention schedules and scoped erasure', false, true],
+            ['Earlier turns sent as context for follow-up questions', false, true],
+            ['Approved-answer cache', false, true],
         ];
 
         echo '<table class="widefat striped ncli-admin__comparison-table"><thead><tr><th scope="col">' . $this->escapeHtml($this->t('Feature')) . '</th><th scope="col">' . $this->escapeHtml($this->t('NCI Core')) . '</th><th scope="col">' . $this->escapeHtml($this->t('Planned NCI Pro')) . '</th></tr></thead><tbody>';
@@ -502,6 +562,15 @@ final class SettingsPage
     private function stringPost(string $key, string $default = ''): string
     {
         return isset($_POST[$key]) && is_string($_POST[$key]) ? $this->unslash($_POST[$key]) : $default;
+    }
+
+    private function accentPost(string $default): string
+    {
+        if (isset($_POST['accent_color_default']) && $_POST['accent_color_default'] === '1') {
+            return '';
+        }
+
+        return $this->stringPost('accent_color', $default);
     }
 
     private function intPost(string $key, int $default): int

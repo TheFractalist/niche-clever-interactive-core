@@ -10,11 +10,14 @@ final class CoreSettings
 {
     public const OPTION_NAME = 'ncli_core_settings';
     public const SCHEMA_OPTION = 'ncli_core_schema_version';
-    public const SCHEMA_VERSION = 1;
+    public const SCHEMA_VERSION = 2;
+    public const DEFAULT_UNAVAILABLE_MESSAGE = 'This interactive service is not available yet.';
+    public const DEFAULT_RETENTION_DAYS = 90;
     public const DEFAULT_PROFILE_ID = 'default';
 
     private const PRESETS = ['concise', 'balanced', 'detailed'];
     private const PANEL_STYLES = ['classic', 'minimal', 'dark'];
+    private const RETENTION_CHOICES = [0, 30, 90, 365];
 
     /**
      * @var array<string, mixed>
@@ -49,6 +52,16 @@ final class CoreSettings
             ],
             'appearance' => [
                 'panel_style' => 'classic',
+                'panel_width' => 'standard',
+                'accent_color' => '',
+                'show_credit' => false,
+            ],
+            'conversation_log' => [
+                'enabled' => false,
+                'retention_days' => self::DEFAULT_RETENTION_DAYS,
+            ],
+            'lifecycle' => [
+                'delete_on_uninstall' => false,
             ],
             'presentation' => [
                 'title' => 'Ask a question',
@@ -57,6 +70,7 @@ final class CoreSettings
                 'placeholder' => 'What would you like to know?',
                 'footer_left' => 'PREPARED KNOWLEDGE',
                 'footer_right' => 'GROUNDED ANSWERS',
+                'unavailable_message' => self::DEFAULT_UNAVAILABLE_MESSAGE,
             ],
             'diagnostics' => [
                 'connection_test' => [
@@ -78,6 +92,8 @@ final class CoreSettings
         $limits = is_array($input['limits'] ?? null) ? $input['limits'] : [];
         $appearance = is_array($input['appearance'] ?? null) ? $input['appearance'] : [];
         $presentation = is_array($input['presentation'] ?? null) ? $input['presentation'] : [];
+        $conversationLog = is_array($input['conversation_log'] ?? null) ? $input['conversation_log'] : [];
+        $lifecycle = is_array($input['lifecycle'] ?? null) ? $input['lifecycle'] : [];
         $diagnostics = is_array($input['diagnostics'] ?? null) ? $input['diagnostics'] : [];
         $connectionTest = is_array($diagnostics['connection_test'] ?? null) ? $diagnostics['connection_test'] : [];
 
@@ -99,6 +115,21 @@ final class CoreSettings
             throw new InvalidArgumentException('Unknown Core panel style.');
         }
 
+        $width = self::boundedString($appearance['panel_width'] ?? $defaults['appearance']['panel_width'], 16);
+        if (!isset(PanelAppearance::WIDTHS[$width])) {
+            throw new InvalidArgumentException('Unknown Core panel width.');
+        }
+
+        $accent = strtolower(self::boundedString($appearance['accent_color'] ?? '', 7));
+        if ($accent !== '' && !PanelAppearance::isHexColour($accent)) {
+            throw new InvalidArgumentException('The Core accent colour must be a six-digit hexadecimal colour.');
+        }
+
+        $retention = $conversationLog['retention_days'] ?? $defaults['conversation_log']['retention_days'];
+        if (!is_int($retention) || !in_array($retention, self::RETENTION_CHOICES, true)) {
+            throw new InvalidArgumentException('Unknown Core conversation retention period.');
+        }
+
         return new self([
             'enabled' => self::boolValue($input['enabled'] ?? $defaults['enabled']),
             'profile' => [
@@ -114,6 +145,16 @@ final class CoreSettings
             ],
             'appearance' => [
                 'panel_style' => $style,
+                'panel_width' => $width,
+                'accent_color' => $accent,
+                'show_credit' => self::boolValue($appearance['show_credit'] ?? $defaults['appearance']['show_credit']),
+            ],
+            'conversation_log' => [
+                'enabled' => self::boolValue($conversationLog['enabled'] ?? $defaults['conversation_log']['enabled']),
+                'retention_days' => $retention,
+            ],
+            'lifecycle' => [
+                'delete_on_uninstall' => self::boolValue($lifecycle['delete_on_uninstall'] ?? $defaults['lifecycle']['delete_on_uninstall']),
             ],
             'presentation' => [
                 'title' => self::boundedString($presentation['title'] ?? $defaults['presentation']['title'], 120),
@@ -122,6 +163,7 @@ final class CoreSettings
                 'placeholder' => self::boundedString($presentation['placeholder'] ?? $defaults['presentation']['placeholder'], 160),
                 'footer_left' => self::boundedString($presentation['footer_left'] ?? $defaults['presentation']['footer_left'], 120),
                 'footer_right' => self::boundedString($presentation['footer_right'] ?? $defaults['presentation']['footer_right'], 120),
+                'unavailable_message' => self::boundedString($presentation['unavailable_message'] ?? $defaults['presentation']['unavailable_message'], 240),
             ],
             'diagnostics' => [
                 'connection_test' => self::connectionTest($connectionTest),
@@ -200,11 +242,55 @@ final class CoreSettings
     }
 
     /**
-     * @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string}
+     * @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string}
      */
     public function presentation(): array
     {
         return $this->values['presentation'];
+    }
+
+    public function panelStyle(): string
+    {
+        return $this->values['appearance']['panel_style'];
+    }
+
+    public function panelWidth(): string
+    {
+        return $this->values['appearance']['panel_width'];
+    }
+
+    public function accentColor(): string
+    {
+        return $this->values['appearance']['accent_color'];
+    }
+
+    public function showCredit(): bool
+    {
+        return $this->values['appearance']['show_credit'];
+    }
+
+    public function conversationLogEnabled(): bool
+    {
+        return $this->values['conversation_log']['enabled'];
+    }
+
+    /** Zero means keep indefinitely. */
+    public function conversationRetentionDays(): int
+    {
+        return $this->values['conversation_log']['retention_days'];
+    }
+
+    public function deleteOnUninstall(): bool
+    {
+        return $this->values['lifecycle']['delete_on_uninstall'];
+    }
+
+    /** The configured unavailable message, or the default when it was saved blank. */
+    public function unavailableMessage(): string
+    {
+        $message = $this->values['presentation']['unavailable_message'];
+
+        return $message !== '' ? $message : self::DEFAULT_UNAVAILABLE_MESSAGE;
     }
 
     /**

@@ -170,7 +170,31 @@
     }
   }
 
+  // An opaque, in-memory identifier that lets the optional server-side history group
+  // the turns of one page session. It is never written to browser storage.
+  function conversationId(panel) {
+    var existing = panel.getAttribute('data-ncli-conversation');
+    if (existing) {
+      return existing;
+    }
+    if (!window.crypto || !window.crypto.getRandomValues) {
+      return '';
+    }
+    var bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    var id = Array.prototype.map.call(bytes, function (byte) {
+      return ('0' + byte.toString(16)).slice(-2);
+    }).join('');
+    panel.setAttribute('data-ncli-conversation', id);
+    return id;
+  }
+
+  function conversationPayload(question, id) {
+    return id ? { question: question, conversation_id: id } : { question: question };
+  }
+
   function clearTranscript(panel) {
+    panel.removeAttribute('data-ncli-conversation');
     var transcript = panel.querySelector('.ncli-panel__transcript');
     var reset = panel.querySelector('.ncli-panel__reset');
     if (transcript) {
@@ -230,7 +254,7 @@
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ question: question })
+      body: JSON.stringify(conversationPayload(question, conversationId(panel)))
     }).then(function (response) {
       return response.json();
     }).then(function (payload) {

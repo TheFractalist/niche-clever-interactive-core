@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "ncli/interactive",
-  "title": "NCI Interactive",
+  "title": "NC Interactive",
   "category": "widgets",
   "description": "Displays the Niche Clever Interactive question panel.",
   "textdomain": "niche-clever-interactive",
