@@ -27,17 +27,23 @@ Since RC5 `Plugin` passed the budget gate as a sixth argument to a five-paramete
 | Table creation, SQL, scheduled purge, upgrade from RC8 on WordPress | Requires verification in the disposable fixture |
 | Administrator and public browser review (desktop and 390px, keyboard order) | Requires verification |
 | Plugin deletion with the option off and on | Requires verification |
-| Plugin Check 2.1.0 on the canonical ZIP | **Not run.** The development container cannot reach wordpress.org or GitHub downloads and has no running Docker daemon. Requires the Windows fixture. |
+| Plugin Check 2.1.0 on the installed RC9 runtime | Run by the owner on the Test-Site: 1 error (`trunk_stable_tag`), 5 warnings, none in RC9-only files. Package provenance and file-for-file match with `02c24b6` not yet confirmed. Not run in the development container (no wordpress.org/GitHub access, no Docker daemon). |
 | Live provider behaviour | Not tested by the agent; owner tests manually |
 
-## Plugin Check: RC8 baseline supplied 15 October 2026
+## Plugin Check on the installed RC9 runtime (owner run, 15 October 2026)
 
-A Plugin Check report generated on 15 October 2026 (14:14:32) was supplied from the Test-Site install. The owner confirmed it was run on **RC8**. It lists one error (`trunk_stable_tag`) and five warnings (the OpenAI `DirectIntegration` warning and four `UnescapedDBParameter` warnings at `WordPressBucketStore.php` lines 23, 28, 35 and 56), identical to the RC8 record in `docs/WORDPRESS-ORG-READINESS-RC8.md`. It is a baseline and **is not RC9 evidence**; Plugin Check on RC9 remains outstanding.
+Plugin Check was run by the owner on the Test-Site install (report generated 15 October 2026, 14:14:32). The owner's Plugins-screen screenshot shows `Version 1.0.0-rc.9` as the only installed version. Result: one error and five warnings, none in an RC9-only file.
 
-What to expect on RC9 (a prediction, not a result):
+| Finding | File | Status |
+| --- | --- | --- |
+| Error `trunk_stable_tag` | `readme.txt` | Deliberate for the release-candidate period; a final-submission gate |
+| Warning `AIProvider.DirectIntegration` (`api.openai.com`) | `src/AI/Transport/OpenAiResponsesFileSearchTransport.php:13` | Deliberate: the Responses API is used directly; the WordPress AI Client is roadmap-only |
+| Four warnings `DirectDB.UnescapedDBParameter` | `src/Budget/WordPressBucketStore.php` lines 23, 28, 35, 56 | Existing prepared, row-locked rate-limit SQL, as reviewed for RC5 to RC8 |
 
-- The same `trunk_stable_tag` error and OpenAI warning, both deliberate: the release-candidate readme keeps `Stable tag: trunk` until a final numeric release, and the Responses API is used directly with the WordPress AI Client roadmap-only.
-- The same four rate-store warnings.
-- Probably similar `UnescapedDBParameter` warnings for `WordPressConversationStore` and the `DROP TABLE` in `uninstall.php`, which build SQL with an interpolated table name in the same way as the rate store.
+This is the same set as the RC8 record. An earlier version of this section called the report an RC8 baseline because of that match; that was an inference, and it was wrong. The owner confirms RC9 was installed.
 
-If those new warnings appear, the available remedy is the `%i` identifier placeholder (supported from WordPress 6.2; the plugin requires 6.5), tested against a real MariaDB before committing because the rate limiter is security-sensitive. That change has not been made.
+Caveats that remain:
+
+- The installed files have not been independently compared with commit `02c24b6`. The installed folder should contain exactly 76 files, including `uninstall.php` and `src/Conversation/`; this should be confirmed on the Test-Site, and the package's provenance (canonical `package-core.ps1` build or otherwise) is not recorded here.
+- Plugin Check reported nothing for `WordPressConversationStore`, `ConversationsPage` or `uninstall.php`, although the conversation store builds SQL with an interpolated table name in the same way as the rate store. The reason is not established. An attempt to reproduce the sniff in the development container failed on a dependency conflict, so there is no local explanation. The absence of findings should be read as "none reported", not as proof the pattern is clean.
+- If a reviewer later flags the conversation store or the rate store, the available remedy is the `%i` identifier placeholder (WordPress 6.2 and later; the plugin requires 6.5), tested against a real MariaDB first because the rate limiter is security-sensitive. No such change has been made.
