@@ -25,6 +25,8 @@ final class ExtensionScreens
     private const CAPABILITY = 'manage_options';
 
     private ExtensionRegistryV1 $registry;
+    /** @var array<string, string> Hook suffix => screen id, for the pages Core added. */
+    private array $hooks = [];
 
     public function __construct(ExtensionRegistryV1 $registry)
     {
@@ -39,6 +41,7 @@ final class ExtensionScreens
 
         // After SettingsPage (10) and ConversationsPage (11) have created the menu.
         add_action('admin_menu', [$this, 'addMenus'], 12);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
     }
 
     /** Core-owned, translatable titles; an extension cannot choose its own label. */
@@ -64,7 +67,7 @@ final class ExtensionScreens
         }
 
         foreach ($this->screenIds() as $screenId) {
-            add_submenu_page(
+            $hook = add_submenu_page(
                 SettingsPage::PAGE_SLUG,
                 self::label($screenId),
                 self::label($screenId),
@@ -74,7 +77,20 @@ final class ExtensionScreens
                     $this->render($screenId);
                 }
             );
+            if (is_string($hook)) {
+                $this->hooks[$hook] = $screenId;
+            }
         }
+    }
+
+    /** Loads the same stylesheet Core's own screens use, so extension screens look identical. */
+    public function enqueueAssets(string $hook): void
+    {
+        if (!isset($this->hooks[$hook]) || !function_exists('wp_enqueue_style') || !function_exists('plugins_url')) {
+            return;
+        }
+
+        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
     }
 
     /**
@@ -118,10 +134,13 @@ final class ExtensionScreens
             return;
         }
 
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1>' . $this->escape(self::label($screenId)) . '</h1>';
+        $ids = $this->screenIds();
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->escape(self::label($screenId)) . '</h1>';
+        $this->masthead();
+        $this->tabs($ids, $screenId);
 
         $extension = $this->registry->implementation(self::SEAM);
-        if (!in_array($screenId, $this->screenIds(), true) || !$extension instanceof WorkspaceExtensionV1) {
+        if (!in_array($screenId, $ids, true) || !$extension instanceof WorkspaceExtensionV1) {
             $this->notice();
             echo '</div>';
             return;
@@ -143,7 +162,44 @@ final class ExtensionScreens
             return;
         }
 
-        echo $body . '</div>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__extension">' . $body . '</section></div>';
+    }
+
+    private function masthead(): void
+    {
+        $path = 'assets/images/ncli-admin-banner.png';
+        $url = function_exists('plugins_url') ? (string) plugins_url($path, dirname(__DIR__, 2) . '/niche-clever-interactive-core.php') : '';
+        $file = dirname(__DIR__, 2) . '/' . $path;
+        $modified = is_file($file) ? (int) filemtime($file) : 0;
+        if ($url !== '' && $modified > 0) {
+            $url .= (str_contains($url, '?') ? '&' : '?') . 'ver=' . $modified;
+        }
+
+        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->attribute($url) . '" alt="" width="1544" height="500"></header>';
+    }
+
+    /**
+     * The same tab bar Core's other screens use: a way back to Settings, then one tab per
+     * screen the extension offers, in the order it declared them.
+     *
+     * @param list<string> $ids
+     */
+    private function tabs(array $ids, string $current): void
+    {
+        $admin = static fn (string $page): string => function_exists('admin_url') ? (string) admin_url('admin.php?page=' . $page) : 'admin.php?page=' . $page;
+
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attribute(Translator::text('Niche Clever Interactive Premium screens')) . '">';
+        echo '<a class="nav-tab" href="' . $this->attribute($admin(SettingsPage::PAGE_SLUG)) . '">' . $this->escape(Translator::text('Settings')) . '</a>';
+        foreach ($ids as $id) {
+            $active = $id === $current;
+            echo '<a class="nav-tab' . ($active ? ' nav-tab-active' : '') . '" href="' . $this->attribute($admin(self::PAGE_PREFIX . $id)) . '"' . ($active ? ' aria-current="page"' : '') . '>' . $this->escape(self::label($id)) . '</a>';
+        }
+        echo '</nav>';
+    }
+
+    private function attribute(string $value): string
+    {
+        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
     private function notice(): void

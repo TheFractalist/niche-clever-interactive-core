@@ -79,3 +79,15 @@
 .ncli-admin__turn-meta { margin: 0 0 6px; color: #5b6770; font-size: 12px; }
 .ncli-admin__turn-question, .ncli-admin__turn-answer { margin: 8px 0; }
 .ncli-admin__pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ncli-admin__extension h2 { margin: 26px 0 10px; }
+.ncli-admin__extension h2:first-child { margin-top: 8px; }
+.ncli-admin__extension .widefat { margin: 12px 0; }
+.ncli-admin__extension .widefat td, .ncli-admin__extension .widefat th { vertical-align: top; }
+.ncli-admin__inline-form { display: inline; margin: 0; }
+.ncli-admin__preline { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ncli-admin__check-list label { display: block; margin: 4px 0; }
+.ncli-admin__extension form + form { margin-top: 0; }
+.ncli-admin__extension .ncli-admin__save-bar { margin-top: 16px; }
+.ncli-admin__extension .ncli-admin__form-table { max-width: 100%; }
+.ncli-admin__extension .button-link-delete { color: #b32d2e; }
+.ncli-admin__extension code { padding: 1px 5px; border-radius: 4px; background: #eef3f6; }

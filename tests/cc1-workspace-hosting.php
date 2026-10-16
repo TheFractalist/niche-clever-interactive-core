@@ -105,7 +105,12 @@ $assert($ncliMenus['ncli-ext-profiles']['cap'] === 'manage_options', 'Pages requ
 $assert($ncliMenus['ncli-ext-profiles']['title'] === 'Profiles', 'The title comes from Core.');
 
 $out = $render($good, 'profiles');
-$assert(str_contains($out, '<h1>Profiles</h1>') && str_contains($out, 'screen profiles nonce nonce-for-ncli_ext_profiles'), 'The extension body renders with a Core-issued nonce.');
+$assert(str_contains($out, '<h1 class="screen-reader-text">Profiles</h1>') && str_contains($out, 'screen profiles nonce nonce-for-ncli_ext_profiles'), 'The extension body renders with a Core-issued nonce.');
+// CC-9: the same chrome as Core's own screens.
+$assert(str_contains($out, 'class="ncli-admin__masthead"') && str_contains($out, 'class="nav-tab-wrapper ncli-admin__tabs"'), 'An extension screen carries Core\'s masthead and tab bar.');
+$assert(str_contains($out, 'nav-tab nav-tab-active" href="admin.php?page=ncli-ext-profiles" aria-current="page">Profiles</a>') && str_contains($out, 'href="admin.php?page=ncli-ext-archive">Conversation governance</a>') && str_contains($out, 'href="admin.php?page=ncli-core">Settings</a>'), 'The tab bar links back to Settings, lists every screen and marks the current one.');
+$assert(str_contains($out, '<section class="ncli-admin__tab-panel ncli-admin__extension">') && substr_count($out, '<section') === 1, 'The extension body sits in Core\'s tab panel.');
+$assert(!str_contains($render($none, 'profiles'), '<section'), 'An unavailable screen shows no panel.');
 $ctx = $ext->contexts[0];
 $assert($ctx->isCoreAuthorised() && $ctx->screenId() === 'profiles' && $ctx->nonceAction() === 'ncli_ext_profiles', 'The context carries the screen id and nonce action.');
 

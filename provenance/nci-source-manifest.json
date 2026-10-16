@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc7.1",
+  "manifest_version": "2026-10-16-cc9.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -309,6 +309,17 @@
       "method_scope": "guarded administrator-only archive facade (count, page, scoped delete) for an installed extension; per-profile recording override and per-profile retention schedules applied by Core's own purge with fail-closed fallback to Core's schedule; prepared-statement criteria SQL; no second archive, no visitor identifiers, no Premium code, no AskFolio material; unchanged behaviour with no extension",
       "decision_reference": "NCI-CD-010 and NCI-CD-014 (Premium plan CC-7), 2026-10-16 owner approval",
       "test_evidence": ["tests/cc7-governance.php", "tests/c6-conversation-log.php", "tests/c6-admin-conversations.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc9-extension-screen-chrome",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Admin/ExtensionScreens.php, assets/css/admin.css, tests/cc1-workspace-hosting.php, docs/ARCHITECTURE.md",
+      "method_scope": "extension screens load Core's admin stylesheet and render inside Core's existing masthead, tab bar and tab panel, so they look the same as Core's own screens; a few additional utility classes in the existing stylesheet; the existing owner-supplied nci-admin-banner asset is reused; no new asset, no Premium code, no AskFolio material",
+      "decision_reference": "2026-10-16 owner instruction to align the Premium admin look with Core",
+      "test_evidence": ["tests/cc1-workspace-hosting.php"],
       "direct_incorporation": false
     }
   ]
