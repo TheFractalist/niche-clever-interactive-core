@@ -179,7 +179,7 @@ $turn = new CompletedTurnV1('c1', $profile, $at, 'Q', 'A', '1.0.0', null, 'corpu
 $assert($turn->question() === 'Q' && $turn->answer() === 'A' && $turn->sourceKind() === 'cache' && $turn->proVersion() === null && $turn->profileId()->value() === 'profile_1' && $turn->completedAt() === $at && $turn->conversationId() === 'c1' && $turn->coreVersion() === '1.0.0' && $turn->corpusVersion() === 'corpus', 'Completed-turn accessors return the stored values.');
 
 // Capability list is truthful.
-$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events'], 'workspace_hosting is advertised now that Core hosts screens.');
+$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events', 'conversation_governance'], 'workspace_hosting is advertised now that Core hosts screens.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

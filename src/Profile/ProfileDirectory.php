@@ -7,7 +7,9 @@ namespace NicheCleverInteractive\Core\Profile;
 use NicheCleverInteractive\Core\Api\V1\Contracts\AnswerCacheV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ChronologyProviderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\CompletedTurnRecorderV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationArchiveV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationContextV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationGovernanceV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\EvidenceCitationsV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\PanelColoursProviderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;
@@ -104,6 +106,73 @@ final class ProfileDirectory
     public const MAX_CHRONOLOGY_FACTS = 20;
     public const MAX_EARLIER_TURNS = 10;
     public const MAX_LINKS = 5;
+    private const RETENTION_CHOICES = [0, 30, 90, 365];
+
+    /** Hands the guarded archive to a governance extension, once, if one is registered. */
+    public function attachArchive(ConversationArchiveV1 $archive): void
+    {
+        $governance = $this->registry !== null ? $this->registry->implementation('conversation_governance') : null;
+        if (!$governance instanceof ConversationGovernanceV1) {
+            return;
+        }
+
+        try {
+            $governance->attach($archive);
+        } catch (\Throwable $exception) {
+            // A failing extension loses its screens' data; Core's history and purge are unaffected.
+        }
+    }
+
+    /**
+     * An extension's explicit decision whether this profile's answers are recorded: true or false
+     * overrides Core's setting, null (also for any fault or non-boolean result) leaves it in charge.
+     */
+    public function recordingOverride(string $profileId): ?bool
+    {
+        $governance = $this->registry !== null ? $this->registry->implementation('conversation_governance') : null;
+        if (!$governance instanceof ConversationGovernanceV1) {
+            return null;
+        }
+
+        try {
+            $decision = $governance->recordingFor(new ProfileIdV1($profileId));
+
+            return is_bool($decision) ? $decision : null;
+        } catch (\Throwable $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * Per-profile retention that differs from Core's schedule: profile id => 0, 30, 90 or 365 days
+     * (0 keeps until deleted). Any fault, a non-array, a wrong key or value, or more than 100
+     * entries yields none, so Core's own schedule applies to every profile; it never extends it.
+     *
+     * @return array<string, int>
+     */
+    public function retentionOverrides(): array
+    {
+        $governance = $this->registry !== null ? $this->registry->implementation('conversation_governance') : null;
+        if (!$governance instanceof ConversationGovernanceV1) {
+            return [];
+        }
+
+        try {
+            $overrides = $governance->retentionOverrides();
+            if (!is_array($overrides) || count($overrides) > 100) {
+                return [];
+            }
+            foreach ($overrides as $profileId => $days) {
+                if (!is_string($profileId) || preg_match('/^[a-z0-9][a-z0-9_-]{0,63}$/D', $profileId) !== 1 || !is_int($days) || !in_array($days, self::RETENTION_CHOICES, true)) {
+                    return [];
+                }
+            }
+
+            return $overrides;
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
 
     /**
      * Owner colours for a panel's question and answer blocks, for the default or a named profile.

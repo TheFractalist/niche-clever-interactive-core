@@ -306,7 +306,7 @@ $assert(str_contains($block, '"profile"'), 'The block declares a profile attribu
 $assert(str_contains((string) file_get_contents(dirname(__DIR__) . '/src/Plugin.php'), 'new ChatService(') && str_contains((string) file_get_contents(dirname(__DIR__) . '/src/Plugin.php'), '$failureLog, $profiles)'), 'Plugin binds the profile directory into ChatService.');
 
 // Capability list.
-$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events'], 'profile_resolution is advertised.');
+$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events', 'conversation_governance'], 'profile_resolution is advertised.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

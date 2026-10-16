@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc8.1",
+  "manifest_version": "2026-10-16-cc7.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -298,6 +298,17 @@
       "method_scope": "optional validated question and answer block colours for the default or a named profile via fixed CSS custom properties with a 3:1 readability safeguard; data-ncli-panel marker; ncli:ask and ncli:prefill page events that fill the panel form without bypassing its route, limits or validation; behaviour unchanged when no extension is installed; no Premium code, no AskFolio material",
       "decision_reference": "NCI-CD-014 (Premium plan CC-8), 2026-10-16 owner approval",
       "test_evidence": ["tests/cc8-presentation.php", "tests/c5-public-js.mjs", "tests/c2-render.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc7-conversation-governance",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "ConversationGovernanceV1, ConversationArchiveV1, ArchivedTurnV1, GuardedConversationArchive, ConversationCriteriaStore, WordPressConversationStore criteria methods, ConversationRecorder, ConversationPurge, ProfileDirectory governance helpers, Plugin wiring, docs/ARCHITECTURE.md",
+      "method_scope": "guarded administrator-only archive facade (count, page, scoped delete) for an installed extension; per-profile recording override and per-profile retention schedules applied by Core's own purge with fail-closed fallback to Core's schedule; prepared-statement criteria SQL; no second archive, no visitor identifiers, no Premium code, no AskFolio material; unchanged behaviour with no extension",
+      "decision_reference": "NCI-CD-010 and NCI-CD-014 (Premium plan CC-7), 2026-10-16 owner approval",
+      "test_evidence": ["tests/cc7-governance.php", "tests/c6-conversation-log.php", "tests/c6-admin-conversations.php", "tests/contract.php"],
       "direct_incorporation": false
     }
   ]

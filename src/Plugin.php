@@ -15,6 +15,7 @@ use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Configuration\TransportMode;
 use NicheCleverInteractive\Core\Conversation\ConversationPurge;
+use NicheCleverInteractive\Core\Conversation\GuardedConversationArchive;
 use NicheCleverInteractive\Core\Conversation\ConversationRecorder;
 use NicheCleverInteractive\Core\Conversation\ConversationTable;
 use NicheCleverInteractive\Core\Conversation\WordPressConversationStore;
@@ -43,6 +44,7 @@ final class Plugin
     private ConversationPurge $conversationPurge;
     private ExtensionScreens $extensionScreens;
     private ProfileDirectory $profiles;
+    private WordPressConversationStore $conversationStore;
     private ProfileConnectionTest $profileTest;
 
     private function __construct()
@@ -61,8 +63,9 @@ final class Plugin
         $this->settingsPage = new SettingsPage(null, $connectionTest);
         $conversationStore = new WordPressConversationStore();
         $this->conversationsPage = new ConversationsPage(null, $conversationStore);
-        $this->conversationPurge = new ConversationPurge($conversationStore);
-        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore), $failureLog, $profiles));
+        $this->conversationPurge = new ConversationPurge($conversationStore, null, $profiles);
+        $this->conversationStore = $conversationStore;
+        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore, null, $profiles), $failureLog, $profiles));
     }
 
     public static function register(string $pluginFile): void
@@ -108,6 +111,9 @@ final class Plugin
         if (function_exists('do_action')) {
             do_action('ncli_core_api_v1_ready', $this->extensions);
         }
+
+        // A governance extension (export, per-profile retention, erasure) gets Core's guarded archive, never the table.
+        $this->profiles->attachArchive(new GuardedConversationArchive($this->conversationStore));
     }
 
     public static function activate(): void

@@ -8,7 +8,7 @@ use RuntimeException;
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- The conversation log is an administrator-managed NCI table; reads and deletes must reflect current rows and cannot use the object cache.
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Every value is passed through $wpdb->prepare(); the table identifier is derived solely from $wpdb->prefix and a constant suffix.
-final class WordPressConversationStore implements ConversationStore
+final class WordPressConversationStore implements ConversationStore, ConversationCriteriaStore
 {
     public function record(ConversationTurn $turn): void
     {
@@ -148,6 +148,121 @@ final class WordPressConversationStore implements ConversationStore
         }
 
         return (int) $result;
+    }
+
+    public function countMatching(?string $profileId, ?string $fromUtc, ?string $toUtc): int
+    {
+        [$wpdb, $table] = $this->database();
+        [$where, $args] = $this->criteria($profileId, $fromUtc, $toUtc);
+        $sql = "SELECT COUNT(*) FROM {$table} WHERE {$where}";
+
+        return (int) $wpdb->get_var($args === [] ? $sql : $wpdb->prepare($sql, ...$args));
+    }
+
+    public function pageMatching(?string $profileId, ?string $fromUtc, ?string $toUtc, int $afterId, int $limit): array
+    {
+        [$wpdb, $table] = $this->database();
+        [$where, $args] = $this->criteria($profileId, $fromUtc, $toUtc);
+        $args[] = max(0, $afterId);
+        $args[] = max(1, $limit);
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table} WHERE {$where} AND id > %d ORDER BY id ASC LIMIT %d", ...$args), ARRAY_A);
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        $page = [];
+        foreach ($rows as $row) {
+            try {
+                $page[] = [
+                    'id' => (int) $row['id'],
+                    'turn' => new ConversationTurn(
+                        (string) $row['conversation_id'],
+                        (string) $row['profile_id'],
+                        (string) $row['question'],
+                        (string) $row['answer'],
+                        (string) $row['core_version'],
+                        (string) $row['corpus_version'],
+                        (string) $row['policy_fingerprint'],
+                        (string) $row['created_at']
+                    ),
+                ];
+            } catch (\InvalidArgumentException $exception) {
+                continue;
+            }
+        }
+
+        return $page;
+    }
+
+    public function deleteMatching(string $profileId, ?string $fromUtc, ?string $toUtc, int $limit): int
+    {
+        [$wpdb, $table] = $this->database();
+        [$where, $args] = $this->criteria($profileId, $fromUtc, $toUtc);
+        $args[] = max(1, $limit);
+        $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE {$where} ORDER BY id ASC LIMIT %d", ...$args));
+        if ($result === false) {
+            throw new RuntimeException('Conversation deletion failed.');
+        }
+
+        return (int) $result;
+    }
+
+    public function purgeProfileOlderThan(string $profileId, string $cutoffUtc, int $limit): int
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $cutoffUtc) !== 1 || preg_match('/^[a-z0-9][a-z0-9_-]{0,63}$/D', $profileId) !== 1) {
+            return 0;
+        }
+
+        [$wpdb, $table] = $this->database();
+        $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE profile_id = %s AND created_at < %s ORDER BY id ASC LIMIT %d", $profileId, $cutoffUtc, max(1, $limit)));
+        if ($result === false) {
+            throw new RuntimeException('Conversation purge failed.');
+        }
+
+        return (int) $result;
+    }
+
+    public function purgeOlderThanExcluding(array $profileIds, string $cutoffUtc, int $limit): int
+    {
+        $profiles = array_values(array_unique(array_filter($profileIds, static fn ($id): bool => is_string($id) && preg_match('/^[a-z0-9][a-z0-9_-]{0,63}$/D', $id) === 1)));
+        if ($profiles === [] || count($profiles) > 200) {
+            return $profiles === [] ? $this->purgeOlderThan($cutoffUtc, $limit) : 0;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $cutoffUtc) !== 1) {
+            return 0;
+        }
+
+        [$wpdb, $table] = $this->database();
+        $placeholders = implode(', ', array_fill(0, count($profiles), '%s'));
+        $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE created_at < %s AND profile_id NOT IN ({$placeholders}) ORDER BY id ASC LIMIT %d", $cutoffUtc, ...array_merge($profiles, [max(1, $limit)])));
+        if ($result === false) {
+            throw new RuntimeException('Conversation purge failed.');
+        }
+
+        return (int) $result;
+    }
+
+    /**
+     * @return array{0: string, 1: list<string>} WHERE clause with placeholders, and its arguments
+     */
+    private function criteria(?string $profileId, ?string $fromUtc, ?string $toUtc): array
+    {
+        $clauses = ['1 = 1'];
+        $args = [];
+        if ($profileId !== null) {
+            $clauses[] = 'profile_id = %s';
+            $args[] = $profileId;
+        }
+        if ($fromUtc !== null) {
+            $clauses[] = 'created_at >= %s';
+            $args[] = $fromUtc;
+        }
+        if ($toUtc !== null) {
+            $clauses[] = 'created_at <= %s';
+            $args[] = $toUtc;
+        }
+
+        return [implode(' AND ', $clauses), $args];
     }
 
     /** @return array{0: object, 1: string} */

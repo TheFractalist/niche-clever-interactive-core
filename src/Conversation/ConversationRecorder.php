@@ -6,6 +6,7 @@ namespace NicheCleverInteractive\Core\Conversation;
 
 use NicheCleverInteractive\Core\Api\V1\Support\CompletedTurnEligibilityV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 
 /**
  * Records a successfully validated provider answer when the owner has opted in.
@@ -14,11 +15,13 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 final class ConversationRecorder
 {
     private ConversationStore $store;
+    private ?ProfileDirectory $policy;
     /** @var callable */
     private $clock;
 
-    public function __construct(ConversationStore $store, ?callable $clock = null)
+    public function __construct(ConversationStore $store, ?callable $clock = null, ?ProfileDirectory $policy = null)
     {
+        $this->policy = $policy;
         $this->store = $store;
         $this->clock = $clock ?? 'time';
     }
@@ -60,7 +63,9 @@ final class ConversationRecorder
         string $policyFingerprint,
         ?string $corpusVersion
     ): bool {
-        if (!$settings->conversationLogEnabled() || !CompletedTurnEligibilityV1::shouldRecord($outcome)) {
+        // An extension's explicit per-profile decision wins over Core's setting; otherwise Core's setting decides.
+        $override = $this->policy !== null ? $this->policy->recordingOverride($profileId) : null;
+        if (!($override ?? $settings->conversationLogEnabled()) || !CompletedTurnEligibilityV1::shouldRecord($outcome)) {
             return false;
         }
 
