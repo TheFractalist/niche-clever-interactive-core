@@ -39,6 +39,21 @@ final class CacheKeyV1
         $this->responsePreset = $responsePreset;
     }
 
+    public function questionDigest(): string
+    {
+        return $this->questionDigest;
+    }
+
+    public function profileId(): ProfileIdV1
+    {
+        return $this->profileId;
+    }
+
+    public function responsePreset(): string
+    {
+        return $this->responsePreset;
+    }
+
     public function identity(): string
     {
         return hash(

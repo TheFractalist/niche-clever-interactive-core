@@ -9,6 +9,10 @@
     "title": {
       "type": "string",
       "default": "Ask Niche Clever"
+    },
+    "profile": {
+      "type": "string",
+      "default": ""
     }
   },
   "render": "file:./render.php"

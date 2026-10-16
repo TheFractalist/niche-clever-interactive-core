@@ -31,7 +31,7 @@ All source changes belong in this repository (`niche-clever-interactive-core`), 
 
 ## Change discipline
 
-Make the smallest coherent change within the currently authorised package. Keep PHP compatible with PHP 8.1. Treat the six API seams as provisional contracts, not an invitation to implement either side.
+Make the smallest coherent change within the currently authorised package. Keep PHP compatible with PHP 8.1. Treat the API seams as provisional contracts, not an invitation to implement either side.
 
 Before committing, inspect git status, the staged diff and the source/asset audit required by SOURCE-ALLOWLIST.md. Do not use broad staging.
 

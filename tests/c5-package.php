@@ -13,8 +13,8 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $assert(str_contains($bootstrap, "Plugin Name: Niche Clever Interactive"), 'The plugin header must use the public Niche Clever Interactive name.');
-$assert(str_contains($bootstrap, "Version: 1.0.0-rc.9"), 'The plugin header must identify the current local-only candidate version.');
-$assert(str_contains($bootstrap, "NCLI_CORE_VERSION = '1.0.0-rc.9'"), 'The runtime version must match the plugin header.');
+$assert(str_contains($bootstrap, "Version: 1.0.0-rc.10"), 'The plugin header must identify the current local-only candidate version.');
+$assert(str_contains($bootstrap, "NCLI_CORE_VERSION = '1.0.0-rc.10'"), 'The runtime version must match the plugin header.');
 $assert(str_contains($bootstrap, "Text Domain: niche-clever-interactive"), 'The plugin header must use the planned public text domain.');
 $assert(is_file($root . '/CHANGELOG.md'), 'The candidate must provide a changelog.');
 $assert(is_file($root . '/readme.txt'), 'The candidate must provide WordPress package metadata.');

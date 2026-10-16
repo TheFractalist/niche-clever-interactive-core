@@ -195,12 +195,53 @@
     return { turn: turn, answer: answerElement };
   }
 
-  function completeTurn(pending, answer) {
+  // Owner-approved links only. Each one must be a plain https address and a short title; anything
+  // else is skipped. Titles are set as text, never parsed, and links open without referrer access.
+  function renderApprovedLinks(links) {
+    if (!Array.isArray(links) || links.length === 0) {
+      return null;
+    }
+    var list = document.createElement('ul');
+    list.className = 'ncli-panel__sources-list';
+    links.slice(0, 5).forEach(function (link) {
+      if (!link || typeof link.title !== 'string' || typeof link.url !== 'string') {
+        return;
+      }
+      if (link.title.length === 0 || link.title.length > 160 || link.url.length > 2000 || !/^https:\/\/[^\s"<>]+$/i.test(link.url)) {
+        return;
+      }
+      var item = document.createElement('li');
+      var anchor = document.createElement('a');
+      anchor.href = link.url;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+      anchor.textContent = link.title;
+      item.appendChild(anchor);
+      list.appendChild(item);
+    });
+    if (!list.firstChild) {
+      return null;
+    }
+    var wrapper = document.createElement('div');
+    wrapper.className = 'ncli-panel__sources';
+    var heading = document.createElement('p');
+    heading.className = 'ncli-panel__sources-title';
+    heading.textContent = text('sourcesLabel', 'Sources');
+    wrapper.appendChild(heading);
+    wrapper.appendChild(list);
+    return wrapper;
+  }
+
+  function completeTurn(pending, answer, links) {
     var answerElement = pending.answer;
     answerElement.className = 'ncli-panel__answer';
     answerElement.textContent = '';
     answerElement.appendChild(hiddenLabel(text('answerLabel', 'Answer:')));
     answerElement.appendChild(renderAnswerMarkdown(answer));
+    var sources = renderApprovedLinks(links);
+    if (sources) {
+      answerElement.appendChild(sources);
+    }
     scrollIntoViewGently(pending.turn);
   }
 
@@ -229,8 +270,12 @@
     return id;
   }
 
-  function conversationPayload(question, id) {
-    return id ? { question: question, conversation_id: id } : { question: question };
+  function conversationPayload(question, id, profile) {
+    var body = id ? { question: question, conversation_id: id } : { question: question };
+    if (profile && profile !== 'default') {
+      body.profile_id = profile;
+    }
+    return body;
   }
 
   function clearTranscript(panel) {
@@ -296,11 +341,17 @@
     setStatus(panel, '');
     var pending = addPendingTurn(panel, question);
     textarea.value = '';
+    var profile = form.getAttribute('data-ncli-profile') || '';
+    var headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    if (profile && window.NCLI_CORE_CHAT.nonce) {
+      // Only named profiles can depend on who is signed in; the default panel never sends it.
+      headers['X-WP-Nonce'] = window.NCLI_CORE_CHAT.nonce;
+    }
     window.fetch(route, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(conversationPayload(question, conversationId(panel)))
+      headers: headers,
+      body: JSON.stringify(conversationPayload(question, conversationId(panel), profile))
     }).then(function (response) {
       return response.json();
     }).then(function (payload) {
@@ -313,7 +364,7 @@
         return;
       }
       if (pending && !detached) {
-        completeTurn(pending, payload.answer);
+        completeTurn(pending, payload.answer, payload.links);
         setStatus(panel, text('answerAdded', 'Verified answer added to this session.'), true);
       }
     }).catch(function () {

@@ -18,7 +18,7 @@ The permitted set is limited to newly authored Core material, the machine-readab
 | uninstall.php | Owner-controlled removal of exactly the NCI-owned options, tables and scheduled event | Newly authored RC9 material |
 | tests/** | Local deterministic checks | Newly authored |
 | scripts/package-core.ps1 | Local-only Core candidate packaging and denylist audit | Newly authored |
-| scripts/verify-rc9-install.php | Read-only local check that an installed plugin folder matches the exact merged RC9 file set (78 files: conversation history from `02c24b6` plus model-cost from `094c654`); excluded from every package | Newly authored |
+| scripts/verify-install.php | Read-only local check that an installed plugin folder matches the exact RC10 file set recorded in its embedded hash manifest; excluded from every package | Newly authored |
 | assets/images/ncli-logo.png, assets/images/ncli-admin-banner.png | Approved NCI visual identity only | Exact manifest entries nci-logo (legacy, owner-granted) and nci-admin-banner (new owner-supplied artwork, 15 October 2026) |
 | wordpress-org-assets/** | Draft directory-listing assets and provenance only; deliberately excluded from runtime packages | Newly authored RC8 submission-readiness material |
 

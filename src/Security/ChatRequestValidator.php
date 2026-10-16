@@ -18,9 +18,10 @@ final class ChatRequestValidator
 
     /**
      * @param mixed $request
-     * @return array{question: string, profile_id: string, response_preset: string, conversation_id: ?string}|null
+     * @param bool $namedProfiles Whether an extension may resolve non-default profile ids. When false, only the default id is valid.
+     * @return array{question: string, profile_id: string, response_preset: ?string, conversation_id: ?string}|null
      */
-    public function validate($request, CoreSettings $settings): ?array
+    public function validate($request, CoreSettings $settings, bool $namedProfiles = false): ?array
     {
         if (!is_array($request)) {
             return null;
@@ -32,14 +33,24 @@ final class ChatRequestValidator
         }
 
         $profile = $request['profile_id'] ?? CoreSettings::DEFAULT_PROFILE_ID;
-        if (!is_string($profile) || $profile !== CoreSettings::DEFAULT_PROFILE_ID) {
+        if (!is_string($profile)) {
+            return null;
+        }
+        $isDefault = $profile === CoreSettings::DEFAULT_PROFILE_ID;
+        if (!$isDefault && (!$namedProfiles || preg_match('/^[a-z0-9][a-z0-9_-]{0,63}$/D', $profile) !== 1)) {
             return null;
         }
 
-        $preset = $request['response_preset'] ?? $settings->responsePreset();
-        if (!is_string($preset) || $preset !== $settings->responsePreset()) {
+        // A client may repeat a profile's preset but never change it. For a named profile the
+        // comparison happens after Core resolves it, so the requested value is returned as sent.
+        $requested = $request['response_preset'] ?? null;
+        if ($requested !== null && !is_string($requested)) {
             return null;
         }
+        if ($isDefault && $requested !== null && $requested !== $settings->responsePreset()) {
+            return null;
+        }
+        $preset = $isDefault ? $settings->responsePreset() : $requested;
 
         $conversation = $request['conversation_id'] ?? null;
         if ($conversation !== null && !ConversationId::isValid($conversation)) {

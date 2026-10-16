@@ -58,4 +58,60 @@ final class CompletedTurnV1
         $this->evidenceFingerprint = $evidenceFingerprint;
         $this->sourceKind = $sourceKind;
     }
+
+    public function conversationId(): string
+    {
+        return $this->conversationId;
+    }
+
+    public function profileId(): ProfileIdV1
+    {
+        return $this->profileId;
+    }
+
+    public function completedAt(): DateTimeImmutable
+    {
+        return $this->completedAt;
+    }
+
+    public function question(): string
+    {
+        return $this->question;
+    }
+
+    public function answer(): string
+    {
+        return $this->answer;
+    }
+
+    public function coreVersion(): string
+    {
+        return $this->coreVersion;
+    }
+
+    public function proVersion(): ?string
+    {
+        return $this->proVersion;
+    }
+
+    public function corpusVersion(): string
+    {
+        return $this->corpusVersion;
+    }
+
+    public function answerFingerprint(): string
+    {
+        return $this->answerFingerprint;
+    }
+
+    public function evidenceFingerprint(): string
+    {
+        return $this->evidenceFingerprint;
+    }
+
+    /** Either `cache` or `provider`. */
+    public function sourceKind(): string
+    {
+        return $this->sourceKind;
+    }
 }

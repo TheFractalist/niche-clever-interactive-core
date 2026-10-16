@@ -13,7 +13,7 @@ require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
 
 if (!defined('NCLI_CORE_VERSION')) {
-    define('NCLI_CORE_VERSION', '1.0.0-rc.9');
+    define('NCLI_CORE_VERSION', '1.0.0-rc.10');
 }
 
 $ncliOptions = [];
@@ -117,9 +117,9 @@ $store = new class implements ConversationStore {
 
 $idA = str_repeat('a', 32);
 $idB = str_repeat('b', 32);
-$store->record(new ConversationTurn($idA, 'default', '<script>alert(1)</script> hostile question', 'Answer <b>one</b>', '1.0.0-rc.9', 'c', '', '2026-10-14 09:00:00'));
-$store->record(new ConversationTurn($idA, 'default', 'Second question', 'Answer two', '1.0.0-rc.9', 'c', '', '2026-10-14 09:01:00'));
-$store->record(new ConversationTurn($idB, 'default', 'Another visitor', 'Another answer', '1.0.0-rc.9', 'c', '', '2026-10-14 10:00:00'));
+$store->record(new ConversationTurn($idA, 'default', '<script>alert(1)</script> hostile question', 'Answer <b>one</b>', '1.0.0-rc.10', 'c', '', '2026-10-14 09:00:00'));
+$store->record(new ConversationTurn($idA, 'default', 'Second question', 'Answer two', '1.0.0-rc.10', 'c', '', '2026-10-14 09:01:00'));
+$store->record(new ConversationTurn($idB, 'default', 'Another visitor', 'Another answer', '1.0.0-rc.10', 'c', '', '2026-10-14 10:00:00'));
 
 $allow = new AdminActionGuard(static fn (): bool => true, static fn (string $action, string $nonce): bool => $nonce === 'good-nonce');
 $page = new ConversationsPage($allow, $store);

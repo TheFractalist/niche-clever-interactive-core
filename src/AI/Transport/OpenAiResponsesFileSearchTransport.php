@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\AI\Transport;
 
 use JsonException;
+use NicheCleverInteractive\Core\Api\V1\Value\EvidenceCitationV1;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use RuntimeException;
 
@@ -64,7 +65,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         $payload = [
             'model' => $options->model(),
             'instructions' => $request->instructions(),
-            'input' => $request->question(),
+            'input' => self::inputFor($request),
             'tools' => [[
                 'type' => 'file_search',
                 'vector_store_ids' => [$request->vectorStoreReference()],
@@ -82,6 +83,28 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
     }
 
     /**
+     * The current question alone as a string, exactly as before, or, when Core supplied earlier
+     * turns, role-tagged messages ending with the current question.
+     *
+     * @return string|list<array{role: string, content: string}>
+     */
+    private static function inputFor(TransportRequest $request)
+    {
+        if ($request->earlierTurns() === []) {
+            return $request->question();
+        }
+
+        $messages = [];
+        foreach ($request->earlierTurns() as $turn) {
+            $messages[] = ['role' => 'user', 'content' => $turn->question()];
+            $messages[] = ['role' => 'assistant', 'content' => $turn->answer()];
+        }
+        $messages[] = ['role' => 'user', 'content' => $request->question()];
+
+        return $messages;
+    }
+
+    /**
      * @param array<string, mixed> $payload
      */
     private function toTransportResult(array $payload, TransportRequest $request): TransportResult
@@ -93,6 +116,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
 
         $completedFileSearch = false;
         $answerParts = [];
+        $citations = [];
         foreach ($output as $item) {
             if (!is_array($item)) {
                 continue;
@@ -112,6 +136,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
                 }
 
                 $answerParts[] = $content['text'];
+                $this->collectCitations($content['annotations'] ?? null, $citations);
             }
         }
 
@@ -119,8 +144,38 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
             $this->publicAnswerText(implode("\n", $answerParts)),
             $completedFileSearch,
             $request->policyFingerprint(),
-            $request->corpusFingerprint()
+            $request->corpusFingerprint(),
+            array_values($citations)
         );
+    }
+
+    /**
+     * Keeps only the file reference and name of file citations, at most 10 distinct sources.
+     * Anything malformed is skipped; no text, offset or payload is retained.
+     *
+     * @param mixed $annotations
+     * @param array<string, EvidenceCitationV1> $citations
+     */
+    private function collectCitations($annotations, array &$citations): void
+    {
+        if (!is_array($annotations)) {
+            return;
+        }
+
+        foreach ($annotations as $annotation) {
+            if (count($citations) >= 10) {
+                return;
+            }
+            if (!is_array($annotation) || ($annotation['type'] ?? null) !== 'file_citation' || !is_string($annotation['file_id'] ?? null)) {
+                continue;
+            }
+            try {
+                $citation = new EvidenceCitationV1($annotation['file_id'], is_string($annotation['filename'] ?? null) ? $annotation['filename'] : '');
+            } catch (\InvalidArgumentException $exception) {
+                continue;
+            }
+            $citations[$citation->reference()] = $citation;
+        }
     }
 
     private function publicAnswerText(string $text): string

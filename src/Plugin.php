@@ -6,6 +6,9 @@ namespace NicheCleverInteractive\Core;
 
 use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
 use NicheCleverInteractive\Core\Admin\ConversationsPage;
+use NicheCleverInteractive\Core\Admin\ExtensionScreens;
+use NicheCleverInteractive\Core\Admin\ProfileConnectionTest;
+use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Admin\SettingsPage;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
@@ -38,20 +41,28 @@ final class Plugin
     private ChatRoute $chatRoute;
     private ConversationsPage $conversationsPage;
     private ConversationPurge $conversationPurge;
+    private ExtensionScreens $extensionScreens;
+    private ProfileDirectory $profiles;
+    private ProfileConnectionTest $profileTest;
 
     private function __construct()
     {
         $this->extensions = new ExtensionRegistryV1();
+        $this->extensionScreens = new ExtensionScreens($this->extensions);
         $this->secrets = new SecretResolver();
-        $this->interactivePanel = new InteractivePanel();
+        $profiles = new ProfileDirectory($this->extensions);
+        $this->profiles = $profiles;
+        $this->interactivePanel = new InteractivePanel($profiles);
         $transport = $this->transport();
         $budget = new BudgetGate(new WordPressBucketStore());
         $failureLog = new OptionFailureLog();
-        $this->settingsPage = new SettingsPage(null, new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current(), $failureLog));
+        $connectionTest = new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current(), $failureLog);
+        $this->profileTest = new ProfileConnectionTest($profiles, $connectionTest);
+        $this->settingsPage = new SettingsPage(null, $connectionTest);
         $conversationStore = new WordPressConversationStore();
         $this->conversationsPage = new ConversationsPage(null, $conversationStore);
         $this->conversationPurge = new ConversationPurge($conversationStore);
-        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore), $failureLog));
+        $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore), $failureLog, $profiles));
     }
 
     public static function register(string $pluginFile): void
@@ -80,6 +91,8 @@ final class Plugin
 
         $this->settingsPage->register();
         $this->conversationsPage->register();
+        $this->extensionScreens->register();
+        $this->profileTest->register();
         $this->conversationPurge->register();
         $this->interactivePanel->register();
         $this->chatRoute->register();
@@ -122,6 +135,12 @@ final class Plugin
         ConversationPurge::unschedule();
     }
 
+    /** The panel renderer wired with this site's profile directory; used by the block render file. */
+    public static function panel(): InteractivePanel
+    {
+        return self::$instance !== null ? self::$instance->interactivePanel : new InteractivePanel();
+    }
+
     public function extensions(): ExtensionRegistryV1
     {
         return $this->extensions;
@@ -146,12 +165,20 @@ final class Plugin
             return;
         }
 
-        $content = '<p>' . $this->escapeHtml(Translator::text('Niche Clever Interactive sends each public visitor question to OpenAI when the site administrator has enabled the public panel. Earlier questions in the same conversation are not sent with it. OpenAI File Search may use material in the administrator-selected vector store to generate an answer.')) . '</p>'
+        $content = '<p>' . $this->escapeHtml(Translator::text('Niche Clever Interactive sends each public visitor question to OpenAI when the site administrator has enabled the public panel.') . ' ' . $this->contextSentence() . ' ' . Translator::text('OpenAI File Search may use material in the administrator-selected vector store to generate an answer.')) . '</p>'
             . '<p>' . $this->escapeHtml(Translator::text('The plugin does not store the OpenAI API key in WordPress options. To enforce daily limits it stores a server-secret HMAC of the visitor network scope, rather than a raw IP address.')) . '</p>'
             . '<p>' . $this->escapeHtml(Translator::text('Conversation history is off by default. If the site owner turns it on, each successfully answered question and its answer are stored in the site database with a random conversation identifier, the time, and the plugin and corpus versions, until the owner deletes them or the chosen retention period ends. No IP address, account or browser identifier is stored with them. Visitors can type personal information into a question, so tell them if questions and answers are kept and for how long.')) . '</p>'
             . '<p>' . $this->escapeHtml(Translator::text('Site owners are responsible for their own OpenAI account, provider terms, billing, retention choices and privacy information.')) . '</p>';
 
         wp_add_privacy_policy_content(Translator::text('Niche Clever Interactive'), wp_kses_post($content));
+    }
+
+    /** The privacy-policy statement about earlier questions must match what Core actually sends. */
+    private function contextSentence(): string
+    {
+        return $this->profiles->hasContextProvider()
+            ? Translator::text('A limited number of earlier questions and answers from the same conversation may be sent with it, as set by the site administrator.')
+            : Translator::text('Earlier questions in the same conversation are not sent with it.');
     }
 
     /**

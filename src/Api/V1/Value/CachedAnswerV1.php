@@ -16,4 +16,9 @@ final class CachedAnswerV1
 
         $this->renderedAnswer = $renderedAnswer;
     }
+
+    public function renderedAnswer(): string
+    {
+        return $this->renderedAnswer;
+    }
 }

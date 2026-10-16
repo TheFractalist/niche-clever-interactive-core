@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10 — 15 October 2026
+
+Local-only candidate. Adds an extension handshake for a separately supplied edition: a declared API minor revision (`NCLI_CORE_API_MINOR`, 1), an `ExtensionRegistryV1::capabilities()` list of the extension capabilities this build really implements (currently only `handshake`), and a Core-side `implementation()` getter. No extension seam is invoked yet, no Premium code is included, and behaviour for a site with no extension is unchanged. Documentation now says five seams, not six. Because the plugin version is part of the connection fingerprint, the administrator connection test must be run again after installing this candidate. Not published, deployed, tagged or submitted to WordPress.org.
+
 ## 1.0.0-rc.9 — 15 October 2026
 
 Local-only candidate. Adds an optional conversation history to Core: off by default, stored in a new prefixed `ncli_core_conversation_turns` table, with a Conversations administrator screen (list, detail, delete one, delete selected, delete all with confirmation), an owner-chosen retention period (30, 90 or 365 days, or indefinite) applied by a daily scheduled purge, and WordPress privacy-policy, exporter and eraser registration that states plainly that no identifier is stored. Only successfully validated answers are recorded; refusals and failures never are, and a storage failure cannot change the visitor's response. The public client sends an optional in-memory `conversation_id` so turns can be grouped.

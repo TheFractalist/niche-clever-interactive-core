@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\AI;
 
 use NicheCleverInteractive\Core\AI\Transport\ProviderFailure;
-use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
@@ -14,7 +13,7 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Configuration\TransportMode;
 use NicheCleverInteractive\Core\Diagnostics\FailureLog;
-use NicheCleverInteractive\Core\Security\PolicyFingerprint;
+use NicheCleverInteractive\Core\Profile\ProfileRuntime;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
 final class ConnectionTestService
@@ -40,8 +39,14 @@ final class ConnectionTestService
 
     public function test(CoreSettings $settings): ConnectionTestResult
     {
-        $fingerprint = ConnectionFingerprint::forSettings($settings, $this->secrets, $this->policy, $this->mode);
-        if ($fingerprint === null || $settings->vectorStoreReference() === '' || $settings->corpusVersion() === '') {
+        return $this->testProfile(ProfileRuntime::fromSettings($settings), $settings);
+    }
+
+    /** Tests one profile; the global provider allowance still comes from Core's settings. */
+    public function testProfile(ProfileRuntime $profile, CoreSettings $settings): ConnectionTestResult
+    {
+        $fingerprint = ConnectionFingerprint::forProfile($profile, $this->secrets, $this->policy, $this->mode);
+        if ($fingerprint === null || $profile->vectorStoreReference() === '' || $profile->corpusVersion() === '') {
             return new ConnectionTestResult(ConnectionTestResult::FAILED, $this->fallbackFingerprint());
         }
 
@@ -55,12 +60,12 @@ final class ConnectionTestService
         try {
             $request = new TransportRequest(
                 self::VERIFICATION_REQUEST,
-                $this->policy->effectiveInstructions($settings->instructions(), $settings->responsePreset()),
-                $settings->responsePreset(),
-                PolicyFingerprint::create($this->policy, $settings->instructions(), $settings->responsePreset()),
-                hash('sha256', $settings->corpusVersion()),
-                $settings->vectorStoreReference(),
-                RequestOptions::fromSettings($settings)
+                $this->policy->effectiveInstructions($profile->instructions(), $profile->responsePreset()),
+                $profile->responsePreset(),
+                $profile->policyFingerprint($this->policy),
+                $profile->corpusFingerprint(),
+                $profile->vectorStoreReference(),
+                $profile->options()
             );
             $dispatched = true;
             $result = $this->transport->respond($request);

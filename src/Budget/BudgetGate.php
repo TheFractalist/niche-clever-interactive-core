@@ -18,14 +18,18 @@ final class BudgetGate
     }
 
     /** @param array<string, mixed> $server */
-    public function reserve(CoreSettings $settings, array $server): ?Reservation
+    public function reserve(CoreSettings $settings, array $server, ?int $visitorLimit = null, string $profileId = CoreSettings::DEFAULT_PROFILE_ID): ?Reservation
     {
         $scopeHash = $this->scopes->hash($server);
         if ($scopeHash === null) {
             return null;
         }
+        // Each non-default profile counts a visitor separately; the default keeps its original bucket.
+        if ($profileId !== CoreSettings::DEFAULT_PROFILE_ID) {
+            $scopeHash = hash('sha256', $scopeHash . ':profile:' . $profileId);
+        }
         $period = gmdate('Y-m-d 00:00:00');
-        if (!$this->store->reserve('visitor', $scopeHash, $period, $settings->visitorRequestsPerDay())) {
+        if (!$this->store->reserve('visitor', $scopeHash, $period, $visitorLimit ?? $settings->visitorRequestsPerDay())) {
             return null;
         }
         $providerHash = hash('sha256', 'provider:core');

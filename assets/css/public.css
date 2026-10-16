@@ -47,3 +47,8 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-limit-notice { max-width: var(--ncli-max); margin: 1rem auto; color: #3c434a; font-size: .95rem; }
 @media (max-width: 600px) { .ncli-panel__frame { padding: 1.25rem; } .ncli-panel__footer { flex-direction: column; } }
 @media (prefers-reduced-motion: reduce) { .ncli-panel *, .ncli-panel *::before, .ncli-panel *::after { scroll-behavior: auto; transition: none !important; } }
+.ncli-panel__sources { margin-top: .85rem; padding-top: .65rem; border-top: 1px solid var(--ncli-rule); font-size: .9em; }
+.ncli-panel__sources-title { margin: 0 0 .3rem; font-weight: 600; color: var(--ncli-muted); }
+.ncli-panel__sources-list { margin: 0; padding-left: 1.2rem; }
+.ncli-panel__sources-list li { margin: .2rem 0; }
+.ncli-panel__sources-list a { overflow-wrap: anywhere; }

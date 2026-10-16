@@ -14,7 +14,9 @@ assert(source.includes('function renderAnswerMarkdown'), 'The public panel must 
 assert(source.includes('answerElement.appendChild(renderAnswerMarkdown(answer))'), 'Answers must be rendered through the bounded formatter.');
 assert(source.includes("document.createElement('strong')") && source.includes("document.createElement('em')"), 'The formatter must support basic emphasis without parsing HTML.');
 assert(source.includes("document.createElement(unordered ? 'ul' : 'ol')"), 'The formatter must support ordered and unordered Markdown lists.');
-assert(!source.includes("document.createElement('a')"), 'The public panel must not turn provider output into clickable source links.');
+assert((source.match(/document\.createElement\('a'\)/g) || []).length === 1 && source.includes('function renderApprovedLinks'), 'The only anchor the panel creates is an owner-approved link, built in one function.');
+assert(source.includes('renderApprovedLinks(links)') && source.includes('payload.links') && !source.includes('payload.citations'), 'Only the links array of the response is rendered, never citations.');
+assert(source.includes("/^https:\\/\\/[^\\s\"<>]+$/i") && source.includes("anchor.rel = 'noopener noreferrer'") && source.includes('anchor.textContent = link.title'), 'Links must be https only, open with noopener, and carry their title as text.');
 assert(!/localStorage|sessionStorage|document\.cookie/.test(source), 'The public panel must not persist a transcript or identifier.');
 assert(source.includes("textarea.focus()"), 'The public panel must restore keyboard focus after a request.');
 assert(source.includes('clearTranscript'), 'The public panel must provide a session-only transcript reset.');
@@ -29,6 +31,30 @@ assert(source.includes('textarea.value = question') && source.includes('failTurn
 assert(source.includes('prefers-reduced-motion') && source.includes('scrollIntoView'), 'The newest turn must be brought into view, respecting reduced motion.');
 assert(source.includes("hiddenLabel(text('questionLabel'") && source.includes("hiddenLabel(text('answerLabel'"), 'Question and answer blocks must carry hidden labels for assistive technology.');
 assert(source.includes('isConnected'), 'A reset during a request must not resurrect a cleared turn.');
+
+
+// Behavioural check of the link renderer: extract the function and run it against a minimal DOM.
+{
+  const start = source.indexOf('function renderApprovedLinks');
+  const end = source.indexOf('function completeTurn');
+  const makeElement = (tag) => ({ tag, children: [], className: '', textContent: '', appendChild(child) { this.children.push(child); this.firstChild = this.children[0]; return child; }, firstChild: null });
+  const factory = new Function('document', 'text', source.slice(start, end) + '; return renderApprovedLinks;');
+  const render = factory({ createElement: makeElement }, (key, fallback) => fallback);
+  const anchors = (node) => (node ? node.children[1].children.map((item) => item.children[0]) : []);
+  const good = render([{ title: 'Annual report', url: 'https://example.com/report?a=1' }]);
+  assert(good && anchors(good).length === 1 && anchors(good)[0].href === 'https://example.com/report?a=1' && anchors(good)[0].textContent === 'Annual report' && anchors(good)[0].rel === 'noopener noreferrer' && anchors(good)[0].target === '_blank', 'A valid approved link is rendered as a safe anchor with its title as text.');
+  assert(render(undefined) === null && render([]) === null && render('x') === null && render({ title: 'a', url: 'https://example.com' }) === null, 'Missing or malformed link lists render nothing.');
+  const bad = [
+    { title: 'js', url: 'javascript:alert(1)' }, { title: 'data', url: 'data:text/html,hi' }, { title: 'http', url: 'http://example.com/' },
+    { title: 'space', url: 'https://example.com/a b' }, { title: 'quote', url: 'https://example.com/"x' }, { title: '', url: 'https://example.com/' },
+    { title: 'x'.repeat(161), url: 'https://example.com/' }, { title: 5, url: 'https://example.com/' }, { title: 'long', url: 'https://example.com/' + 'a'.repeat(2000) }, null,
+  ];
+  assert(render(bad) === null, 'Unsafe schemes, spaces, quotes, empty or oversized values and non-objects are all skipped.');
+  const many = render(Array.from({ length: 9 }, (_, i) => ({ title: 'Link ' + i, url: 'https://example.com/' + i })));
+  assert(anchors(many).length === 5, 'At most five links are shown.');
+  const mixed = render([{ title: '<img src=x onerror=1>', url: 'https://example.com/ok' }, { title: 'bad', url: 'ftp://example.com' }]);
+  assert(anchors(mixed).length === 1 && anchors(mixed)[0].textContent === '<img src=x onerror=1>', 'A markup-looking title is kept as inert text and the unsafe sibling is dropped.');
+}
 
 if (failures.length) {
   console.error(`FAIL\n- ${failures.join('\n- ')}`);

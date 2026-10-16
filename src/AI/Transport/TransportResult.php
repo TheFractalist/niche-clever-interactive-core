@@ -10,9 +10,12 @@ final class TransportResult
     private bool $completedFileSearch;
     private string $policyFingerprint;
     private string $corpusFingerprint;
+    /** @var list<\NicheCleverInteractive\Core\Api\V1\Value\EvidenceCitationV1> */
+    private array $citations;
 
-    public function __construct(string $answer, bool $completedFileSearch, string $policyFingerprint, string $corpusFingerprint)
+    public function __construct(string $answer, bool $completedFileSearch, string $policyFingerprint, string $corpusFingerprint, array $citations = [])
     {
+        $this->citations = $citations;
         $this->answer = $answer;
         $this->completedFileSearch = $completedFileSearch;
         $this->policyFingerprint = $policyFingerprint;
@@ -32,6 +35,17 @@ final class TransportResult
     public function policyFingerprint(): string
     {
         return $this->policyFingerprint;
+    }
+
+    /**
+     * Bounded descriptors of the sources the answer cited. They stay inside Core and an installed
+     * extension; they never reach a browser.
+     *
+     * @return list<\NicheCleverInteractive\Core\Api\V1\Value\EvidenceCitationV1>
+     */
+    public function citations(): array
+    {
+        return $this->citations;
     }
 
     public function corpusFingerprint(): string

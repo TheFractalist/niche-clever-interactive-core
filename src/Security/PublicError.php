@@ -16,17 +16,41 @@ final class PublicError
         'allowance_exceeded' => 'The question allowance has been reached. Please try again later.',
         'provider_failure' => 'The interactive service is temporarily unavailable.',
         'evidence_failure' => 'A verified answer is not available for that question.',
+        'access_required' => 'Access to this service has not been granted.',
     ];
 
-    private string $code;
+    public const MAX_ACCESS_MESSAGE = 300;
 
-    public function __construct(string $code)
+    private string $code;
+    private ?string $message;
+
+    /**
+     * @param string|null $message Only `access_required` may carry an owner-supplied message; Core
+     *                             reduces it to bounded plain text and ignores it for every other code.
+     */
+    public function __construct(string $code, ?string $message = null)
     {
         if (!isset(self::MESSAGES[$code])) {
             throw new InvalidArgumentException('Unknown public error code.');
         }
 
         $this->code = $code;
+        $this->message = $code === 'access_required' ? self::plainText($message) : null;
+    }
+
+    public static function plainText(?string $message): ?string
+    {
+        if ($message === null) {
+            return null;
+        }
+
+        $text = function_exists('wp_strip_all_tags') ? (string) wp_strip_all_tags($message) : strip_tags($message);
+        $text = trim(preg_replace('/[\x00-\x1F\x7F]+/', ' ', $text) ?? '');
+        if ($text === '' || strlen($text) > self::MAX_ACCESS_MESSAGE) {
+            return null;
+        }
+
+        return $text;
     }
 
     /**
@@ -34,6 +58,6 @@ final class PublicError
      */
     public function payload(): array
     {
-        return ['code' => $this->code, 'message' => Translator::text(self::MESSAGES[$this->code])];
+        return ['code' => $this->code, 'message' => $this->message ?? Translator::text(self::MESSAGES[$this->code])];
     }
 }

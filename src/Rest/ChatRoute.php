@@ -57,6 +57,7 @@ final class ChatRoute
         return match ($errorCode) {
             null => 200,
             'invalid_request', 'policy_refusal' => 400,
+            'access_required' => 403,
             'allowance_exceeded' => 429,
             'evidence_failure' => 422,
             default => 503,

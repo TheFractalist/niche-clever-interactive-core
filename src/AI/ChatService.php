@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\AI;
 
+use NicheCleverInteractive\Core\Api\V1\Value\CacheKeyV1;
+use NicheCleverInteractive\Core\Api\V1\Value\CompletedTurnV1;
+use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
-use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\AI\Transport\ProviderFailure;
 use NicheCleverInteractive\Core\Conversation\ConversationRecorder;
 use NicheCleverInteractive\Core\Diagnostics\FailureLog;
-use NicheCleverInteractive\Core\Profile\DefaultProfileResolverV1;
+use NicheCleverInteractive\Core\Profile\ProfileDirectory;
+use NicheCleverInteractive\Core\Profile\ProfileRuntime;
 use NicheCleverInteractive\Core\Security\ChatRequestValidator;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
@@ -28,6 +31,7 @@ final class ChatService
     private ?BudgetGate $budgets;
     private ?ConversationRecorder $conversations;
     private ?FailureLog $failures;
+    private ProfileDirectory $profiles;
 
     public function __construct(
         ResponseTransport $transport,
@@ -36,7 +40,8 @@ final class ChatService
         ?ChatRequestValidator $requests = null,
         ?BudgetGate $budgets = null,
         ?ConversationRecorder $conversations = null,
-        ?FailureLog $failures = null
+        ?FailureLog $failures = null,
+        ?ProfileDirectory $profiles = null
     ) {
         $this->transport = $transport;
         $this->secrets = $secrets ?? new SecretResolver();
@@ -45,6 +50,7 @@ final class ChatService
         $this->budgets = $budgets;
         $this->conversations = $conversations;
         $this->failures = $failures;
+        $this->profiles = $profiles ?? new ProfileDirectory();
     }
 
     /** @param mixed $request */
@@ -54,20 +60,64 @@ final class ChatService
             return ChatOutcome::failure('policy_refusal');
         }
 
-        $validated = $this->requests->validate($request, $settings);
+        $validated = $this->requests->validate($request, $settings, $this->profiles->hasResolver());
         if ($validated === null) {
             return ChatOutcome::failure('invalid_request');
         }
 
-        $profile = (new DefaultProfileResolverV1($settings, $this->policy))->resolve(new ProfileIdV1($validated['profile_id']));
-        if ($profile === null || !Readiness::evaluate($settings, $this->secrets)->isReady()) {
+        // Only Core's own directory turns an id into a profile; an unknown, disabled or
+        // misconfigured id is unavailable and never falls back to the default corpus.
+        $profile = $this->profiles->resolve($validated['profile_id'], $settings);
+        if ($profile === null) {
             return ChatOutcome::failure('profile_unavailable');
+        }
+        // Access is decided before readiness so a viewer who may not use the profile learns nothing about its setup.
+        $access = $this->profiles->access($profile);
+        if (!$access->isAllowed()) {
+            return ChatOutcome::accessRequired($access->message());
+        }
+        if (!Readiness::evaluateProfile($profile, $this->secrets, $this->profiles->testRecord($profile, $settings))->isReady()) {
+            return ChatOutcome::failure('profile_unavailable');
+        }
+        if ($validated['response_preset'] !== null && $validated['response_preset'] !== $profile->responsePreset()) {
+            return ChatOutcome::failure('invalid_request');
+        }
+        $facts = $this->profiles->chronology($profile);
+        // Earlier turns come only from the server-side seam, never from the browser, and only
+        // for a valid conversation identifier. A request that carries them is never cache-eligible.
+        $earlier = $this->profiles->earlierTurns($profile, $validated['conversation_id']);
+        $withContext = $earlier !== [];
+        $policyFingerprint = $profile->policyFingerprint($this->policy, $facts, $withContext);
+        $corpusFingerprint = $profile->corpusFingerprint();
+
+        // An approved answer may be reused only when the request carries no earlier-turn context
+        // (Core sends none yet) and the profile is not access-controlled. A hit uses no allowance
+        // and no provider call; it is validated by Core again and recorded like any answer.
+        $cacheKey = null;
+        if (!$access->isRestricted() && !$withContext) {
+            $cacheKey = new CacheKeyV1(
+                self::questionDigest($validated['question']),
+                new ProfileIdV1($profile->id()),
+                $policyFingerprint,
+                $profile->answerSourceFingerprint(),
+                hash('sha256', 'access:open'),
+                $profile->responsePreset()
+            );
+            $cached = $this->profiles->cachedAnswer($cacheKey);
+            if ($cached !== null) {
+                if ($this->conversations !== null) {
+                    $this->conversations->recordCachedAnswer($settings, $validated['conversation_id'], $profile->id(), $validated['question'], $cached, $policyFingerprint, $profile->corpusVersion());
+                }
+                $this->completeTurn('cache', $validated['conversation_id'], $profile, $validated['question'], $cached, $policyFingerprint, $corpusFingerprint);
+
+                return ChatOutcome::success($cached);
+            }
         }
 
         $reservation = null;
         if ($this->budgets !== null) {
             try {
-                $reservation = $this->budgets->reserve($settings, is_array($_SERVER ?? null) ? $_SERVER : []);
+                $reservation = $this->budgets->reserve($settings, is_array($_SERVER ?? null) ? $_SERVER : [], $profile->visitorRequestsPerDay(), $profile->id());
             } catch (\Throwable $exception) {
                 return ChatOutcome::failure('provider_failure');
             }
@@ -80,12 +130,13 @@ final class ChatService
         try {
             $result = $this->transport->respond(new TransportRequest(
                 $validated['question'],
-                $this->policy->effectiveInstructions($settings->instructions(), $validated['response_preset']),
-                $validated['response_preset'],
-                $profile->policyFingerprint(),
-                $profile->corpusFingerprint(),
-                $settings->vectorStoreReference(),
-                RequestOptions::fromSettings($settings)
+                $this->policy->effectiveInstructions($profile->instructions(), $profile->responsePreset(), $facts, $withContext),
+                $profile->responsePreset(),
+                $policyFingerprint,
+                $corpusFingerprint,
+                $profile->vectorStoreReference(),
+                $profile->options(),
+                $earlier
             ));
         } catch (\Throwable $exception) {
             // A request may already have reached a provider; retain the reservation
@@ -107,8 +158,8 @@ final class ChatService
         }
 
         if (!$result->completedFileSearch()
-            || !hash_equals($profile->policyFingerprint(), $result->policyFingerprint())
-            || !hash_equals($profile->corpusFingerprint(), $result->corpusFingerprint())) {
+            || !hash_equals($policyFingerprint, $result->policyFingerprint())
+            || !hash_equals($corpusFingerprint, $result->corpusFingerprint())) {
             $this->noteFailure(ProviderFailure::EVIDENCE_MISMATCH, $started);
             if (!$this->commitReservation($reservation)) {
                 return ChatOutcome::failure('provider_failure');
@@ -126,14 +177,60 @@ final class ChatService
             $this->conversations->recordProviderAnswer(
                 $settings,
                 $validated['conversation_id'],
-                $profile->id()->value(),
+                $profile->id(),
                 $validated['question'],
                 $answer,
-                $profile->policyFingerprint()
+                $policyFingerprint,
+                $profile->corpusVersion()
             );
         }
 
-        return ChatOutcome::success($answer);
+        if ($cacheKey !== null) {
+            $this->profiles->offerAnswer($cacheKey, $answer, $validated['question']);
+        }
+        $this->completeTurn('provider', $validated['conversation_id'], $profile, $validated['question'], $answer, $policyFingerprint, $corpusFingerprint);
+
+        // Links come only from the owner's approvals via the seam; raw provider citations never leave Core.
+        return ChatOutcome::success($answer, $this->profiles->approvedLinks($profile, $result->citations()));
+    }
+
+    /**
+     * Tells the recorder seam about a validated turn so an extension can offer it back as context
+     * for a follow-up. Only turns with a conversation identifier are reported.
+     *
+     * @param mixed $conversationId
+     */
+    private function completeTurn(string $source, $conversationId, ProfileRuntime $profile, string $question, string $answer, string $policyFingerprint, string $corpusFingerprint): void
+    {
+        if (!is_string($conversationId)) {
+            return;
+        }
+
+        try {
+            $this->profiles->recordCompletedTurn(new CompletedTurnV1(
+                $conversationId,
+                new ProfileIdV1($profile->id()),
+                new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+                $question,
+                $answer,
+                defined('NCLI_CORE_VERSION') ? NCLI_CORE_VERSION : 'development',
+                null,
+                $profile->corpusVersion(),
+                hash('sha256', $answer),
+                hash('sha256', $policyFingerprint . '|' . $corpusFingerprint),
+                $source
+            ));
+        } catch (\Throwable $exception) {
+            // An invalid value must never change the response.
+        }
+    }
+
+    /** Case, spacing and surrounding whitespace do not make a repeated question a different one. */
+    private static function questionDigest(string $question): string
+    {
+        $flat = trim((string) preg_replace('/\s+/u', ' ', $question));
+
+        return hash('sha256', function_exists('mb_strtolower') ? mb_strtolower($flat, 'UTF-8') : strtolower($flat));
     }
 
     private function noteFailure(string $reason, float $started): void

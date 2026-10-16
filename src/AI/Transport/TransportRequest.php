@@ -13,10 +13,13 @@ final class TransportRequest
     private string $corpusFingerprint;
     private string $vectorStoreReference;
     private RequestOptions $options;
+    /** @var list<\NicheCleverInteractive\Core\Api\V1\Value\EarlierTurnV1> */
+    private array $earlierTurns;
 
-    public function __construct(string $question, string $instructions, string $responsePreset, string $policyFingerprint, string $corpusFingerprint, string $vectorStoreReference = '', ?RequestOptions $options = null)
+    public function __construct(string $question, string $instructions, string $responsePreset, string $policyFingerprint, string $corpusFingerprint, string $vectorStoreReference = '', ?RequestOptions $options = null, array $earlierTurns = [])
     {
         $this->options = $options ?? new RequestOptions();
+        $this->earlierTurns = $earlierTurns;
         $this->question = $question;
         $this->instructions = $instructions;
         $this->responsePreset = $responsePreset;
@@ -53,6 +56,16 @@ final class TransportRequest
     public function vectorStoreReference(): string
     {
         return $this->vectorStoreReference;
+    }
+
+    /**
+     * Earlier turns of the conversation, oldest first, already bounded by Core.
+     *
+     * @return list<\NicheCleverInteractive\Core\Api\V1\Value\EarlierTurnV1>
+     */
+    public function earlierTurns(): array
+    {
+        return $this->earlierTurns;
     }
 
     public function options(): RequestOptions

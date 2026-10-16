@@ -20,7 +20,7 @@ Niche Clever Interactive does not create or manage a vector store, upload docume
 
 Niche Clever is the creator of this plugin, including its administrator artwork and screenshots, and releases them under the same GPLv2 or later licence as the code.
 
-This RC9 package is a local release candidate. It is not a WordPress.org submission, directory listing or public 1.0.0 release.
+This RC10 package is a local release candidate. It is not a WordPress.org submission, directory listing or public 1.0.0 release.
 
 == Installation ==
 
@@ -48,7 +48,7 @@ Yes. Set Visitor availability to Unavailable in the Setup tab, or untick Enable 
 
 = What information is sent to OpenAI? =
 
-Each visitor question is sent to OpenAI when the enabled public panel is used. Earlier questions in the same conversation are not sent with it. File Search may use material in the configured vector store to generate the answer.
+Each visitor question is sent to OpenAI when the enabled public panel is used. Earlier questions in the same conversation are not sent with it by Core itself; an installed extension such as NCI Premium can add a limited number of earlier turns. File Search may use material in the configured vector store to generate the answer.
 
 = Does it record what visitors ask? =
 
@@ -80,15 +80,15 @@ A label you choose, such as v10, for the material in your vector store. Changing
 
 = Does it show sources or citations? =
 
-No. The plugin does not publish provider citations or source links.
+Not on its own: the plugin never publishes provider citations or raw source links. NCI Premium can show titles and links that you have approved yourself.
 
 = Can visitors ask follow-up questions? =
 
-Yes, but each question is answered on its own: earlier questions in the same conversation are not sent with it.
+Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. NCI Premium can send a limited number of earlier turns as context.
 
 = Are answers cached? =
 
-No. Each question is a fresh request to OpenAI.
+Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved.
 
 = Can visitors ask in other languages? =
 
@@ -126,6 +126,10 @@ NCI Premium is a separately supplied edition from Niche Clever. It adds several 
 4. Appearance & Limits tab: panel style and width, accent colour, optional credit line and daily request limits.
 
 == Changelog ==
+
+= 1.0.0-rc.10 =
+
+* Adds an extension handshake (API minor revision and a list of the extension capabilities this build offers) so a separately supplied edition can confirm compatibility before it registers. Nothing changes for sites without such an edition.
 
 = 1.0.0-rc.9 =
 

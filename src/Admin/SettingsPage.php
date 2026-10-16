@@ -225,7 +225,7 @@ final class SettingsPage
 
         if ($tab === 'ai-corpus') {
             $this->text('vector_store_reference', 'Vector store reference', (string) $values['profile']['vector_store_reference'], 'Enter the identifier for an existing OpenAI File Search vector store that you control. NCI does not create, upload to or manage the store. Changing it requires a new connection test.');
-            $this->descriptionRow('NCI answers directly from the configured File Search corpus. It does not publish source links or citation metadata.');
+            $this->descriptionRow('NCI answers directly from the configured File Search corpus. On its own it does not publish source links or citation metadata.');
             $this->renderModelFields($values['model']);
         }
 
@@ -348,7 +348,7 @@ final class SettingsPage
         echo '<p>' . $this->escapeHtml($this->t('Example profiles: for lowest cost, choose an Economy model with a small retrieval depth and a Concise preset. For best quality, choose a Premium model with a larger retrieval depth and a Detailed preset.')) . '</p>';
         echo '<p>' . $this->escapeHtml($this->t('Also set a usage limit in your OpenAI dashboard. Core\'s request limits help, but they are not a billing control.')) . ' <a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('OpenAI API pricing')) . '</a></p>';
         echo '<h3>' . $this->escapeHtml($this->t('Safe public use')) . '</h3>';
-        echo '<p>' . $this->escapeHtml($this->t('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.')) . '</p>';
+        echo '<p>' . $this->escapeHtml($this->t('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it by Core itself, although an installed extension such as NCI Premium can add a limited number of earlier turns. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.')) . '</p>';
         echo '<h3>' . $this->escapeHtml($this->t('What it does not do')) . '</h3>';
         echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, or publish provider citations or source links. It keeps no record of visitor conversations unless you switch on the optional conversation history in the Conversation tab.')) . '</p>';
     }
@@ -373,12 +373,12 @@ final class SettingsPage
                 ['Does it show sources or citations?', 'No. Core never publishes provider citations or source links. Approved evidence links that you choose yourself are available in NCI Premium.'],
                 ['Why did the panel refuse my question?', 'Core applies fixed safety rules. A question that tries to override its instructions or reveal them is declined with a short refusal.'],
                 ['Why does it say a verified answer is not available?', 'The answer did not come from a completed search of your corpus. Check the vector store reference and corpus version, then run the connection test again.'],
-                ['Can visitors ask follow-up questions?', 'Yes, but each question is answered on its own: earlier questions in the same conversation are not sent with it. Using earlier turns as context for follow-ups is available in NCI Premium.'],
-                ['Are answers cached?', 'No. Each question is a fresh request to OpenAI. Reusing approved answers to save cost and time is available in NCI Premium.'],
+                ['Can visitors ask follow-up questions?', 'Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. NCI Premium can send a limited number of earlier turns as context so follow-ups make sense, with a setting for how many.'],
+                ['Are answers cached?', 'Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved to save cost and time.'],
                 ['Can visitors ask in other languages?', 'They can ask in any language the model understands. The interface text is translation-ready, while wording you write in the Profile and Conversation tabs appears exactly as you wrote it.'],
             ],
             'Visitors, limits and privacy' => [
-                ['What information is sent to OpenAI?', 'Only the visitor\'s current question, together with your instructions and the vector store reference, is sent when the enabled panel is used. Earlier questions in the same conversation are not sent with it.'],
+                ['What information is sent to OpenAI?', 'Only the visitor\'s current question, together with your instructions and the vector store reference, is sent when the enabled panel is used. Earlier questions in the same conversation are not sent with it by Core itself; if NCI Premium is installed it can add a limited number of earlier turns and any chronology records you have entered.'],
                 ['Why does the panel say the question allowance has been reached?', 'Either one visitor has used their daily questions or the whole site has used its daily provider allowance. Both limits are set in Appearance & Limits, count by UTC day and start again at UTC midnight. Visitors are counted with a privacy-bounded code, not a stored address, and no extra server setup is needed for this.'],
                 ['Does it keep a record of visitors\' conversations?', 'Not unless you switch on the optional conversation history in the Conversation tab. It is off by default. If you turn it on you choose how long records are kept and can review and delete them under NC Interactive > Conversations.'],
                 ['How do I review or delete stored conversations?', 'Open NC Interactive > Conversations to view them and to delete one, several or all. Records are removed automatically after the retention period you choose. Deleted records can reappear if you restore an older database backup, so repeat the deletion after a restore.'],

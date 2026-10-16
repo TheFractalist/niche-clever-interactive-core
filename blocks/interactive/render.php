@@ -6,6 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-use NicheCleverInteractive\Core\Frontend\InteractivePanel;
+use NicheCleverInteractive\Core\Plugin;
 
-return (new InteractivePanel())->renderInteractive(is_array($attributes ?? null) ? $attributes : []);
+return Plugin::panel()->renderInteractive(is_array($attributes ?? null) ? $attributes : []);

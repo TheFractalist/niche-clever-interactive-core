@@ -98,10 +98,17 @@ $assert(
         'eligible_answer_cache',
         'completed_public_turn',
         'workspace_extension',
+        'viewer_access',
+        'conversation_context',
+        'evidence_citations',
     ],
-    'The registry exposes exactly the five provisional Core seams.'
+    'The registry exposes exactly the eight provisional Core seams.'
 );
+$assert($registry->implementation('profile_resolution') === null, 'An unregistered seam resolves to null.');
+$assert($registry->implementation('unknown_seam') === null, 'An unknown seam resolves to null.');
+$assert($registry->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations'], 'The registry advertises only capabilities Core implements.');
 $registry->register('profile_resolution', $resolver);
+$assert($registry->implementation('profile_resolution') === $resolver, 'Core can retrieve a registered seam implementation.');
 $assert($registry->has('profile_resolution'), 'The explicitly registered profile seam is available.');
 $throws(static fn (): mixed => $registry->register('profile_resolution', $resolver), LogicException::class);
 $throws(static fn (): mixed => $registry->register('unknown_seam', $resolver), InvalidArgumentException::class);
@@ -152,6 +159,7 @@ $throws(static fn (): WorkspaceContextV1 => new WorkspaceContextV1(false, 'core-
 $root = dirname(__DIR__);
 $plugin = file_get_contents($root . '/niche-clever-interactive-core.php');
 $assert($plugin !== false && str_contains($plugin, 'NCLI_CORE_API_MAJOR = 1'), 'The bootstrap declares API major 1.');
+$assert($plugin !== false && str_contains($plugin, 'NCLI_CORE_API_MINOR = 1'), 'The bootstrap declares API minor 1.');
 
 $source = '';
 $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root . '/src'));

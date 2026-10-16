@@ -38,4 +38,24 @@ final class ChronologyFactV1
         $this->summary = $summary;
         $this->sourceRevision = $sourceRevision;
     }
+
+    public function date(): string
+    {
+        return $this->date;
+    }
+
+    public function label(): string
+    {
+        return $this->label;
+    }
+
+    public function summary(): string
+    {
+        return $this->summary;
+    }
+
+    public function sourceRevision(): string
+    {
+        return $this->sourceRevision;
+    }
 }

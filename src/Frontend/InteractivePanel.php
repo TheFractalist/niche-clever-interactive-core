@@ -8,12 +8,21 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
+use NicheCleverInteractive\Core\Profile\ProfileDirectory;
+use NicheCleverInteractive\Core\Security\PublicError;
 use NicheCleverInteractive\Core\Support\Translator;
 
 final class InteractivePanel
 {
     /** Destination of the optional, opt-in credit line. */
     private const CREDIT_URL = 'https://nicheclever.co.uk/';
+
+    private ProfileDirectory $profiles;
+
+    public function __construct(?ProfileDirectory $profiles = null)
+    {
+        $this->profiles = $profiles ?? new ProfileDirectory();
+    }
 
     public function register(): void
     {
@@ -41,6 +50,8 @@ final class InteractivePanel
         if (function_exists('wp_add_inline_script') && function_exists('rest_url') && function_exists('wp_json_encode')) {
             wp_add_inline_script('ncli-core-public', 'window.NCLI_CORE_CHAT = ' . wp_json_encode([
                 'route' => rest_url('ncli/v1/chat'),
+                // Lets the route recognise a logged-in viewer; the client sends it only for named profiles.
+                'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('wp_rest') : '',
                 'strings' => [
                     'conversationReset' => Translator::text('Conversation reset for this browser session.'),
                     'unavailable' => $this->load()->unavailableMessage(),
@@ -50,6 +61,7 @@ final class InteractivePanel
                     'answerAdded' => Translator::text('Verified answer added to this session.'),
                     'questionLabel' => Translator::text('Question:'),
                     'answerLabel' => Translator::text('Answer:'),
+                    'sourcesLabel' => Translator::text('Sources'),
                 ],
             ]) . ';', 'before');
         }
@@ -68,20 +80,52 @@ final class InteractivePanel
     public function renderInteractive(array $attributes = []): string
     {
         $settings = $this->load();
-        $style = $settings->panelStyle();
-        $readiness = Readiness::evaluate($settings, new SecretResolver());
         $this->enqueueRegisteredAssets();
 
-        $presentation = $settings->presentation();
+        // A `profile` attribute selects an extension profile. Anything Core cannot resolve
+        // renders the default panel's disabled, generic state, never the default corpus.
+        $requested = isset($attributes['profile']) && is_string($attributes['profile']) ? trim($attributes['profile']) : '';
+        $profileId = '';
+        if ($requested === '' || $requested === CoreSettings::DEFAULT_PROFILE_ID) {
+            $style = $settings->panelStyle();
+            $ready = Readiness::evaluate($settings, new SecretResolver())->isReady();
+            $presentation = $settings->presentation();
+            $unavailable = $settings->unavailableMessage();
+        } else {
+            $profile = $this->profiles->resolve($requested, $settings);
+            if ($profile === null) {
+                $style = $settings->panelStyle();
+                $ready = false;
+                $presentation = $settings->presentation();
+                $unavailable = $settings->unavailableMessage();
+            } else {
+                $style = $profile->panelStyle();
+                $presentation = $profile->presentation();
+                $unavailable = $profile->unavailableMessage();
+                $access = $this->profiles->access($profile);
+                if ($access->isRestricted()) {
+                    // A page whose panel depends on who is viewing must never be served from a shared cache.
+                    $this->markUncacheable();
+                }
+                if (!$access->isAllowed()) {
+                    // The form stays disabled and carries no profile marker; the owner's message replaces the status.
+                    $ready = false;
+                    $unavailable = PublicError::plainText($access->message()) ?? Translator::text('Access to this service has not been granted.');
+                } else {
+                    $profileId = $profile->id();
+                    $ready = Readiness::evaluateProfile($profile, new SecretResolver(), $this->profiles->testRecord($profile, $settings))->isReady();
+                }
+            }
+        }
         $title = isset($attributes['title']) && is_string($attributes['title']) && trim($attributes['title']) !== ''
             ? $attributes['title']
             : $presentation['title'];
-        $status = $readiness->isReady() ? Translator::text('Ready for a verified answer.') : $settings->unavailableMessage();
+        $status = $ready ? Translator::text('Ready for a verified answer.') : $unavailable;
         $inlineStyle = PanelAppearance::inlineStyle($style, $settings->panelWidth(), $settings->accentColor());
         $credit = $settings->showCredit()
             ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(Translator::text('Powered by NC Interactive')) . '</a></p>'
             : '';
-        $disabled = $readiness->isReady() ? '' : ' disabled';
+        $disabled = $ready ? '' : ' disabled';
 
         return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
             . '<div class="ncli-panel__frame">'
@@ -91,7 +135,7 @@ final class InteractivePanel
             . '</header>'
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
             . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
-            . '<form class="ncli-panel__form" data-ncli-interactive="1">'
+            . '<form class="ncli-panel__form" data-ncli-interactive="1"' . ($profileId !== '' ? ' data-ncli-profile="' . $this->attr($profileId) . '"' : '') . '>'
             . '<label class="screen-reader-text" for="ncli-question">' . $this->html(Translator::text('Ask a question')) . '</label>'
             . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="' . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
             . '<button type="submit" aria-label="' . $this->attr(Translator::text('Submit question')) . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">' . $this->html(Translator::text('Ask')) . '</span></button></div>'
@@ -113,6 +157,16 @@ final class InteractivePanel
             : Translator::text('Question limits help keep this service available.');
 
         return '<p class="ncli-limit-notice" role="status">' . $this->html($message) . '</p>';
+    }
+
+    private function markUncacheable(): void
+    {
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+        if (function_exists('nocache_headers') && !headers_sent()) {
+            nocache_headers();
+        }
     }
 
     private function load(): CoreSettings

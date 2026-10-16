@@ -84,7 +84,8 @@ $assert(($body['tools'][0]['vector_store_ids'][0] ?? null) === 'vs_fixture_store
 $assert(!array_key_exists('include', $body), 'The live transport must not request retrieved search-result text.');
 $assert($result->completedFileSearch(), 'A completed provider File Search call must be recognised.');
 $assert($result->answer() === 'Grounded fixture answer.', 'The transport must remove opaque inline provider citation markers from public answer text.');
-$assert(!str_contains(json_encode($result, JSON_THROW_ON_ERROR), $fileId), 'The transport result must ignore provider file identifiers and citation metadata.');
+$assert(count($result->citations()) === 1 && $result->citations()[0]->reference() === $fileId && $result->citations()[0]->filename() === 'private-fixture.txt', 'Since CC-6 the transport result keeps only a bounded descriptor (file reference and name) of each cited file, for an installed extension.');
+$assert(!str_contains($result->answer(), $fileId) && !str_contains($result->answer(), 'private-fixture'), 'The answer text carries no file identifier or name.');
 $assert(!str_contains($result->answer(), 'filecite'), 'The public answer must not expose an inline provider citation marker.');
 
 $settings = CoreSettings::fromArray([

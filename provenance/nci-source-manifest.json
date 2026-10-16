@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-14-rc8-submission-readiness.1",
+  "manifest_version": "2026-10-16-cc6.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -121,7 +121,7 @@
       "owner": "Core",
       "licence": "GPL-2.0-or-later",
       "target": "src/AI/Transport/OpenAiResponsesFileSearchTransport.php and HTTP support classes",
-      "method_scope": "server-constant-gated OpenAI Responses File Search request, completed-call parsing, citation-metadata discard and closed failures only",
+      "method_scope": "server-constant-gated OpenAI Responses File Search request, completed-call parsing, closed failures, and (from CC-6, NCI-CD-011) retention of only the file reference and file name of each file citation as a bounded in-process descriptor, with all other citation metadata discarded",
       "decision_reference": "2026-10-12-NCI-C5-LIVE-CANARY-CONTINUATION-PLAN; 2026-10-12 owner direction to remove Core approved-evidence mapping",
       "test_evidence": ["tests/c5-live-transport.php", "segregated-live-canary"],
       "direct_incorporation": false
@@ -210,6 +210,83 @@
       "method_scope": "draft WordPress.org directory screenshots only (Setup, Profile, AI & Corpus, Appearance & Limits tabs), captured by the owner from the local Test-Site with the NCI administrator banner of 2026-10-15; they show only this plugin's interface with no credential, vector-store identifier, provider data, visitor data or protected AskFolio imagery; excluded from Core runtime and release ZIP",
       "decision_reference": "2026-10-15 owner supplied the four screenshots for the plugin listing",
       "test_evidence": ["tests/c5-package.php", "package-audit"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc0-extension-handshake",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "niche-clever-interactive-core.php, src/Api/V1/Support/ExtensionRegistryV1.php, docs/ARCHITECTURE.md",
+      "method_scope": "API minor constant, truthful capability list and registry getter for Core's own seam invocation; no seam is invoked, no Premium code, no AskFolio material",
+      "decision_reference": "NCI-CD-014 (Premium plan CC-0), 2026-10-15 owner approval",
+      "test_evidence": ["tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc1-workspace-hosting",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Admin/ExtensionScreens.php, src/Plugin.php, accessors on src/Api/V1/Value/*, docs/ARCHITECTURE.md",
+      "method_scope": "Core-hosted submenu pages for a registered workspace extension with Core-owned titles, manage_options check, per-screen nonce and fail-closed rendering; additive value-object accessors; no Premium code, no AskFolio material",
+      "decision_reference": "NCI-CD-014 (Premium plan CC-1), 2026-10-15 owner approval",
+      "test_evidence": ["tests/cc1-workspace-hosting.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc2-profile-wiring",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Profile/*, src/Admin/ProfileConnectionTest.php, ResolvedProfileV1::configured, ChatService, ChatRequestValidator, BudgetGate, Readiness, ConnectionFingerprint, ConnectionTestService, InteractivePanel, assets/js/public.js, blocks/interactive, docs/ARCHITECTURE.md",
+      "method_scope": "Core-owned resolution of non-default profile ids through the profile seam with Core-computed fingerprints, per-profile connection-test records, per-profile visitor buckets, profile attribute on the shortcode and block and profile_id in the public client; default-profile behaviour and fingerprints unchanged; no Premium code, no AskFolio material",
+      "decision_reference": "NCI-CD-014 (Premium plan CC-2), 2026-10-15 owner approval",
+      "test_evidence": ["tests/cc2-profiles.php", "tests/c1-domain.php", "tests/c3-retrieval.php", "tests/c4-budget.php", "tests/c4-connection-test.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc3-viewer-access",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Api/V1/Contracts/ViewerAccessV1.php, src/Api/V1/Value/AccessDecisionV1.php, ExtensionRegistryV1, ProfileDirectory::access, ChatService, PublicError, ChatOutcome, ChatRoute, InteractivePanel, assets/js/public.js, docs/ARCHITECTURE.md",
+      "method_scope": "viewer-access seam for non-default profiles: decision before readiness and budget, fail-closed on any failure, access_required public error with a plain-text owner message, disabled panel for a denied viewer, no-cache marking for restricted pages and REST nonce sent only for named profiles; default-profile requests unchanged; no Premium code, no AskFolio material",
+      "decision_reference": "NCI-CD-012 and NCI-CD-014 (Premium plan CC-3), 2026-10-15 owner approval",
+      "test_evidence": ["tests/cc3-viewer-access.php", "tests/cc2-profiles.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc4-chronology-and-cache",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "ProfileDirectory::chronology/cachedAnswer/offerAnswer, ChatService, PromptPolicy, PolicyFingerprint, ProfileRuntime, ConversationRecorder, AnswerCacheV1::store, CacheKeyV1 accessors, ExtensionRegistryV1 capabilities, docs/ARCHITECTURE.md",
+      "method_scope": "wiring of the chronology and answer-cache seams: bounded delimited chronology section in the policy fingerprint, cache lookup before budget reservation with Core re-validation, offer after evidence validation, never for restricted profiles, history records cache hits; no cache implementation, no Premium code, no AskFolio material; instructions and fingerprints unchanged when no facts",
+      "decision_reference": "NCI-CD-013 and NCI-CD-014 (Premium plan CC-4), 2026-10-16 owner approval",
+      "test_evidence": ["tests/cc4-chronology-cache.php", "tests/c1-domain.php", "tests/c3-retrieval.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc5-conversation-context",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "ConversationContextV1, EarlierTurnV1, CompletedTurnRecorderV1 wiring in ChatService, ProfileDirectory::earlierTurns/recordCompletedTurn, TransportRequest, OpenAiResponsesFileSearchTransport::inputFor, PromptPolicy, PolicyFingerprint, ProfileRuntime, Plugin privacy text, SettingsPage Help copy, readme.txt, docs",
+      "method_scope": "bounded server-supplied earlier-turn context (at most 10 turns and 16,000 bytes, any fault means none) sent as role-tagged provider input, cache bypass for requests with context, best-effort completed-turn recording for provider and cache outcomes, and privacy and Help wording that matches what Core actually sends; no Premium code, no AskFolio material; requests without context are byte-for-byte unchanged",
+      "decision_reference": "NCI-CD-014 (Premium plan CC-5), 2026-10-16 owner approval",
+      "test_evidence": ["tests/cc5-context.php", "tests/c5-live-transport.php", "tests/c6-admin-conversations.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc6-evidence-citations",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "EvidenceCitationsV1, EvidenceCitationV1, ApprovedLinkV1, TransportResult::citations, OpenAiResponsesFileSearchTransport::collectCitations, ProfileDirectory::approvedLinks, ChatService, ChatOutcome, assets/js/public.js, assets/css/public.css, docs/ARCHITECTURE.md, docs/PRIVACY-LIFECYCLE.md",
+      "method_scope": "bounded file-citation descriptors passed in-process to an installed extension after evidence validation; Core validates returned public https links (at most five, distinct, any fault means none) and adds an optional links list to the success payload; public.js renders them with DOM nodes only; no change to the payload when no extension is installed; raw citations, file references and names never reach a browser; supersedes the 12 October direction to remove Core approved-evidence mapping only as recorded in NCI-CD-011; no Premium code, no AskFolio material",
+      "decision_reference": "NCI-CD-011 (owner decision of 15 October 2026) and NCI-CD-014 (Premium plan CC-6), 2026-10-16 owner approval",
+      "test_evidence": ["tests/cc6-evidence.php", "tests/c5-live-transport.php", "tests/c5-public-js.mjs", "tests/contract.php"],
       "direct_incorporation": false
     }
   ]

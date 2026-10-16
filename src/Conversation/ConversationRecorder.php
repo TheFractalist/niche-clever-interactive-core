@@ -24,15 +24,43 @@ final class ConversationRecorder
     }
 
     /** @param mixed $conversationId */
+    public function recordCachedAnswer(
+        CoreSettings $settings,
+        $conversationId,
+        string $profileId,
+        string $question,
+        string $answer,
+        string $policyFingerprint,
+        ?string $corpusVersion = null
+    ): bool {
+        return $this->recordAnswer('cache', $settings, $conversationId, $profileId, $question, $answer, $policyFingerprint, $corpusVersion);
+    }
+
+    /** @param mixed $conversationId */
     public function recordProviderAnswer(
         CoreSettings $settings,
         $conversationId,
         string $profileId,
         string $question,
         string $answer,
-        string $policyFingerprint
+        string $policyFingerprint,
+        ?string $corpusVersion = null
     ): bool {
-        if (!$settings->conversationLogEnabled() || !CompletedTurnEligibilityV1::shouldRecord('provider')) {
+        return $this->recordAnswer('provider', $settings, $conversationId, $profileId, $question, $answer, $policyFingerprint, $corpusVersion);
+    }
+
+    /** @param mixed $conversationId */
+    private function recordAnswer(
+        string $outcome,
+        CoreSettings $settings,
+        $conversationId,
+        string $profileId,
+        string $question,
+        string $answer,
+        string $policyFingerprint,
+        ?string $corpusVersion
+    ): bool {
+        if (!$settings->conversationLogEnabled() || !CompletedTurnEligibilityV1::shouldRecord($outcome)) {
             return false;
         }
 
@@ -43,7 +71,7 @@ final class ConversationRecorder
                 $question,
                 $answer,
                 defined('NCLI_CORE_VERSION') ? NCLI_CORE_VERSION : 'development',
-                $settings->corpusVersion(),
+                $corpusVersion ?? $settings->corpusVersion(),
                 $policyFingerprint,
                 gmdate('Y-m-d H:i:s', (int) call_user_func($this->clock))
             ));
