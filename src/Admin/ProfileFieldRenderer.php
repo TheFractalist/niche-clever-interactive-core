@@ -75,6 +75,63 @@ final class ProfileFieldRenderer
     }
 
     /**
+     * The same rows for an extension profile. $values holds the profile's effective settings:
+     * label, enabled, reference_saved, corpus_version, instructions, response_preset, presentation,
+     * panel_style, visitor_requests_per_day, model (complete block) and appearance (panel_width,
+     * accent_color, show_credit). Site-wide settings (the provider daily cap, delete on uninstall)
+     * and the conversation log belong to Core's profile and are not drawn here.
+     *
+     * @param array<string, mixed> $values
+     */
+    public function profileRows(string $tab, array $values): void
+    {
+        if ($tab === 'setup' || $tab === 'profile') {
+            if ($tab === 'setup') {
+                $this->select('enabled', 'Visitor availability', ['0' => 'Unavailable', '1' => 'Available after a current connection test'], $values['enabled'] ? '1' : '0', 'Public answers remain unavailable until this is enabled and the profile has a current passing connection test.');
+            } else {
+                echo '<input type="hidden" name="enabled" value="0">';
+                $this->checkbox('enabled', 'Enable this profile', (bool) $values['enabled'], 'Enable this only when the saved configuration is ready for public visitors. A current connection test is also required.', 'Enable public answers for this profile.');
+                $this->text('label', 'Profile name', (string) $values['label'], 'A short name for this profile, shown only to you in the Profiles list and the profile switcher.');
+            }
+            $this->text('corpus_version', 'Corpus version', (string) $values['corpus_version'], 'Use your own short version or date label for the prepared material in this profile\'s vector store. Updating it makes the existing connection test stale.');
+        }
+
+        if ($tab === 'profile') {
+            $presentation = $values['presentation'];
+            $this->text('presentation_title', 'Panel title', (string) $presentation['title'], 'The visible title above the public question panel. Leave it blank to use the default profile\'s wording.');
+            $this->text('presentation_headline', 'Panel headline', (string) $presentation['headline'], 'A short supporting line under the title. Leave it blank to use the default profile\'s wording.');
+            $this->textarea('presentation_introduction', 'Panel introduction', (string) $presentation['introduction'], 'Optional introductory copy shown before the question box. Do not include confidential information, credentials or unpublished sources.');
+            $this->text('presentation_unavailable_message', 'Unavailable message', (string) $presentation['unavailable_message'], 'Shown to visitors in place of the question box while this profile is not ready. Leave it blank to use the default profile\'s message.');
+        }
+
+        if ($tab === 'ai-corpus') {
+            $saved = (bool) $values['reference_saved'];
+            echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('vector_store_reference', 'Vector store reference', 'Enter the identifier for an existing OpenAI File Search vector store that you control. It is write-only: once saved it is never shown again, and leaving the field blank keeps the saved value. Changing it requires a new connection test.') . '</th><td>'
+                . '<input id="ncli-vector_store_reference" class="regular-text" type="text" name="vector_store_reference" value="" maxlength="256" autocomplete="off"' . ($saved ? ' placeholder="' . $this->escapeAttribute($this->t('Saved. Leave blank to keep it.')) . '"' : '') . '></td></tr>';
+            $this->renderModelFields($values['model']);
+        }
+
+        if ($tab === 'conversation') {
+            $presentation = $values['presentation'];
+            $this->textarea('instructions', 'Owner response guidance', (string) $values['instructions'], 'Use this for tone, format and level of detail. It cannot override NCI retrieval, safety, privacy or disclosure rules. Editing it requires a new successful connection test.');
+            $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset'], 'Choose the default answer length. Owner response guidance can refine presentation but cannot override safety, retrieval or disclosure rules.');
+            $this->text('presentation_placeholder', 'Question placeholder', (string) $presentation['placeholder'], 'Hint text displayed inside the visitor question field. Leave it blank to use the default profile\'s.');
+            $this->text('presentation_footer_left', 'Panel footer left label', (string) $presentation['footer_left'], 'Optional short label displayed in the left side of the panel footer.');
+            $this->text('presentation_footer_right', 'Panel footer right label', (string) $presentation['footer_right'], 'Optional short label displayed in the right side of the panel footer.');
+        }
+
+        if ($tab === 'appearance-limits') {
+            $appearance = $values['appearance'];
+            $style = (string) $values['panel_style'];
+            $this->select('panel_style', 'Panel style', ['classic' => 'Classic', 'minimal' => 'Minimal', 'dark' => 'Dark'], $style, 'Choose one of the three built-in panel treatments.');
+            $this->select('panel_width', 'Panel width', ['narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide'], (string) $appearance['panel_width'], 'The maximum width of this profile\'s public panel. It always shrinks to fit narrower screens.');
+            $this->accentRow($style, (string) $appearance['accent_color']);
+            $this->checkbox('show_credit', 'Credit line', (bool) $appearance['show_credit'], 'Adds a small "Powered by NC Interactive" link under this profile\'s public panel. It is off by default.', 'Show "Powered by NC Interactive" under the panel.', true);
+            $this->number('visitor_requests_per_day', 'Visitor requests per day', (int) $values['visitor_requests_per_day'], 'Maximum successful or attempted public questions for one privacy-bounded visitor scope in a UTC day, for this profile. The site-wide provider allowance is set on the default profile.', 1, 10000);
+        }
+    }
+
+    /**
      * @param array{id: string, reasoning_effort: string, retrieval_depth: int, max_output_tokens: int, timeout_seconds: int} $model
      */
     private function renderModelFields(array $model): void

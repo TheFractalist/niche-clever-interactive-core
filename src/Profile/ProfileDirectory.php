@@ -12,7 +12,9 @@ use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationContextV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationGovernanceV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\EvidenceCitationsV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\PanelColoursProviderV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileEditorV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileWorkspaceV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ViewerAccessV1;
 use NicheCleverInteractive\Core\Api\V1\Value\AccessDecisionV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ApprovedLinkV1;
@@ -25,8 +27,12 @@ use NicheCleverInteractive\Core\Api\V1\Value\CompletedTurnV1;
 use NicheCleverInteractive\Core\Api\V1\Value\EarlierTurnV1;
 use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
+use NicheCleverInteractive\Core\Api\V1\Value\ProfileSectionV1;
+use NicheCleverInteractive\Core\Api\V1\Value\ProfileSummaryV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ResolvedProfileV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\Readiness;
+use NicheCleverInteractive\Core\Configuration\SecretResolver;
 
 /**
  * The single place Core turns a profile id into a profile it will answer from. The
@@ -377,5 +383,122 @@ final class ProfileDirectory
         if (!$profile->isDefault()) {
             $this->records->put($profile->id(), $status, $fingerprint, $testedAt);
         }
+    }
+
+    /** The extension's profile editor, when one is registered. The Profiles page and workspace exist only then. */
+    public function editor(): ?ProfileEditorV1
+    {
+        $editor = $this->registry !== null ? $this->registry->implementation('profile_editor') : null;
+
+        return $editor instanceof ProfileEditorV1 ? $editor : null;
+    }
+
+    public function workspace(): ?ProfileWorkspaceV1
+    {
+        $workspace = $this->registry !== null ? $this->registry->implementation('profile_workspace') : null;
+
+        return $workspace instanceof ProfileWorkspaceV1 ? $workspace : null;
+    }
+
+    /**
+     * The extension's profiles for the Profiles page. A throwing editor, a malformed list, the
+     * default id or a repeated id yields no profiles at all, so the page shows Core's profile alone.
+     *
+     * @return list<ProfileSummaryV1>
+     */
+    public function summaries(): array
+    {
+        $editor = $this->editor();
+        if ($editor === null) {
+            return [];
+        }
+
+        try {
+            $list = $editor->summaries();
+            if (!is_array($list) || count($list) > 100) {
+                return [];
+            }
+            $seen = [];
+            $out = [];
+            foreach ($list as $summary) {
+                if (!$summary instanceof ProfileSummaryV1) {
+                    return [];
+                }
+                $id = $summary->id()->value();
+                if ($id === CoreSettings::DEFAULT_PROFILE_ID || isset($seen[$id])) {
+                    return [];
+                }
+                $seen[$id] = true;
+                $out[] = $summary;
+            }
+
+            return $out;
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
+
+    /**
+     * Sections the extension adds to a profile's tabs. Any failure or malformed entry yields none.
+     *
+     * @return list<ProfileSectionV1>
+     */
+    public function sections(string $profileId): array
+    {
+        $workspace = $this->workspace();
+        if ($workspace === null || preg_match('/^[a-z0-9][a-z0-9_-]{0,63}$/D', $profileId) !== 1) {
+            return [];
+        }
+
+        try {
+            $list = $workspace->sections(new ProfileIdV1($profileId));
+            if (!is_array($list) || count($list) > 30) {
+                return [];
+            }
+            $keys = [];
+            foreach ($list as $section) {
+                if (!$section instanceof ProfileSectionV1 || isset($keys[$section->key()])) {
+                    return [];
+                }
+                $keys[$section->key()] = true;
+            }
+
+            return array_values($list);
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
+
+    /**
+     * Where a profile stands, computed by Core from its own test record: one of Readiness's states,
+     * `unavailable` (an enabled profile Core cannot build) or `disabled`.
+     *
+     * @return array{state: string, tested_at: string, status: string}
+     */
+    public function status(string $profileId, CoreSettings $settings, bool $enabled): array
+    {
+        $secrets = new SecretResolver();
+        if ($profileId === CoreSettings::DEFAULT_PROFILE_ID) {
+            return [
+                'state' => Readiness::evaluate($settings, $secrets)->state(),
+                'tested_at' => $settings->connectionTestTime(),
+                'status' => $settings->connectionTestStatus(),
+            ];
+        }
+
+        if (!$enabled) {
+            return ['state' => Readiness::DISABLED, 'tested_at' => '', 'status' => 'never'];
+        }
+        $runtime = $this->resolve($profileId, $settings);
+        if ($runtime === null) {
+            return ['state' => 'unavailable', 'tested_at' => '', 'status' => 'never'];
+        }
+        $record = $this->records->get($profileId);
+
+        return [
+            'state' => Readiness::evaluateProfile($runtime, $secrets, $record)->state(),
+            'tested_at' => $record['tested_at'],
+            'status' => $record['status'],
+        ];
     }
 }

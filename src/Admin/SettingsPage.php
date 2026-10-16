@@ -32,9 +32,11 @@ final class SettingsPage
     private ConnectionTestService $connectionTest;
     private FailureLog $failures;
     private ProfileFieldRenderer $fields;
+    private ?ProfileHub $hub;
 
-    public function __construct(?AdminActionGuard $guard = null, ?ConnectionTestService $connectionTest = null, ?FailureLog $failures = null)
+    public function __construct(?AdminActionGuard $guard = null, ?ConnectionTestService $connectionTest = null, ?FailureLog $failures = null, ?ProfileHub $hub = null)
     {
+        $this->hub = $hub;
         $this->guard = $guard ?? AdminActionGuard::forWordPress();
         $this->failures = $failures ?? new OptionFailureLog();
         $this->fields = new ProfileFieldRenderer();
@@ -73,7 +75,7 @@ final class SettingsPage
             add_submenu_page(
                 self::PAGE_SLUG,
                 $this->t('Niche Clever Interactive'),
-                $this->t('Settings'),
+                $this->hubActive() ? $this->t('Profiles') : $this->t('Settings'),
                 'manage_options',
                 self::PAGE_SLUG,
                 [$this, 'render']
@@ -98,6 +100,10 @@ final class SettingsPage
             return;
         }
 
+        if ($this->hubActive() && $this->hub->render()) {
+            return;
+        }
+
         $settings = $this->load();
         $tab = $this->currentTab();
         $readiness = Readiness::evaluate($settings, new SecretResolver());
@@ -111,10 +117,19 @@ final class SettingsPage
             'diagnostics' => $this->t('Diagnostics'),
             'help' => $this->t('Help'),
         ];
+        if ($this->hubActive()) {
+            $tabs = $this->hub->tabs(CoreSettings::DEFAULT_PROFILE_ID, $tabs);
+        }
 
         echo '<div class="wrap ncli-admin ncli-admin--workspace">';
         echo '<h1 class="screen-reader-text">' . $this->escapeHtml($this->t('Niche Clever Interactive workspace')) . '</h1>';
+        if ($this->hubActive()) {
+            $this->hub->header(CoreSettings::DEFAULT_PROFILE_ID, $this->t('Default profile'));
+        }
         echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
+        if ($this->hubActive()) {
+            $this->hub->switcher(CoreSettings::DEFAULT_PROFILE_ID);
+        }
         echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute($this->t('Niche Clever Interactive settings')) . '">';
         foreach ($tabs as $id => $label) {
             $class = $id === $tab ? ' nav-tab-active' : '';
@@ -141,8 +156,14 @@ final class SettingsPage
             $this->renderHelp();
         } elseif ($tab === 'placement') {
             echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.')) . '</p></section>';
+        } elseif ($tab === 'questions' || $tab === 'cache') {
+            // Only the extension's sections, drawn below.
         } else {
             $this->renderForm($settings, $tab);
+        }
+
+        if ($this->hubActive()) {
+            $this->hub->sections(CoreSettings::DEFAULT_PROFILE_ID, $tab);
         }
 
         echo '</div>';
@@ -212,7 +233,7 @@ final class SettingsPage
         echo '</tbody></table>';
 
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-corpus' || $tab === 'conversation' || $tab === 'appearance-limits') {
-            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Save settings')) . '</button><a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute($this->t('Niche Clever')) . '" width="180" height="35"></a></div>';
+            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Save settings')) . '</button>' . ($this->hubActive() ? '<a class="button" href="' . $this->escapeAttribute($this->hub->landingUrl()) . '">' . $this->escapeHtml($this->t('All profiles')) . '</a>' : '') . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute($this->t('Niche Clever')) . '" width="180" height="35"></a></div>';
         }
         echo '</form>';
     }
@@ -596,6 +617,11 @@ final class SettingsPage
         ];
     }
 
+    private function hubActive(): bool
+    {
+        return $this->hub !== null && $this->hub->active();
+    }
+
     private function currentTab(): string
     {
         return $this->safeTab($_GET['tab'] ?? 'setup');
@@ -604,6 +630,10 @@ final class SettingsPage
     private function safeTab($value): string
     {
         $valid = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help'];
+        if ($this->hubActive()) {
+            // An installed extension may add these two tabs; they carry only its sections.
+            $valid = array_merge($valid, ['questions', 'cache']);
+        }
         return is_string($value) && in_array($value, $valid, true) ? $value : 'setup';
     }
 

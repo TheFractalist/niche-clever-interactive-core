@@ -11,7 +11,9 @@ use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationContextV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationGovernanceV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\EvidenceCitationsV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\PanelColoursProviderV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileEditorV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileWorkspaceV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ViewerAccessV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\WorkspaceExtensionV1;
 
@@ -31,6 +33,8 @@ final class ExtensionRegistryV1
         'evidence_citations' => EvidenceCitationsV1::class,
         'panel_colours' => PanelColoursProviderV1::class,
         'conversation_governance' => ConversationGovernanceV1::class,
+        'profile_editor' => ProfileEditorV1::class,
+        'profile_workspace' => ProfileWorkspaceV1::class,
     ];
 
     /**
@@ -40,7 +44,7 @@ final class ExtensionRegistryV1
      *
      * @var list<string>
      */
-    private const CAPABILITIES = ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events', 'conversation_governance'];
+    private const CAPABILITIES = ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events', 'conversation_governance', 'profile_hub'];
 
     /**
      * @var array<string, object>

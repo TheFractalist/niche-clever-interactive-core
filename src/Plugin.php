@@ -8,6 +8,7 @@ use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
 use NicheCleverInteractive\Core\Admin\ConversationsPage;
 use NicheCleverInteractive\Core\Admin\ExtensionScreens;
 use NicheCleverInteractive\Core\Admin\ProfileConnectionTest;
+use NicheCleverInteractive\Core\Admin\ProfileHub;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Admin\SettingsPage;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
@@ -46,6 +47,7 @@ final class Plugin
     private ProfileDirectory $profiles;
     private WordPressConversationStore $conversationStore;
     private ProfileConnectionTest $profileTest;
+    private ProfileHub $profileHub;
 
     private function __construct()
     {
@@ -60,7 +62,8 @@ final class Plugin
         $failureLog = new OptionFailureLog();
         $connectionTest = new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current(), $failureLog);
         $this->profileTest = new ProfileConnectionTest($profiles, $connectionTest);
-        $this->settingsPage = new SettingsPage(null, $connectionTest);
+        $this->profileHub = new ProfileHub($profiles, null, null, null, fn (): array => $this->extensionScreens->screenIds());
+        $this->settingsPage = new SettingsPage(null, $connectionTest, null, $this->profileHub);
         $conversationStore = new WordPressConversationStore();
         $this->conversationsPage = new ConversationsPage(null, $conversationStore);
         $this->conversationPurge = new ConversationPurge($conversationStore, null, $profiles);
@@ -96,6 +99,7 @@ final class Plugin
         $this->conversationsPage->register();
         $this->extensionScreens->register();
         $this->profileTest->register();
+        $this->profileHub->register();
         $this->conversationPurge->register();
         $this->interactivePanel->register();
         $this->chatRoute->register();

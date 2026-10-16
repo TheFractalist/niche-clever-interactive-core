@@ -87,7 +87,7 @@ final class ProfileConnectionTest
 
         $base = function_exists('wp_get_referer') && is_string(wp_get_referer()) && wp_get_referer() !== ''
             ? (string) wp_get_referer()
-            : admin_url('admin.php?page=' . ExtensionScreens::PAGE_PREFIX . self::SCREEN);
+            : admin_url('admin.php?page=' . SettingsPage::PAGE_SLUG . '&view=profiles');
         $url = function_exists('add_query_arg') ? add_query_arg(['ncli_profile_test' => $outcome], $base) : $base;
         wp_safe_redirect($url);
         exit;

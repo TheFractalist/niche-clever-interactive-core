@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc10b.1",
+  "manifest_version": "2026-10-16-cc10c.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -342,6 +342,17 @@
       "method_scope": "an extension profile may supply its own model, reasoning effort, retrieval depth, answer length and timeout, and its own panel width, accent colour and credit line; Core validates the model block with the same ModelSettings rules it uses for its own settings and treats an invalid block or colour as an unavailable profile (never the default model); the values feed Core's connection and answer-cache fingerprints; profiles that supply nothing inherit the default profile exactly as before; no Premium code, no AskFolio material",
       "decision_reference": "2026-10-16 owner approval of the merged profile hub plan (full per-profile parity), step CC-10b",
       "test_evidence": ["tests/cc10b-profile-model.php", "tests/cc2-profiles.php", "tests/c6-model-config.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc10c-profile-hub",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Api/V1/Contracts/{ProfileEditorV1,ProfileWorkspaceV1}.php, src/Api/V1/Value/{ProfileSummaryV1,ProfileEditV1,ProfileSectionV1}.php, src/Api/V1/Support/ExtensionRegistryV1.php, src/Profile/ProfileDirectory.php, src/Admin/ProfileHub.php, src/Admin/ProfileFieldRenderer.php, src/Admin/SettingsPage.php, src/Admin/ProfileConnectionTest.php, src/Plugin.php, assets/css/admin.css, tests/cc10c-profile-hub.php",
+      "method_scope": "two new seams (profile_editor, profile_workspace; capability profile_hub): while an extension registers a profile editor, NC Interactive opens on a Profiles page that lists the default profile and each extension profile with Core-computed connection-test status, offers Add profile, and opens any profile in the same tabbed workspace; Core renders and validates every form and calls the editor only to store; the extension adds sections to Core's tabs; retired per-feature pages redirect; fail-closed for a throwing, malformed or absent extension; without an editor the Settings page is byte-identical to before; layout informed by screenshots of AskFolio Premium's running screens supplied by the owner (no AskFolio source read, no code or asset copied); the existing owner-supplied banner is reused",
+      "decision_reference": "2026-10-16 owner approval of the merged profile hub plan, step CC-10c; AskFolio screenshots supplied by the owner the same day",
+      "test_evidence": ["tests/cc10c-profile-hub.php", "tests/cc10a-profile-fields.php", "tests/cc10b-profile-model.php", "tests/c2-admin-chrome.php", "tests/contract.php"],
       "direct_incorporation": false
     }
   ]
