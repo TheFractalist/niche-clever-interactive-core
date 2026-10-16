@@ -156,7 +156,7 @@ $throws(
 );
 
 new WorkspaceScreenV1('archive');
-$throws(static fn (): WorkspaceScreenV1 => new WorkspaceScreenV1('settings'), InvalidArgumentException::class);
+$throws(static fn (): WorkspaceScreenV1 => new WorkspaceScreenV1('anything-else'), InvalidArgumentException::class);
 new WorkspaceContextV1(true, 'core-issued-nonce');
 $throws(static fn (): WorkspaceContextV1 => new WorkspaceContextV1(false, 'core-issued-nonce'), InvalidArgumentException::class);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\Admin;
 
+use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileEditorV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\WorkspaceExtensionV1;
 use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
 use NicheCleverInteractive\Core\Api\V1\Value\WorkspaceContextV1;
@@ -55,6 +56,7 @@ final class ExtensionScreens
             'cache' => 'Answer cache',
             'archive' => 'Conversation governance',
             'evidence' => 'Evidence links',
+            'settings' => 'Premium settings',
         ];
 
         return Translator::text($labels[$screenId] ?? 'Extension');
@@ -189,7 +191,10 @@ final class ExtensionScreens
         $admin = static fn (string $page): string => function_exists('admin_url') ? (string) admin_url('admin.php?page=' . $page) : 'admin.php?page=' . $page;
 
         echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attribute(Translator::text('Niche Clever Interactive Premium screens')) . '">';
-        echo '<a class="nav-tab" href="' . $this->attribute($admin(SettingsPage::PAGE_SLUG)) . '">' . $this->escape(Translator::text('Settings')) . '</a>';
+        // With the profile hub the way back is the Profiles page; without it, Core's Settings.
+        $hub = $this->registry->implementation('profile_editor') instanceof ProfileEditorV1;
+        $back = $hub ? $admin(SettingsPage::PAGE_SLUG) . '&view=profiles' : $admin(SettingsPage::PAGE_SLUG);
+        echo '<a class="nav-tab" href="' . $this->attribute($back) . '">' . $this->escape(Translator::text($hub ? 'Profiles' : 'Settings')) . '</a>';
         foreach ($ids as $id) {
             $active = $id === $current;
             echo '<a class="nav-tab' . ($active ? ' nav-tab-active' : '') . '" href="' . $this->attribute($admin(self::PAGE_PREFIX . $id)) . '"' . ($active ? ' aria-current="page"' : '') . '>' . $this->escape(self::label($id)) . '</a>';

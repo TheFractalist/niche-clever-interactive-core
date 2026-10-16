@@ -114,6 +114,9 @@ $assert(!str_contains($render($none, 'profiles'), '<section'), 'An unavailable s
 $ctx = $ext->contexts[0];
 $assert($ctx->isCoreAuthorised() && $ctx->screenId() === 'profiles' && $ctx->nonceAction() === 'ncli_ext_profiles', 'The context carries the screen id and nonce action.');
 
+// CC-10d: a site-level screen id, and the way back follows the hub.
+$assert((new NicheCleverInteractive\Core\Api\V1\Value\WorkspaceScreenV1('settings'))->id() === 'settings' && NicheCleverInteractive\Core\Admin\ExtensionScreens::label('settings') === 'Premium settings', 'The settings screen id is permitted and labelled by Core.');
+$assert(str_contains($out, 'href="admin.php?page=ncli-core">Settings</a>') && !str_contains($out, 'view=profiles'), 'Without a profile editor the tab bar leads back to Settings.');
 // Callbacks registered with WordPress render the same.
 ob_start();
 call_user_func($ncliMenus['ncli-ext-archive']['cb']);

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc10c.1",
+  "manifest_version": "2026-10-16-cc10d.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -353,6 +353,17 @@
       "method_scope": "two new seams (profile_editor, profile_workspace; capability profile_hub): while an extension registers a profile editor, NC Interactive opens on a Profiles page that lists the default profile and each extension profile with Core-computed connection-test status, offers Add profile, and opens any profile in the same tabbed workspace; Core renders and validates every form and calls the editor only to store; the extension adds sections to Core's tabs; retired per-feature pages redirect; fail-closed for a throwing, malformed or absent extension; without an editor the Settings page is byte-identical to before; layout informed by screenshots of AskFolio Premium's running screens supplied by the owner (no AskFolio source read, no code or asset copied); the existing owner-supplied banner is reused",
       "decision_reference": "2026-10-16 owner approval of the merged profile hub plan, step CC-10c; AskFolio screenshots supplied by the owner the same day",
       "test_evidence": ["tests/cc10c-profile-hub.php", "tests/cc10a-profile-fields.php", "tests/cc10b-profile-model.php", "tests/c2-admin-chrome.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc10d-site-screens",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Api/V1/Value/WorkspaceScreenV1.php, src/Admin/ExtensionScreens.php, tests/cc1-workspace-hosting.php, tests/cc10c-profile-hub.php, tests/contract.php",
+      "method_scope": "a permitted site-level extension screen id (settings, labelled Premium settings by Core) for settings that belong to no single profile, and the extension tab bar leads back to the Profiles page while the profile hub is active; no Premium code, no AskFolio material",
+      "decision_reference": "2026-10-16 owner approval of the merged profile hub plan; follows CC-10c",
+      "test_evidence": ["tests/cc1-workspace-hosting.php", "tests/cc10c-profile-hub.php", "tests/contract.php"],
       "direct_incorporation": false
     }
   ]

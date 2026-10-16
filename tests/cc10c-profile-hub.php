@@ -388,6 +388,11 @@ $_GET = ['tab' => 'setup'];
 $noHub = $render(static fn () => (new SettingsPage())->render());
 $assert(!str_contains($noHub, 'ncli-admin__titlebar') && !str_contains($noHub, 'All profiles') && !str_contains($noHub, 'Switch profile'), 'Without an editor the Settings page is exactly as before.');
 
+// ---- Site screens lead back to the hub --------------------------------------------------------------------------------------------------------
+$screens = new NicheCleverInteractive\Core\Admin\ExtensionScreens($registry);
+$html = $render(static fn () => $screens->render('settings'));
+$assert(str_contains($html, 'view=profiles">Profiles</a>') && !str_contains($html, '>Settings</a>'), 'With a profile editor the extension tab bar leads back to the Profiles page.');
+
 // ---- Wiring -----------------------------------------------------------------------------------------------------------------------------------------
 $pluginSource = (string) file_get_contents(dirname(__DIR__) . '/src/Plugin.php');
 $assert(str_contains($pluginSource, 'new ProfileHub(') && str_contains($pluginSource, '$this->profileHub->register()') && str_contains($pluginSource, 'new SettingsPage(null, $connectionTest, null, $this->profileHub)'), 'Core wires the hub into the plugin.');
