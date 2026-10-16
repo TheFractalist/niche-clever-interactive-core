@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc9.1",
+  "manifest_version": "2026-10-16-cc10b.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -320,6 +320,28 @@
       "method_scope": "extension screens load Core's admin stylesheet and render inside Core's existing masthead, tab bar and tab panel, so they look the same as Core's own screens; a few additional utility classes in the existing stylesheet; the existing owner-supplied nci-admin-banner asset is reused; no new asset, no Premium code, no AskFolio material",
       "decision_reference": "2026-10-16 owner instruction to align the Premium admin look with Core",
       "test_evidence": ["tests/cc1-workspace-hosting.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc10a-profile-field-renderer",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Admin/ProfileFieldRenderer.php, src/Admin/SettingsPage.php, tests/cc10a-profile-fields.php, tests/c2-render.php",
+      "method_scope": "behaviour-preserving extraction of the settings tabs' field rows from SettingsPage into a renderer that draws them from a settings array, so a later change can render the same rows for another profile; the rendered HTML of every Settings tab is unchanged (compared byte for byte before and after); no Premium code, no AskFolio material",
+      "decision_reference": "2026-10-16 owner approval of the merged profile hub plan, step CC-10a",
+      "test_evidence": ["tests/cc10a-profile-fields.php", "tests/c2-admin-chrome.php", "tests/c2-render.php", "tests/c6-model-config.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc10b-profile-model-and-appearance",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Configuration/ModelSettings.php, src/Configuration/CoreSettings.php, src/Api/V1/Value/ResolvedProfileV1.php, src/Profile/ProfileRuntime.php, src/Frontend/InteractivePanel.php, tests/cc10b-profile-model.php",
+      "method_scope": "an extension profile may supply its own model, reasoning effort, retrieval depth, answer length and timeout, and its own panel width, accent colour and credit line; Core validates the model block with the same ModelSettings rules it uses for its own settings and treats an invalid block or colour as an unavailable profile (never the default model); the values feed Core's connection and answer-cache fingerprints; profiles that supply nothing inherit the default profile exactly as before; no Premium code, no AskFolio material",
+      "decision_reference": "2026-10-16 owner approval of the merged profile hub plan (full per-profile parity), step CC-10b",
+      "test_evidence": ["tests/cc10b-profile-model.php", "tests/cc2-profiles.php", "tests/c6-model-config.php"],
       "direct_incorporation": false
     }
   ]

@@ -21,7 +21,7 @@ final class ResolvedProfileV1
     private string $policyFingerprint;
     private string $corpusFingerprint;
     private string $responsePreset;
-    /** @var array{vector_store_reference: string, corpus_version: string, instructions: string, response_preset: string, presentation: array<string, string>, panel_style: string, visitor_requests_per_day: int}|null */
+    /** @var array{vector_store_reference: string, corpus_version: string, instructions: string, response_preset: string, presentation: array<string, string>, panel_style: string, visitor_requests_per_day: int, model: array<string, mixed>|null, appearance: array<string, mixed>|null}|null */
     private ?array $configuration = null;
 
     public function __construct(
@@ -44,6 +44,8 @@ final class ResolvedProfileV1
      * Core never reads for a configured profile. Every field is bounded here and again by Core.
      *
      * @param array<string, string> $presentation Any subset of title, headline, introduction, placeholder, footer_left, footer_right, unavailable_message.
+     * @param array<string, mixed>|null $model All of id, reasoning_effort, retrieval_depth, max_output_tokens, timeout_seconds, or null to use the default profile's model settings. Core checks the values against its model catalogue when it builds the profile and treats any other value as unavailable.
+     * @param array<string, mixed>|null $appearance Any subset of panel_width, accent_color (six-digit hex or empty), show_credit, or null to use the default profile's.
      */
     public static function configured(
         ProfileIdV1 $id,
@@ -54,7 +56,9 @@ final class ResolvedProfileV1
         string $responsePreset,
         array $presentation,
         string $panelStyle,
-        int $visitorRequestsPerDay
+        int $visitorRequestsPerDay,
+        ?array $model = null,
+        ?array $appearance = null
     ): self {
         if (strlen($vectorStoreReference) > 256 || strlen($corpusVersion) > 128 || strlen($ownerGuidance) > 4000) {
             throw new \InvalidArgumentException('A profile configuration value is out of bounds.');
@@ -68,6 +72,25 @@ final class ResolvedProfileV1
         foreach ([$vectorStoreReference, $corpusVersion, $ownerGuidance] as $value) {
             if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $value) === 1) {
                 throw new \InvalidArgumentException('A profile configuration value is malformed.');
+            }
+        }
+        if ($model !== null) {
+            $expected = ['id' => 'string', 'reasoning_effort' => 'string', 'retrieval_depth' => 'integer', 'max_output_tokens' => 'integer', 'timeout_seconds' => 'integer'];
+            if (array_keys($model) !== array_keys($expected)) {
+                throw new \InvalidArgumentException('A profile model block needs exactly its five settings.');
+            }
+            foreach ($expected as $key => $type) {
+                if (gettype($model[$key]) !== $type || (is_string($model[$key]) && (strlen($model[$key]) > 128 || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $model[$key]) === 1))) {
+                    throw new \InvalidArgumentException('A profile model value is malformed.');
+                }
+            }
+        }
+        if ($appearance !== null) {
+            $expected = ['panel_width' => 'string', 'accent_color' => 'string', 'show_credit' => 'boolean'];
+            foreach ($appearance as $key => $value) {
+                if (!isset($expected[$key]) || gettype($value) !== $expected[$key] || (is_string($value) && strlen($value) > 16)) {
+                    throw new \InvalidArgumentException('A profile appearance value is malformed.');
+                }
             }
         }
         foreach ($presentation as $key => $value) {
@@ -86,6 +109,8 @@ final class ResolvedProfileV1
             'presentation' => array_map('trim', $presentation),
             'panel_style' => $panelStyle,
             'visitor_requests_per_day' => $visitorRequestsPerDay,
+            'model' => $model,
+            'appearance' => $appearance === null ? null : array_map(static fn ($v) => is_string($v) ? trim($v) : $v, $appearance),
         ];
 
         return $profile;

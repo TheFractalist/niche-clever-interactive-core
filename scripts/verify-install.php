@@ -1,7 +1,7 @@
 <?php
 /**
  * Verifies an installed Niche Clever Interactive plugin folder against the exact
- * rc.10 file set (101 files, from the working tree when this manifest was generated; regenerate it after any source change). Read-only: it changes nothing.
+ * rc.10 file set (103 files, from the working tree when this manifest was generated; regenerate it after any source change). Read-only: it changes nothing.
  *
  * Usage:  C:\xampp\php\php.exe verify-install.php "C:\xampp\htdocs\Test-Site\wp-content\plugins\niche-clever-interactive"
  *
@@ -12,7 +12,7 @@ $expected = <<<'MANIFEST'
 ea4c9bc39487f449f8c7c02fc9102ffc71a72ca7a6246e61ed229bdddb73c792  CHANGELOG.md
 edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6  COPYING
 d4c4bbd2b2f0c85952f4b1618e3a114465f4b566afc1ebdef465030c56696f94  LICENSE
-fdafab1d06b30bb14b016a8b412d0ee10b805a10af9496889950c1031a632b85  README.md
+a9aae900e7868e83356afdf8a90d61fcdaddee30fbc70cf319b5018c345592ca  README.md
 1ed8297865e44731cf6f357501e6c5a12c876f7d6e2ce726bfd82158b2029987  assets/css/admin.css
 59ae9562daa8c748ecd58e6ef615b5fa4beb30cf3458030b6c6e9961c386e91d  assets/css/public.css
 8cce4f63d628a7da81b6fa617788b9e552a1021db06a27c75cf4e67252ef2a89  assets/images/ncli-admin-banner.png
@@ -41,7 +41,8 @@ a3c89ffd15e1a0b0afe65061b75a9399565f231725ef2ca0c340b8a0336f5699  src/AI/Transpo
 033daf2347a19959bd733c0742efb3d732e75da7b40c29b463b4d5df8c348fcf  src/Admin/ConversationsPage.php
 fec7301ec5eb93a31e997201eff919343366c85e742218dac54bae655ac2f2db  src/Admin/ExtensionScreens.php
 ff168e4eb2689a83b288383cd384f5e1f6395c339dee254484e0a8af72c2ecaa  src/Admin/ProfileConnectionTest.php
-2942aa14f85be9325bd975074ef099b73c4b1d4acb1488c6d044ff50b55f11e9  src/Admin/SettingsPage.php
+2c91626c5e6b94222c5a1670762eec78f2bd5fdce0e066d851a9717f0794dc2f  src/Admin/ProfileFieldRenderer.php
+8b1d6cc996a6a935d35c0c5deaed6375b922842044312dd62d37cdd0ebefd4f5  src/Admin/SettingsPage.php
 147abb51fd541fd7f964d61dbe5f5c4ca469043796e165bebab77b70e38c223c  src/Api/V1/Contracts/AnswerCacheV1.php
 1bc562a68ef248f9644e1e5b7f06e61a760beb03ec4d2accbe8064fc84ee20aa  src/Api/V1/Contracts/ChronologyProviderV1.php
 10d70b19d06d828b5f336c845bb0cef838c4002311cb2eda951af73f84bd489c  src/Api/V1/Contracts/CompletedTurnRecorderV1.php
@@ -66,7 +67,7 @@ aab8294f11e1203cf1e5bb46fe543fdc2ee87d5693a09dd49e771a80adcd867c  src/Api/V1/Val
 9cf30bbc91cc50b3e095bf20fc39b76d473049962f84a38cd32194c2bd839cea  src/Api/V1/Value/EvidenceCitationV1.php
 7b928b4363e2372caf382de560c7e2f81b880f3c5e10128ff76b2e38ae8d07eb  src/Api/V1/Value/PanelColoursV1.php
 ca53c1edc08a72c448f5d0ba530580f9c62e1f95e9b4f58c439c308b079f1120  src/Api/V1/Value/ProfileIdV1.php
-220e0fe0013ea745999e7d558157bc9857a7a2d96819ce1e100af91b332c1891  src/Api/V1/Value/ResolvedProfileV1.php
+042470c1bc7294598bd78ecc72d32534f6c635fe8d9c1bddd3ec2db40935ad6a  src/Api/V1/Value/ResolvedProfileV1.php
 f9f2e9a7ddbc950d1ffffdc0db626d46de8b9a490f0e1c0c0f68f75e275b7b0b  src/Api/V1/Value/WorkspaceContextV1.php
 0f5225b6b14141f6b7fb9c668400b5ad64d664f25454478d1e951bc9388a4909  src/Api/V1/Value/WorkspaceScreenV1.php
 93a2203bd494a0114b6488abcf3818a486522a5f5d1895dee22fa51cbca8283d  src/Budget/BucketStore.php
@@ -76,8 +77,9 @@ f9f2e9a7ddbc950d1ffffdc0db626d46de8b9a490f0e1c0c0f68f75e275b7b0b  src/Api/V1/Val
 36e2778c0757468f11095137dbdff8c5da035a7f9a7f1c0b6ea013655f8416a4  src/Budget/Reservation.php
 acc4e57bbd53453a74b4348da07c790cc533a2fc0aa6ad85fa122cf3f3ecf9f9  src/Budget/WordPressBucketStore.php
 e1a2688496dbf47c14e0c605e03a9d0e903e164d9bb84e7e7d33036a13e46b67  src/Configuration/ConnectionFingerprint.php
-6d8bf764542d3bcc00b7c1fb34030ba22c80742f26ef35328cd66bb2f06fd6d4  src/Configuration/CoreSettings.php
+0fa6b2f895621f2f6132f03cb96d48665cf0edd5b31f25cf5b07e9e0093737ee  src/Configuration/CoreSettings.php
 ab9872f905a4ba38e87c58f2cbb959e0cb3b9d20e45be99b263d3c1f41274205  src/Configuration/ModelCatalogue.php
+1db74b6577d15befb5b6d4e2b7c64128a69d8b742d3e78ef5f1e3453be15e3fb  src/Configuration/ModelSettings.php
 40a6e3b3b22d9a93fb3dfcc740eb92285b430e0d9a11ad3d574fdd399ddeebf0  src/Configuration/PanelAppearance.php
 c6cc8c0ae5bd927c3591b84245cf57c72a4143da0061c8b62b3487d554c697c5  src/Configuration/Readiness.php
 6d14a31943a797d38fc7b43a6c6923e200a0a10b850a1e79b3b79d80c2ae08d9  src/Configuration/SecretResolver.php
@@ -93,12 +95,12 @@ c247121ab84c0f75748a923d20d6ad525bcd4a587e2fbee1a3abd4e4709f4dcb  src/Conversati
 7bbba6c10098e86e90ac75f9a8b420e1a2b70beb3f19f5805366dbd0e3a28e48  src/Conversation/WordPressConversationStore.php
 7b5b47dd9d2accd823bed3841b7bf0db0fcbd23aa47c9c1a10ab8a7f1f1be0af  src/Diagnostics/FailureLog.php
 690001337fa4d6eb199293e4f2d6abf6eabfa85db102639308634baa41009b56  src/Diagnostics/OptionFailureLog.php
-450dc22b9adc2168fbe9295bc64725406106c5678d2ade1bf27d5f5b3258b7eb  src/Frontend/InteractivePanel.php
+bce82b043b8947213cb6d875c18b3c3ec7f6a9f1b0932083e03cd3b0a0eb8713  src/Frontend/InteractivePanel.php
 dc3d655993016380df085aab7ca428b6fc23bc464d9fa22fe14e589ee90e171a  src/Plugin.php
 c46d220367202696ffe3f779c736db316af161f2fdaccaf02b0b78cfbd0cd3b9  src/Profile/DefaultProfileResolverV1.php
 76e45627b517895df7bc0f175b3992233025ba3ce4e9f28a2932635ada291c38  src/Profile/OptionProfileTestRecords.php
 6cd7cb3f4671a271d422b4df8ecfd3a67d18bd72a6b66acd696629f89fd19d9c  src/Profile/ProfileDirectory.php
-f26c82a8c97d2906d6d57b42693020418ed6a6849262b85db076781a41d16ee0  src/Profile/ProfileRuntime.php
+e830ab9f5280ceacb2cad9c705da631e689bfdce0f56329d3e3bd331257077ca  src/Profile/ProfileRuntime.php
 ccdd314b783cce60a9ecf375bb3b41c0cef09f85863e740a4b22fa7248a1e727  src/Profile/ProfileTestRecords.php
 c1c8900f147bbdd3a77ab9e1e0184d6b2bce4bd9f76cd9167dd3da1e11774228  src/Rest/ChatRoute.php
 7aa8ba97138dbc2f01ed270640833a069a46f5f5063d8903c61b2716693def6b  src/Security/AdminActionGuard.php
@@ -158,7 +160,7 @@ foreach (['MISSING' => array_keys($missing), 'DIFFERENT CONTENT' => $different, 
     }
 }
 if ($missing === [] && $different === [] && $extra === []) {
-    echo "\nRESULT: MATCH. This folder is exactly the rc.10 file set (101 files).\n";
+    echo "\nRESULT: MATCH. This folder is exactly the rc.10 file set (103 files).\n";
     exit(0);
 }
 echo "\nRESULT: DOES NOT MATCH rc.10.\n";

@@ -49,6 +49,8 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/cc6-evidence.php
     & 'C:\xampp\php\php.exe' tests/cc8-presentation.php
     & 'C:\xampp\php\php.exe' tests/cc7-governance.php
+    & 'C:\xampp\php\php.exe' tests/cc10a-profile-fields.php
+    & 'C:\xampp\php\php.exe' tests/cc10b-profile-model.php
     node --check assets/js/admin.js
     node --check assets/js/public.js
     node tests/c5-public-js.mjs

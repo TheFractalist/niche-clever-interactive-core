@@ -115,25 +115,7 @@ final class CoreSettings
             throw new InvalidArgumentException('Unknown Core response preset.');
         }
 
-        $modelId = self::boundedString($model['id'] ?? $defaults['model']['id'], 128);
-        if (!ModelCatalogue::has($modelId)) {
-            throw new InvalidArgumentException('Unknown Core model.');
-        }
-
-        $effort = self::boundedString($model['reasoning_effort'] ?? $defaults['model']['reasoning_effort'], 16);
-        if (!ModelCatalogue::validEffort($modelId, $effort)) {
-            throw new InvalidArgumentException('Unknown Core reasoning effort for the selected model.');
-        }
-
-        $depth = self::positiveInt($model['retrieval_depth'] ?? $defaults['model']['retrieval_depth'], 1, 50);
-        if (!in_array($depth, ModelCatalogue::RETRIEVAL_DEPTHS, true)) {
-            throw new InvalidArgumentException('Unknown Core retrieval depth.');
-        }
-
-        $timeout = self::positiveInt($model['timeout_seconds'] ?? $defaults['model']['timeout_seconds'], 1, 600);
-        if (!in_array($timeout, ModelCatalogue::TIMEOUT_SECONDS, true)) {
-            throw new InvalidArgumentException('Unknown Core timeout.');
-        }
+        $modelBlock = ModelSettings::validate($model, $defaults['model']);
 
         $style = self::boundedString($appearance['panel_style'] ?? $defaults['appearance']['panel_style'], 16);
         if ($style === 'editorial') {
@@ -167,13 +149,7 @@ final class CoreSettings
             ],
             'instructions' => self::boundedString($input['instructions'] ?? '', 4000),
             'response_preset' => $preset,
-            'model' => [
-                'id' => $modelId,
-                'reasoning_effort' => $effort,
-                'retrieval_depth' => $depth,
-                'max_output_tokens' => self::positiveInt($model['max_output_tokens'] ?? $defaults['model']['max_output_tokens'], ModelCatalogue::MIN_OUTPUT_TOKENS, ModelCatalogue::MAX_OUTPUT_TOKENS),
-                'timeout_seconds' => $timeout,
-            ],
+            'model' => $modelBlock,
             'limits' => [
                 'visitor_requests_per_day' => self::positiveInt($limits['visitor_requests_per_day'] ?? $defaults['limits']['visitor_requests_per_day'], 1, 10000),
                 'provider_requests_per_day' => self::positiveInt($limits['provider_requests_per_day'] ?? $defaults['limits']['provider_requests_per_day'], 1, 100000),

@@ -89,6 +89,9 @@ final class InteractivePanel
         $profileId = '';
         $colourProfile = null;
         $panelMarker = 'unavailable';
+        $width = $settings->panelWidth();
+        $accentColour = $settings->accentColor();
+        $showCredit = $settings->showCredit();
         if ($requested === '' || $requested === CoreSettings::DEFAULT_PROFILE_ID) {
             $style = $settings->panelStyle();
             $colourProfile = ProfileRuntime::fromSettings($settings);
@@ -105,6 +108,9 @@ final class InteractivePanel
                 $unavailable = $settings->unavailableMessage();
             } else {
                 $style = $profile->panelStyle();
+                $width = $profile->panelWidth();
+                $accentColour = $profile->accentColor();
+                $showCredit = $profile->showCredit();
                 $presentation = $profile->presentation();
                 $unavailable = $profile->unavailableMessage();
                 $access = $this->profiles->access($profile);
@@ -128,13 +134,13 @@ final class InteractivePanel
             ? $attributes['title']
             : $presentation['title'];
         $status = $ready ? Translator::text('Ready for a verified answer.') : $unavailable;
-        $inlineStyle = PanelAppearance::inlineStyle($style, $settings->panelWidth(), $settings->accentColor());
+        $inlineStyle = PanelAppearance::inlineStyle($style, $width, $accentColour);
         $colours = $colourProfile !== null ? $this->profiles->colours($colourProfile) : null;
         if ($colours !== null) {
             $colourStyle = PanelAppearance::colourStyle($style, $colours->toArray());
             $inlineStyle = $inlineStyle === '' ? $colourStyle : ($colourStyle === '' ? $inlineStyle : $inlineStyle . ';' . $colourStyle);
         }
-        $credit = $settings->showCredit()
+        $credit = $showCredit
             ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(Translator::text('Powered by NC Interactive')) . '</a></p>'
             : '';
         $disabled = $ready ? '' : ' disabled';

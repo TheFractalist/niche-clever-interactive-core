@@ -7,6 +7,8 @@ namespace NicheCleverInteractive\Core\Profile;
 use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\Api\V1\Value\ResolvedProfileV1;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Configuration\ModelSettings;
+use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 use NicheCleverInteractive\Core\Security\PolicyFingerprint;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
@@ -27,6 +29,9 @@ final class ProfileRuntime
     /** @var array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string} */
     private array $presentation;
     private string $panelStyle;
+    private string $panelWidth;
+    private string $accentColor;
+    private bool $showCredit;
 
     /**
      * @param array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string} $presentation
@@ -40,7 +45,10 @@ final class ProfileRuntime
         RequestOptions $options,
         int $visitorRequestsPerDay,
         array $presentation,
-        string $panelStyle
+        string $panelStyle,
+        string $panelWidth,
+        string $accentColor,
+        bool $showCredit
     ) {
         $this->id = $id;
         $this->vectorStoreReference = $vectorStoreReference;
@@ -51,6 +59,9 @@ final class ProfileRuntime
         $this->visitorRequestsPerDay = $visitorRequestsPerDay;
         $this->presentation = $presentation;
         $this->panelStyle = $panelStyle;
+        $this->panelWidth = $panelWidth;
+        $this->accentColor = $accentColor;
+        $this->showCredit = $showCredit;
     }
 
     public static function fromSettings(CoreSettings $settings): self
@@ -64,13 +75,18 @@ final class ProfileRuntime
             RequestOptions::fromSettings($settings),
             $settings->visitorRequestsPerDay(),
             $settings->presentation(),
-            $settings->panelStyle()
+            $settings->panelStyle(),
+            $settings->panelWidth(),
+            $settings->accentColor(),
+            $settings->showCredit()
         );
     }
 
     /**
-     * An extension profile inherits Core's model, retrieval, timeout and provider settings;
-     * it supplies only its own store, corpus version, guidance, wording, style and limit.
+     * An extension profile supplies its own store, corpus version, guidance, wording, style and
+     * limit, and may supply its own model settings and panel width, accent colour and credit line;
+     * anything it leaves out is inherited from the default profile. A value Core does not accept
+     * (an unknown model, a bad colour) makes the profile unavailable rather than falling back.
      * A profile built without a configuration cannot be answered from (null).
      */
     public static function fromResolved(ResolvedProfileV1 $profile, CoreSettings $defaults): ?self
@@ -80,17 +96,42 @@ final class ProfileRuntime
             return null;
         }
 
+        try {
+            $options = $configuration['model'] === null
+                ? RequestOptions::fromSettings($defaults)
+                : self::optionsFrom(ModelSettings::validate($configuration['model'], $defaults->model()));
+        } catch (\InvalidArgumentException $exception) {
+            return null;
+        }
+
+        $inherited = $defaults->toArray()['appearance'];
+        $own = $configuration['appearance'] ?? [];
+        $width = $own['panel_width'] ?? $inherited['panel_width'];
+        $accent = strtolower($own['accent_color'] ?? $inherited['accent_color']);
+        if (!isset(PanelAppearance::WIDTHS[$width]) || ($accent !== '' && !PanelAppearance::isHexColour($accent))) {
+            return null;
+        }
+
         return new self(
             $profile->id()->value(),
             $configuration['vector_store_reference'],
             $configuration['corpus_version'],
             $configuration['instructions'],
             $configuration['response_preset'],
-            RequestOptions::fromSettings($defaults),
+            $options,
             $configuration['visitor_requests_per_day'],
             array_merge($defaults->presentation(), $configuration['presentation']),
-            $configuration['panel_style']
+            $configuration['panel_style'],
+            $width,
+            $accent,
+            $own['show_credit'] ?? $inherited['show_credit']
         );
+    }
+
+    /** @param array{id: string, reasoning_effort: string, retrieval_depth: int, max_output_tokens: int, timeout_seconds: int} $model */
+    private static function optionsFrom(array $model): RequestOptions
+    {
+        return new RequestOptions($model['id'], $model['reasoning_effort'], $model['retrieval_depth'], $model['max_output_tokens'], $model['timeout_seconds']);
     }
 
     public function id(): string
@@ -142,6 +183,22 @@ final class ProfileRuntime
     public function panelStyle(): string
     {
         return $this->panelStyle;
+    }
+
+    public function panelWidth(): string
+    {
+        return $this->panelWidth;
+    }
+
+    /** Six-digit hex colour, or an empty string for the panel style's own colour. */
+    public function accentColor(): string
+    {
+        return $this->accentColor;
+    }
+
+    public function showCredit(): bool
+    {
+        return $this->showCredit;
     }
 
     public function unavailableMessage(): string
