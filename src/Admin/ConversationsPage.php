@@ -23,9 +23,13 @@ final class ConversationsPage
     private AdminActionGuard $guard;
     private ConversationStore $store;
     private ?string $hook = null;
+    private ?ExtensionScreens $screens;
+    private ?ProfileHub $hub;
 
-    public function __construct(?AdminActionGuard $guard = null, ?ConversationStore $store = null)
+    public function __construct(?AdminActionGuard $guard = null, ?ConversationStore $store = null, ?ExtensionScreens $screens = null, ?ProfileHub $hub = null)
     {
+        $this->screens = $screens;
+        $this->hub = $hub;
         $this->guard = $guard ?? AdminActionGuard::forWordPress();
         $this->store = $store ?? new WordPressConversationStore();
     }
@@ -81,9 +85,20 @@ final class ConversationsPage
         echo '<h1 class="screen-reader-text">' . $this->escapeHtml($this->t('Niche Clever Interactive conversations')) . '</h1>';
         echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
         echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute($this->t('Niche Clever Interactive conversations')) . '">';
-        echo '<a class="nav-tab" href="' . $this->escapeAttribute($this->adminUrl(['page' => SettingsPage::PAGE_SLUG, 'tab' => 'conversation'])) . '">' . $this->escapeHtml($this->t('Conversation settings')) . '</a>';
-        echo '<a class="nav-tab nav-tab-active" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '" aria-current="page">' . $this->escapeHtml($this->t('Conversation history')) . '</a>';
+        $governance = $this->governanceActive() && $this->requestedTab() === 'governance';
+        if (!$this->governanceActive()) {
+            echo '<a class="nav-tab" href="' . $this->escapeAttribute($this->adminUrl(['page' => SettingsPage::PAGE_SLUG, 'tab' => 'conversation'])) . '">' . $this->escapeHtml($this->t('Conversation settings')) . '</a>';
+        }
+        echo '<a class="nav-tab' . ($governance ? '' : ' nav-tab-active') . '" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '"' . ($governance ? '' : ' aria-current="page"') . '>' . $this->escapeHtml($this->t('Conversation history')) . '</a>';
+        if ($this->governanceActive()) {
+            echo '<a class="nav-tab' . ($governance ? ' nav-tab-active' : '') . '" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'governance'])) . '"' . ($governance ? ' aria-current="page"' : '') . '>' . $this->escapeHtml($this->t('Governance')) . '</a>';
+        }
         echo '</nav>';
+
+        if ($governance) {
+            echo '<section class="ncli-admin__tab-panel ncli-admin__extension">' . $this->screens->bodyHtml('archive') . '</section></div>';
+            return;
+        }
 
         $this->renderNotice();
 
@@ -101,6 +116,19 @@ final class ConversationsPage
         }
 
         echo '</div>';
+    }
+
+    /** Whether the extension's governance screen is hosted here as a tab. */
+    private function governanceActive(): bool
+    {
+        return $this->screens !== null && $this->hub !== null && $this->hub->active() && $this->screens->declares('archive');
+    }
+
+    private function requestedTab(): string
+    {
+        $tab = $_GET['tab'] ?? '';
+
+        return is_string($tab) && $tab === 'governance' ? $tab : '';
     }
 
     public function handleDelete(): void

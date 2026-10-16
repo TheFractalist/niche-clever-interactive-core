@@ -59,15 +59,12 @@ final class ProfileHub
     private $settings;
     /** @var callable(array<string, string>): void */
     private $redirect;
-    /** @var callable(): list<string> */
-    private $screenIds;
 
     /**
      * @param callable(): CoreSettings|null $settings
      * @param callable(array<string, string>): void|null $redirect Receives the query for the Core page to return to.
-     * @param callable(): list<string>|null $screenIds Ids of the extension screens Core still hosts as pages.
      */
-    public function __construct(ProfileDirectory $profiles, ?AdminActionGuard $guard = null, ?callable $settings = null, ?callable $redirect = null, ?callable $screenIds = null)
+    public function __construct(ProfileDirectory $profiles, ?AdminActionGuard $guard = null, ?callable $settings = null, ?callable $redirect = null)
     {
         $this->profiles = $profiles;
         $this->guard = $guard ?? AdminActionGuard::forWordPress();
@@ -77,7 +74,6 @@ final class ProfileHub
             return CoreSettings::fromArray(is_array($stored) ? $stored : CoreSettings::defaults());
         };
         $this->redirect = $redirect ?? [$this, 'redirectTo'];
-        $this->screenIds = $screenIds ?? static fn (): array => [];
     }
 
     public function register(): void
@@ -126,27 +122,33 @@ final class ProfileHub
 
     // ---- shared chrome (also used by SettingsPage for the default profile) ----------------------------------------------
 
-    /** The title strip and profile switcher that sit above the tab bar of every profile workspace. */
-    public function header(string $profileId, string $title): void
+    /** A plain title strip: the page name on the left, a short label on the right. */
+    public function titleBar(string $left, string $right): void
     {
-        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html($title) . '</span><span>' . $this->html($this->t('Profile workspace')) . '</span></div>';
+        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html($left) . '</span><span>' . $this->html($right) . '</span></div>';
     }
 
-    /** The profile switcher and the link back to the Profiles page. */
-    public function switcher(string $profileId): void
+    /**
+     * The navy title strip of a profile workspace: the profile's name on the left; on the right the
+     * profile switcher, the link to every profile and the words "Profile workspace", in white.
+     */
+    public function header(string $profileId, string $title): void
     {
         $tab = $this->query('tab');
-        echo '<form class="ncli-admin__switcher" method="get" action="' . $this->attr($this->adminUrl([])) . '"><input type="hidden" name="page" value="' . $this->attr(SettingsPage::PAGE_SLUG) . '">';
+        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html($title) . '</span><div class="ncli-admin__titlebar-tools">';
+        echo '<form class="ncli-admin__titlebar-switch" method="get" action="' . $this->attr($this->adminUrl([])) . '"><input type="hidden" name="page" value="' . $this->attr(SettingsPage::PAGE_SLUG) . '">';
         if ($tab !== '' && array_key_exists($tab, self::TABS)) {
             echo '<input type="hidden" name="tab" value="' . $this->attr($tab) . '">';
         }
-        echo '<label for="ncli-profile-switch">' . $this->html($this->t('Profile')) . '</label> <select id="ncli-profile-switch" name="profile">';
+        echo '<label class="screen-reader-text" for="ncli-profile-switch">' . $this->html($this->t('Profile')) . '</label><select id="ncli-profile-switch" name="profile">';
         echo '<option value="default"' . ($profileId === CoreSettings::DEFAULT_PROFILE_ID ? ' selected' : '') . '>' . $this->html($this->t('Default profile')) . '</option>';
         foreach ($this->profiles->summaries() as $summary) {
             $id = $summary->id()->value();
             echo '<option value="' . $this->attr($id) . '"' . ($id === $profileId ? ' selected' : '') . '>' . $this->html($summary->label()) . '</option>';
         }
-        echo '</select> <button type="submit" class="button">' . $this->html($this->t('Switch profile')) . '</button> <a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html($this->t('All profiles')) . '</a></form>';
+        echo '</select> <button type="submit" class="button">' . $this->html($this->t('Switch profile')) . '</button></form>';
+        echo '<a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html($this->t('All profiles')) . '</a>';
+        echo '<span class="ncli-admin__titlebar-label">' . $this->html($this->t('Profile workspace')) . '</span></div></div>';
     }
 
     /**
@@ -257,7 +259,7 @@ final class ProfileHub
         echo '</p>';
 
         echo '<table class="widefat striped ncli-admin__profile-table"><thead><tr>';
-        foreach (['Profile', 'Availability', 'Connection test', 'Access', 'Actions'] as $heading) {
+        foreach (['Profile', 'Tag', 'Availability', 'Connection test', 'Last tested', 'Access', 'Actions'] as $heading) {
             echo '<th scope="col">' . $this->html($this->t($heading)) . '</th>';
         }
         echo '</tr></thead><tbody>';
@@ -270,7 +272,7 @@ final class ProfileHub
 
         echo '<section class="ncli-admin__cards">';
         echo '<div class="ncli-admin__card"><h3>' . $this->html($this->t('Edition')) . '</h3><p><strong>' . $this->html($this->t('Premium')) . '</strong></p><p class="description">' . $this->html($this->t('The installed package supplies these capabilities.')) . '</p></div>';
-        echo '<div class="ncli-admin__card"><h3>' . $this->html($this->t('Help and site settings')) . '</h3><p><a href="' . $this->attr($this->adminUrl(['profile' => CoreSettings::DEFAULT_PROFILE_ID, 'tab' => 'help'])) . '">' . $this->html($this->t('Open the Help Centre')) . '</a></p></div>';
+        echo '<div class="ncli-admin__card"><h3>' . $this->html($this->t('Help and settings')) . '</h3><p><a href="' . $this->attr($this->adminUrl(['page' => SiteSettingsPage::PAGE_SLUG, 'tab' => 'help'])) . '">' . $this->html($this->t('Open the Help Centre')) . '</a></p></div>';
         echo '</section></div>';
     }
 
@@ -281,12 +283,12 @@ final class ProfileHub
         if ($status['state'] === Readiness::MISSING_CONNECTION_TEST && $status['status'] === 'failed') {
             $text = 'The last test failed';
         }
-        $tested = $status['tested_at'] !== '' ? ' <span class="description">(' . $this->html($this->t('UTC')) . ' ' . $this->html($status['tested_at']) . ')</span>' : '';
         $open = $this->adminUrl(['profile' => $id, 'tab' => 'setup']);
 
-        echo '<tr><th scope="row"><a href="' . $this->attr($open) . '">' . $this->html($label) . '</a><br><code>' . $this->html($id) . '</code></th>';
+        echo '<tr><th scope="row"><a href="' . $this->attr($open) . '">' . $this->html($label) . '</a></th><td><code>' . $this->html($id) . '</code></td>';
         echo '<td>' . $this->html($enabled ? $this->t('Enabled') : $this->t('Disabled')) . '</td>';
-        echo '<td><span class="ncli-admin__status ncli-admin__status--' . $tone . '">' . $this->html($this->t($text)) . '</span>' . $tested . '</td>';
+        echo '<td><span class="ncli-admin__status ncli-admin__status--' . $tone . '">' . $this->html($this->t($text)) . '</span></td>';
+        echo '<td>' . ($status['tested_at'] !== '' ? $this->html($this->testedAt($status['tested_at'])) : '&mdash;') . '</td>';
         echo '<td>' . $this->html($protected ? $this->t('Protected') : $this->t('Public')) . '</td><td>';
         echo '<a href="' . $this->attr($open) . '">' . $this->html($this->t('Open')) . '</a> ';
         if ($id === CoreSettings::DEFAULT_PROFILE_ID) {
@@ -295,6 +297,14 @@ final class ProfileHub
             echo $this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]);
         }
         echo '</td></tr>';
+    }
+
+    /** "2026-10-16T10:00:00Z" as "2026-10-16 10:00 UTC". */
+    private function testedAt(string $time): string
+    {
+        $stamp = strtotime($time);
+
+        return $stamp === false ? $time : gmdate('Y-m-d H:i', $stamp) . ' UTC';
     }
 
     /** @param array<string, string> $hidden */
@@ -349,7 +359,6 @@ final class ProfileHub
 
         $this->header($id, $edit->label());
         $this->masthead();
-        $this->switcher($id);
         $coreTabs = [];
         foreach (['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'placement', 'diagnostics'] as $coreTab) {
             $coreTabs[$coreTab] = $this->t(self::TABS[$coreTab]);
@@ -510,16 +519,33 @@ final class ProfileHub
         call_user_func($this->redirect, ['view' => 'profiles', 'ncli_notice' => $removed ? 'deleted' : 'failed']);
     }
 
-    /** Old per-feature pages the extension no longer declares lead to the Profiles page. */
+    /**
+     * While the hub is active the extension's screens are tabs and panels of Core's pages, so every
+     * old `ncli-ext-*` address leads to where its content now lives, and the default profile's Help
+     * tab leads to the Help tab of Settings. Runs while the menu is built, before WordPress would
+     * refuse an unregistered page.
+     */
     public function redirectRetiredPages(): void
     {
         $page = $_GET['page'] ?? null;
-        if (!is_string($page) || preg_match('/^' . preg_quote(ExtensionScreens::PAGE_PREFIX, '/') . '([a-z]+)$/D', $page, $m) !== 1 || !$this->active()) {
+        if (!is_string($page) || !$this->active()) {
             return;
         }
-        if (!in_array($m[1], (array) call_user_func($this->screenIds), true)) {
-            call_user_func($this->redirect, ['view' => 'profiles']);
+
+        if ($page === SettingsPage::PAGE_SLUG && ($_GET['tab'] ?? null) === 'help') {
+            $help = $_GET['help'] ?? null;
+            call_user_func($this->redirect, ['page' => SiteSettingsPage::PAGE_SLUG, 'tab' => 'help'] + (is_string($help) && in_array($help, ['overview', 'faq', 'premium'], true) ? ['help' => $help] : []));
+            return;
         }
+
+        if (preg_match('/^' . preg_quote(ExtensionScreens::PAGE_PREFIX, '/') . '([a-z]+)$/D', $page, $m) !== 1) {
+            return;
+        }
+        $targets = [
+            'archive' => ['page' => ConversationsPage::PAGE_SLUG, 'tab' => 'governance'],
+            'settings' => ['page' => SiteSettingsPage::PAGE_SLUG],
+        ];
+        call_user_func($this->redirect, $targets[$m[1]] ?? ['view' => 'profiles']);
     }
 
     public function redirectTo(array $query): void
@@ -741,7 +767,7 @@ final class ProfileHub
         }
     }
 
-    private function masthead(): void
+    public function masthead(): void
     {
         $path = 'assets/images/ncli-admin-banner.png';
         $url = function_exists('plugins_url') ? (string) plugins_url($path, dirname(__DIR__, 2) . '/niche-clever-interactive-core.php') : '';

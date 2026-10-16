@@ -62,9 +62,16 @@ final class ExtensionScreens
         return Translator::text($labels[$screenId] ?? 'Extension');
     }
 
+    /** Whether the profile hub is active: the extension's screens are then hosted inside Core's own pages. */
+    public function hosted(): bool
+    {
+        return $this->registry->implementation('profile_editor') instanceof ProfileEditorV1;
+    }
+
     public function addMenus(): void
     {
-        if (!function_exists('add_submenu_page')) {
+        // With the hub the extension's screens are tabs and panels of Profiles, Conversations and Settings, not menu entries.
+        if (!function_exists('add_submenu_page') || $this->hosted()) {
             return;
         }
 
@@ -127,6 +134,40 @@ final class ExtensionScreens
         }
 
         return array_keys($ids);
+    }
+
+    /** Whether the extension declares this screen. */
+    public function declares(string $screenId): bool
+    {
+        return in_array($screenId, $this->screenIds(), true);
+    }
+
+    /**
+     * One screen's body as markup, for a Core page that hosts it: empty when the extension does not
+     * declare the screen, a generic notice when it fails. Core issues the nonce, as for a page of its own.
+     */
+    public function bodyHtml(string $screenId): string
+    {
+        $extension = $this->registry->implementation(self::SEAM);
+        if (!$extension instanceof WorkspaceExtensionV1 || !$this->declares($screenId)) {
+            return '';
+        }
+
+        $level = ob_get_level();
+        ob_start();
+        try {
+            $action = self::NONCE_PREFIX . $screenId;
+            $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
+            $extension->render($screenId, new WorkspaceContextV1(true, $nonce, $screenId, $action));
+
+            return (string) ob_get_clean();
+        } catch (\Throwable $exception) {
+            while (ob_get_level() > $level) {
+                ob_end_clean();
+            }
+
+            return '<div class="notice notice-error"><p>' . $this->escape(Translator::text('This screen is temporarily unavailable.')) . '</p></div>';
+        }
     }
 
     public function render(string $screenId): void

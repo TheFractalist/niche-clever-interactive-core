@@ -12,7 +12,7 @@ $panel = new InteractivePanel();
 $output = $panel->renderInteractive(['title' => '<script>alert(1)</script>']);
 $notice = $panel->renderLimitNotice(['message' => '<strong>Limited</strong>']);
 $publicCss = (string) file_get_contents(dirname(__DIR__) . '/assets/css/public.css');
-$settingsPage = (string) file_get_contents(dirname(__DIR__) . '/src/Admin/SettingsPage.php') . (string) file_get_contents(dirname(__DIR__) . '/src/Admin/ProfileFieldRenderer.php');
+$settingsPage = (string) file_get_contents(dirname(__DIR__) . '/src/Admin/SettingsPage.php') . (string) file_get_contents(dirname(__DIR__) . '/src/Admin/ProfileFieldRenderer.php') . (string) file_get_contents(dirname(__DIR__) . '/src/Admin/HelpRenderer.php');
 $darkSettings = CoreSettings::fromArray([
     'appearance' => ['panel_style' => 'editorial'],
     'presentation' => [

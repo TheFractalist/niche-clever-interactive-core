@@ -11,6 +11,7 @@ use NicheCleverInteractive\Core\Admin\ProfileConnectionTest;
 use NicheCleverInteractive\Core\Admin\ProfileHub;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Admin\SettingsPage;
+use NicheCleverInteractive\Core\Admin\SiteSettingsPage;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
@@ -48,6 +49,7 @@ final class Plugin
     private WordPressConversationStore $conversationStore;
     private ProfileConnectionTest $profileTest;
     private ProfileHub $profileHub;
+    private SiteSettingsPage $siteSettings;
 
     private function __construct()
     {
@@ -62,10 +64,11 @@ final class Plugin
         $failureLog = new OptionFailureLog();
         $connectionTest = new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current(), $failureLog);
         $this->profileTest = new ProfileConnectionTest($profiles, $connectionTest);
-        $this->profileHub = new ProfileHub($profiles, null, null, null, fn (): array => $this->extensionScreens->screenIds());
+        $this->profileHub = new ProfileHub($profiles);
+        $this->siteSettings = new SiteSettingsPage($this->profileHub, $this->extensionScreens);
         $this->settingsPage = new SettingsPage(null, $connectionTest, null, $this->profileHub);
         $conversationStore = new WordPressConversationStore();
-        $this->conversationsPage = new ConversationsPage(null, $conversationStore);
+        $this->conversationsPage = new ConversationsPage(null, $conversationStore, $this->extensionScreens, $this->profileHub);
         $this->conversationPurge = new ConversationPurge($conversationStore, null, $profiles);
         $this->conversationStore = $conversationStore;
         $this->chatRoute = new ChatRoute(new ChatService($transport, $this->secrets, null, null, $budget, new ConversationRecorder($conversationStore, null, $profiles), $failureLog, $profiles));
@@ -97,6 +100,7 @@ final class Plugin
 
         $this->settingsPage->register();
         $this->conversationsPage->register();
+        $this->siteSettings->register();
         $this->extensionScreens->register();
         $this->profileTest->register();
         $this->profileHub->register();

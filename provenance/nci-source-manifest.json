@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc10d.1",
+  "manifest_version": "2026-10-17-cc11.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -364,6 +364,17 @@
       "method_scope": "a permitted site-level extension screen id (settings, labelled Premium settings by Core) for settings that belong to no single profile, and the extension tab bar leads back to the Profiles page while the profile hub is active; no Premium code, no AskFolio material",
       "decision_reference": "2026-10-16 owner approval of the merged profile hub plan; follows CC-10c",
       "test_evidence": ["tests/cc1-workspace-hosting.php", "tests/cc10c-profile-hub.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc11-site-pages-and-hub-layout",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "src/Admin/{HelpRenderer,SiteSettingsPage,ProfileHub,ExtensionScreens,ConversationsPage,SettingsPage,ProfileFieldRenderer}.php, src/Api/V1/Support/ExtensionRegistryV1.php, src/Plugin.php, assets/css/admin.css, tests/cc10c-profile-hub.php",
+      "method_scope": "while the profile hub is active: a site-wide Settings page (daily provider allowance, Delete data on uninstall, the extension's site settings, Help) and a Help menu entry; the extension's settings and governance screens are hosted inside Core's Settings and Conversations pages instead of being menu entries; the Help Centre is extracted into a renderer (byte-identical output); retired addresses redirect; the Profiles table has separate Tag, Connection test and Last tested columns; the profile switcher and All profiles link sit in the title strip; capability site_pages; without an extension Core's pages are unchanged; no Premium code, no AskFolio material",
+      "decision_reference": "2026-10-17 owner review of the merged profile hub; plan approved the same day",
+      "test_evidence": ["tests/cc10c-profile-hub.php", "tests/c2-render.php", "tests/c2-admin-chrome.php", "tests/contract.php"],
       "direct_incorporation": false
     }
   ]

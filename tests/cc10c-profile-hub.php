@@ -223,7 +223,7 @@ $assert($directory->status('docs', $settings, true)['state'] === 'ready', 'Resto
 $redirects = [];
 $can = true;
 $guard = new AdminActionGuard(static function () use (&$can): bool { return $can; }, static fn (string $action, string $nonce): bool => $nonce === 'nonce-' . $action);
-$hub = new ProfileHub($directory, $guard, static fn (): CoreSettings => $settings, static function (array $q) use (&$redirects): void { $redirects[] = $q; }, static fn (): array => ['evidence', 'archive']);
+$hub = new ProfileHub($directory, $guard, static fn (): CoreSettings => $settings, static function (array $q) use (&$redirects): void { $redirects[] = $q; });
 $render = static function (callable $fn): string {
     ob_start();
     $fn();
@@ -234,7 +234,8 @@ $assert($hub->active() && !(new ProfileHub($plain))->active(), 'The hub exists o
 $_GET = [];
 $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'Your profiles') && str_contains($html, 'Default profile') && str_contains($html, 'Docs &lt;b&gt;') && !str_contains($html, 'Docs <b>'), 'The Profiles page lists the default profile and each extension profile, escaped.');
-$assert(str_contains($html, 'Ready (current test)') && str_contains($html, 'Disabled') && str_contains($html, 'Not tested yet') && str_contains($html, '2026-10-16T10:00:00Z'), 'Each profile shows its own connection-test status and time.');
+$assert(str_contains($html, 'Ready (current test)') && str_contains($html, 'Disabled') && str_contains($html, 'Not tested yet') && str_contains($html, '2026-10-16 10:00 UTC'), 'Each profile shows its own connection-test status and time.');
+$assert(preg_match('/<th scope="col">Profile<\/th><th scope="col">Tag<\/th><th scope="col">Availability<\/th><th scope="col">Connection test<\/th><th scope="col">Last tested<\/th><th scope="col">Access<\/th><th scope="col">Actions<\/th>/', $html) === 1 && str_contains($html, '<td><code>docs</code></td>') && str_contains($html, '<td>&mdash;</td>'), 'The table has separate Tag, Connection test and Last tested columns, with a dash where a profile was never tested.');
 $assert(str_contains($html, 'Protected') && str_contains($html, 'href="https://example.test/wp-admin/admin.php?page=ncli-core&amp;view=new"') && str_contains($html, 'Add profile'), 'The page shows access and an Add profile link.');
 $assert(substr_count($html, 'name="action" value="ncli_test_profile"') === 2 && str_contains($html, 'name="action" value="ncli_test_connection"') && !str_contains($html, 'value="off"'), 'Each enabled profile has a Test connection button (the disabled one does not).');
 $assert(str_contains($html, 'maximum') === false, 'Below the limit there is no limit notice.');
@@ -250,7 +251,8 @@ $assert($render(static fn () => $assert($hub->render() === false, 'A bare tab ad
 $_GET = ['profile' => 'docs', 'tab' => 'setup'];
 $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'Profile workspace') && str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'Get started') && str_contains($html, 'name="vector_store_reference"') === false, 'A profile opens in the same workspace; the setup tab has its checklist.');
-$assert(str_contains($html, 'Questions &amp; sharing') && str_contains($html, 'Cached answers') && str_contains($html, 'Setup') && str_contains($html, 'Switch profile'), 'The tab bar carries the extension tabs and the switcher is shown.');
+$assert(str_contains($html, 'Questions &amp; sharing') && str_contains($html, 'Cached answers') && str_contains($html, 'Setup'), 'The tab bar carries the extension tabs.');
+$assert(preg_match('/<div class="ncli-admin__titlebar">.*Switch profile.*All profiles.*Profile workspace.*<\/div><\/div><header/s', $html) === 1 && !str_contains(substr($html, strpos($html, '<header')), 'Switch profile'), 'The profile switcher, All profiles and the workspace label sit in the title strip, not below the banner.');
 $assert(str_contains($html, 'body access for docs nonce nonce-for-ncli_ext_access action ncli_ext_access'), 'A section is drawn with a Core-issued nonce.');
 $assert(str_contains($html, 'name="action" value="ncli_save_profile"') && str_contains($html, 'Delete this profile') && str_contains($html, 'Save this profile'), 'The setup tab has the save form and the delete form.');
 $_GET = ['profile' => 'docs', 'tab' => 'ai-corpus'];
@@ -353,18 +355,29 @@ $hub->delete();
 $assert(!in_array('delete:default', array_slice($editor->log, $count), true) && end($redirects)['ncli_notice'] === 'missing', 'The default profile is never deleted through the hub.');
 
 // ---- Retired pages -----------------------------------------------------------------------------------------------------------------------------
+foreach ([
+    'ncli-ext-chronology' => ['view' => 'profiles'],
+    'ncli-ext-evidence' => ['view' => 'profiles'],
+    'ncli-ext-archive' => ['page' => 'ncli-conversations', 'tab' => 'governance'],
+    'ncli-ext-settings' => ['page' => 'ncli-settings'],
+] as $retired => $target) {
+    $redirects = [];
+    $_GET = ['page' => $retired];
+    $hub->redirectRetiredPages();
+    $assert($redirects === [$target], "$retired leads to where its content now lives.");
+}
 $redirects = [];
-$_GET = ['page' => 'ncli-ext-chronology'];
+$_GET = ['page' => 'ncli-core', 'tab' => 'help', 'help' => 'faq'];
 $hub->redirectRetiredPages();
-$assert($redirects === [['view' => 'profiles']], 'A retired per-feature page leads to the Profiles page.');
+$assert($redirects === [['page' => 'ncli-settings', 'tab' => 'help', 'help' => 'faq']], 'The default profile\'s Help tab leads to Help in Settings, keeping the section.');
 $redirects = [];
-$_GET = ['page' => 'ncli-ext-evidence'];
+$_GET = ['page' => 'ncli-core', 'tab' => 'setup'];
 $hub->redirectRetiredPages();
 $_GET = ['page' => 'ncli-core'];
 $hub->redirectRetiredPages();
 $_GET = ['page' => ['x']];
 $hub->redirectRetiredPages();
-$assert($redirects === [], 'A page the extension still declares, or another page, is not redirected.');
+$assert($redirects === [], 'Other pages are not redirected.');
 $redirects = [];
 $_GET = ['page' => 'ncli-ext-chronology'];
 (new ProfileHub($plain, $guard, static fn (): CoreSettings => $settings, static function (array $q) use (&$redirects): void { $redirects[] = $q; }))->redirectRetiredPages();
@@ -376,6 +389,7 @@ $_GET = ['tab' => 'setup'];
 $html = $render(static fn () => $page->render());
 $assert(str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'Default profile') && str_contains($html, 'Switch profile') && str_contains($html, 'All profiles') && str_contains($html, 'ncli-admin__save-bar'), 'The default profile gets the title strip, switcher and an All profiles link.');
 $assert(str_contains($html, 'Questions &amp; sharing') && str_contains($html, 'Cached answers') && str_contains($html, 'body access for default'), 'The default profile\'s tab bar and tabs carry the extension\'s tabs and sections.');
+$assert(!str_contains($html, '>Help</a>'), 'With the hub the default profile\'s tab bar has no Help tab; Help lives in Settings.');
 $_GET = ['tab' => 'questions'];
 $html = $render(static fn () => $page->render());
 $assert(str_contains($html, 'body questions for default') && !str_contains($html, 'name="corpus_version"'), 'An extension tab on the default profile shows only sections.');
@@ -387,6 +401,120 @@ $assert(str_contains($render(static fn () => $page->render()), 'Profile workspac
 $_GET = ['tab' => 'setup'];
 $noHub = $render(static fn () => (new SettingsPage())->render());
 $assert(!str_contains($noHub, 'ncli-admin__titlebar') && !str_contains($noHub, 'All profiles') && !str_contains($noHub, 'Switch profile'), 'Without an editor the Settings page is exactly as before.');
+
+// ---- Hub mode removes the site-wide rows from the default profile; the Settings page owns them -----------------------------------------------
+$_GET = ['tab' => 'appearance-limits'];
+$html = $render(static fn () => $page->render());
+$assert(!str_contains($html, 'provider_requests_per_day') && str_contains($html, 'visitor_requests_per_day'), 'With the hub the default profile keeps its own limit but not the site-wide provider allowance.');
+$_GET = ['tab' => 'conversation'];
+$html = $render(static fn () => $page->render());
+$assert(!str_contains($html, 'delete_on_uninstall') && str_contains($html, 'conversation_log_enabled'), 'With the hub Delete data on uninstall is not on the default profile\'s Conversation tab.');
+$_GET = ['tab' => 'appearance-limits'];
+$assert(str_contains($noHubAppearance = $render(static fn () => (new SettingsPage())->render()), 'provider_requests_per_day'), 'Without the hub the provider allowance is where it always was.');
+
+// ---- Site screens are hosted inside Core's pages -------------------------------------------------------------------------------------------
+$hosting = new class implements NicheCleverInteractive\Core\Api\V1\Contracts\WorkspaceExtensionV1 {
+    public bool $throw = false;
+    public function screens(): array
+    {
+        return [new NicheCleverInteractive\Core\Api\V1\Value\WorkspaceScreenV1('settings'), new NicheCleverInteractive\Core\Api\V1\Value\WorkspaceScreenV1('archive')];
+    }
+    public function render(string $screenId, WorkspaceContextV1 $context): void
+    {
+        echo '<p class="hosted">' . $screenId . ' nonce ' . $context->nonce() . ' action ' . $context->nonceAction() . '</p>';
+        if ($this->throw) {
+            throw new RuntimeException('secret detail');
+        }
+    }
+};
+$hostRegistry = new ExtensionRegistryV1();
+$hostRegistry->register('profile_editor', $editor);
+$hostRegistry->register('workspace_extension', $hosting);
+$hostedScreens = new NicheCleverInteractive\Core\Admin\ExtensionScreens($hostRegistry);
+$assert($hostedScreens->hosted() && $hostedScreens->declares('settings') && !$hostedScreens->declares('cache'), 'Screens are hosted while the hub is active.');
+$assert($hostedScreens->bodyHtml('settings') === '<p class="hosted">settings nonce nonce-for-ncli_ext_settings action ncli_ext_settings</p>' && $hostedScreens->bodyHtml('cache') === '', 'A hosted body carries a Core-issued nonce; an undeclared screen is empty.');
+$hosting->throw = true;
+$failed = $hostedScreens->bodyHtml('archive');
+$assert(str_contains($failed, 'temporarily unavailable') && !str_contains($failed, 'secret detail') && !str_contains($failed, 'hosted'), 'A failing hosted body is replaced by a generic notice.');
+$hosting->throw = false;
+$menus = [];
+$GLOBALS['ncliMenuLog'] = [];
+if (!function_exists('add_submenu_page')) {
+    function add_submenu_page(string $parent, string $title, string $menu, string $cap, string $slug, $cb = null)
+    {
+        $GLOBALS['ncliMenuLog'][] = $slug;
+        return 'hook-' . $slug;
+    }
+}
+$hostedScreens->addMenus();
+$assert($GLOBALS['ncliMenuLog'] === [], 'While the hub is active the extension\'s screens are not menu entries.');
+
+// ---- The Settings page ---------------------------------------------------------------------------------------------------------------------
+$siteRedirects = [];
+$updated = [];
+if (!function_exists('update_option')) {
+    function update_option(string $name, $value, $autoload = null): bool
+    {
+        $GLOBALS['ncliUpdated'][$name] = $value;
+        return true;
+    }
+}
+$siteGuard = new AdminActionGuard(static function () use (&$can): bool { return $can; }, static fn (string $action, string $nonce): bool => $nonce === 'nonce-' . $action);
+$site = new NicheCleverInteractive\Core\Admin\SiteSettingsPage($hub, $hostedScreens, $siteGuard, static function (array $q) use (&$siteRedirects): void { $siteRedirects[] = $q; });
+$_GET = [];
+$html = $render(static fn () => $site->render());
+$assert(str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'name="provider_requests_per_day"') && str_contains($html, 'name="delete_on_uninstall"') && str_contains($html, 'name="action" value="ncli_save_site_settings"'), 'Settings > General has the provider allowance and Delete data on uninstall.');
+$assert(str_contains($html, '<h2>NCI Premium</h2>') && str_contains($html, 'settings nonce nonce-for-ncli_ext_settings'), 'The extension\'s site settings are hosted under General.');
+$assert(preg_match('/<a class="nav-tab nav-tab-active"[^>]*>General<\/a><a class="nav-tab"[^>]*>Help<\/a>/', $html) === 1, 'The tab bar has General and Help.');
+$_GET = ['tab' => 'help', 'help' => 'faq'];
+$html = $render(static fn () => $site->render());
+$assert(str_contains($html, 'Help Centre') && str_contains($html, 'Frequently asked questions') && str_contains($html, 'page=ncli-settings&amp;tab=help&amp;help=overview'), 'Settings > Help shows the Help Centre with its own section links.');
+$_GET = ['tab' => 'help'];
+$siteHelp = $render(static fn () => $site->render());
+$assert(!str_contains($siteHelp, 'name="provider_requests_per_day"'), 'The Help tab carries no settings form.');
+$_POST = ['_ncli_nonce' => 'nonce-ncli_save_site_settings', 'provider_requests_per_day' => '250', 'delete_on_uninstall' => '1'];
+$GLOBALS['ncliUpdated'] = [];
+$site->save();
+$saved = $GLOBALS['ncliUpdated'][CoreSettings::OPTION_NAME] ?? null;
+$assert(end($siteRedirects) === ['tab' => 'general', 'ncli_notice' => 'saved'] && $saved['limits']['provider_requests_per_day'] === 250 && $saved['lifecycle']['delete_on_uninstall'] === true && $saved['profile'] === $settings->toArray()['profile'] && $saved['limits']['visitor_requests_per_day'] === $settings->toArray()['limits']['visitor_requests_per_day'], 'Saving changes the two site settings and nothing else.');
+$_POST = ['_ncli_nonce' => 'nonce-ncli_save_site_settings', 'provider_requests_per_day' => '0', 'delete_on_uninstall' => '0'];
+$GLOBALS['ncliUpdated'] = [];
+$site->save();
+$assert(end($siteRedirects)['ncli_notice'] === 'invalid' && $GLOBALS['ncliUpdated'] === [], 'An out-of-range allowance is refused and nothing is stored.');
+$_POST = ['_ncli_nonce' => 'forged', 'provider_requests_per_day' => '250', 'delete_on_uninstall' => '1'];
+$GLOBALS['ncliUpdated'] = [];
+$site->save();
+$can = false;
+$_POST = ['_ncli_nonce' => 'nonce-ncli_save_site_settings', 'provider_requests_per_day' => '250', 'delete_on_uninstall' => '1'];
+$site->save();
+$can = true;
+$assert($GLOBALS['ncliUpdated'] === [], 'A bad nonce or a missing capability changes nothing.');
+$GLOBALS['ncliMenuLog'] = [];
+$site->addMenu();
+$assert($GLOBALS['ncliMenuLog'] === ['ncli-settings', 'admin.php?page=ncli-settings&tab=help'], 'The menu gets Settings and a Help entry that opens its tab.');
+$GLOBALS['ncliMenuLog'] = [];
+(new NicheCleverInteractive\Core\Admin\SiteSettingsPage(new ProfileHub($plain), $hostedScreens))->addMenu();
+$assert($GLOBALS['ncliMenuLog'] === [], 'Without an editor there is no Settings page.');
+
+// ---- Governance is a tab of Conversations ----------------------------------------------------------------------------------------------------------
+$conversationsStore = new class implements NicheCleverInteractive\Core\Conversation\ConversationStore {
+    public function record(NicheCleverInteractive\Core\Conversation\ConversationTurn $turn): void {}
+    public function listConversations(int $limit, int $offset): array { return []; }
+    public function countConversations(): int { return 0; }
+    public function turns(string $conversationId): array { return []; }
+    public function deleteConversations(array $conversationIds): int { return 0; }
+    public function deleteAll(): int { return 0; }
+    public function purgeOlderThan(string $cutoffUtc, int $limit): int { return 0; }
+};
+$conversations = new NicheCleverInteractive\Core\Admin\ConversationsPage($siteGuard, $conversationsStore, $hostedScreens, $hub);
+$_GET = ['tab' => 'governance'];
+$html = $render(static fn () => $conversations->render());
+$assert(str_contains($html, 'archive nonce nonce-for-ncli_ext_archive') && str_contains($html, '>Governance</a>') && str_contains($html, '>Conversation history</a>') && !str_contains($html, 'Conversation settings'), 'Conversations > Governance hosts the extension\'s screen; the tab bar has history and governance.');
+$_GET = [];
+$html = $render(static fn () => $conversations->render());
+$assert(!str_contains($html, 'archive nonce') && str_contains($html, '>Governance</a>'), 'The history tab shows the history, with the Governance tab beside it.');
+$plainConversations = $render(static fn () => (new NicheCleverInteractive\Core\Admin\ConversationsPage($siteGuard, $conversationsStore))->render());
+$assert(str_contains($plainConversations, 'Conversation settings') && !str_contains($plainConversations, 'Governance'), 'Without the hub the Conversations page is as before.');
 
 // ---- Site screens lead back to the hub --------------------------------------------------------------------------------------------------------
 $screens = new NicheCleverInteractive\Core\Admin\ExtensionScreens($registry);

@@ -19,8 +19,9 @@ final class ProfileFieldRenderer
     /**
      * @param array<string, mixed> $values
      * @param string $conversationsUrl Address of the conversation history screen.
+     * @param bool $hubMode True while the profile hub is active: the site-wide rows (daily provider allowance, delete on uninstall) are on the Settings page instead.
      */
-    public function rows(string $tab, array $values, string $conversationsUrl): void
+    public function rows(string $tab, array $values, string $conversationsUrl, bool $hubMode = false): void
     {
         $accent = '';
         $style = '';
@@ -57,7 +58,9 @@ final class ProfileFieldRenderer
             $this->sectionRow('Conversation history', 'Optionally keep a record of the questions visitors ask and the answers they receive, so you can review and delete them. Nothing is recorded unless you turn this on. No IP address, account or browser identifier is stored with a conversation.');
             $this->checkbox('conversation_log_enabled', 'Record conversations', (bool) $values['conversation_log']['enabled'], 'When on, each successfully answered public question and its answer are stored in a table on this site. Refused, failed and administrator test requests are never stored. Tell visitors in your privacy notice that questions and answers are kept.', 'Keep a record of public questions and answers on this site.', true);
             $this->select('conversation_retention_days', 'Keep conversations for', ['30' => '30 days', '90' => '90 days', '365' => '1 year', '0' => 'Until I delete them'], (string) $values['conversation_log']['retention_days'], 'Older conversations are removed automatically once a day. Choose the shortest period that meets your needs. The setting also applies to conversations already stored if you later switch recording off.');
-            $this->checkbox('delete_on_uninstall', 'Delete data on uninstall', (bool) $values['lifecycle']['delete_on_uninstall'], 'By default, deleting the plugin leaves your settings, request counters and conversations in the database so a reinstall can pick them up. Turn this on to remove all of them when the plugin is deleted from the Plugins screen.', 'Delete all Niche Clever Interactive settings, counters and conversations when the plugin is deleted.', true);
+            if (!$hubMode) {
+                $this->checkbox('delete_on_uninstall', 'Delete data on uninstall', (bool) $values['lifecycle']['delete_on_uninstall'], 'By default, deleting the plugin leaves your settings, request counters and conversations in the database so a reinstall can pick them up. Turn this on to remove all of them when the plugin is deleted from the Plugins screen.', 'Delete all Niche Clever Interactive settings, counters and conversations when the plugin is deleted.', true);
+            }
             echo '<tr class="ncli-admin__field"><th scope="row"><span>' . $this->escapeHtml($this->t('Conversation history')) . '</span></th><td><a class="button button-secondary" href="' . $this->escapeAttribute($conversationsUrl) . '">' . $this->escapeHtml($this->t('View conversation history')) . '</a></td></tr>';
         }
 
@@ -69,9 +72,22 @@ final class ProfileFieldRenderer
             $this->accentRow($style, $accent);
             $this->checkbox('show_credit', 'Credit line', (bool) $values['appearance']['show_credit'], 'Adds a small "Powered by NC Interactive" link under the public panel. It is off by default and appears only if you turn it on.', 'Show "Powered by NC Interactive" under the panel.', true);
             $this->number('visitor_requests_per_day', 'Visitor requests per day', (int) $values['limits']['visitor_requests_per_day'], 'Maximum successful or attempted public questions for one privacy-bounded visitor scope in a UTC day. Use this to protect availability and API spend.');
-            $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day'], 'Maximum provider requests across the whole site in a UTC day, including administrator connection tests. Keep this within your OpenAI budget.');
+            if (!$hubMode) {
+                $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day'], 'Maximum provider requests across the whole site in a UTC day, including administrator connection tests. Keep this within your OpenAI budget.');
+            }
         }
 
+    }
+
+    /**
+     * The settings that belong to the whole site rather than to one profile.
+     *
+     * @param array<string, mixed> $values In the shape of CoreSettings::toArray().
+     */
+    public function siteRows(array $values): void
+    {
+        $this->number('provider_requests_per_day', 'Provider requests per day', (int) $values['limits']['provider_requests_per_day'], 'Maximum provider requests across the whole site in a UTC day, including administrator connection tests. Keep this within your OpenAI budget.');
+        $this->checkbox('delete_on_uninstall', 'Delete data on uninstall', (bool) $values['lifecycle']['delete_on_uninstall'], 'By default, deleting the plugin leaves your settings, request counters and conversations in the database so a reinstall can pick them up. Turn this on to remove all of them when the plugin is deleted from the Plugins screen.', 'Delete all Niche Clever Interactive settings, counters and conversations when the plugin is deleted.', true);
     }
 
     /**

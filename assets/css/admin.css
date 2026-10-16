@@ -107,3 +107,13 @@
 .ncli-admin__card { padding: 16px 20px; border: 1px solid #d5dbe0; border-radius: 10px; background: #fcfbf8; }
 .ncli-admin__card h3 { margin: 0 0 8px; color: #123b5a; font-size: 15px; }
 .ncli-admin__profile-section { margin-top: 16px; border-top: 1px solid #d5dbe0; border-radius: 10px; }
+.ncli-admin__titlebar { flex-wrap: wrap; }
+.ncli-admin__titlebar-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 12px; color: #fff; }
+.ncli-admin__titlebar-switch { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+.ncli-admin__titlebar select { min-height: 30px; max-width: 220px; border-color: rgba(255, 255, 255, .7); border-radius: 6px; background-color: #fff; color: #123b5a; font-size: 13px; }
+.ncli-admin__titlebar .button { min-height: 30px; border-color: rgba(255, 255, 255, .7); background: transparent; color: #fff; font-size: 13px; line-height: 28px; }
+.ncli-admin__titlebar .button:hover, .ncli-admin__titlebar .button:focus { border-color: #fff; background: rgba(255, 255, 255, .16); color: #fff; }
+.ncli-admin__titlebar .button:focus-visible, .ncli-admin__titlebar select:focus-visible { outline: 2px solid #fff; outline-offset: 2px; box-shadow: none; }
+.ncli-admin__titlebar-label { color: #fff; font-size: 13px; font-weight: 600; }
+.ncli-admin__save-bar .button:not(.button-primary) { min-height: 36px; border-color: rgba(255, 255, 255, .7); background: transparent; color: #fff; }
+.ncli-admin__save-bar .button:not(.button-primary):hover, .ncli-admin__save-bar .button:not(.button-primary):focus { border-color: #fff; background: rgba(255, 255, 255, .16); color: #fff; }

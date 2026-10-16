@@ -1,7 +1,7 @@
 <?php
 /**
  * Verifies an installed Niche Clever Interactive plugin folder against the exact
- * rc.10 file set (109 files, from the working tree when this manifest was generated; regenerate it after any source change). Read-only: it changes nothing.
+ * rc.10 file set (111 files, from the working tree when this manifest was generated; regenerate it after any source change). Read-only: it changes nothing.
  *
  * Usage:  C:\xampp\php\php.exe verify-install.php "C:\xampp\htdocs\Test-Site\wp-content\plugins\niche-clever-interactive"
  *
@@ -13,7 +13,7 @@ ea4c9bc39487f449f8c7c02fc9102ffc71a72ca7a6246e61ed229bdddb73c792  CHANGELOG.md
 edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6  COPYING
 d4c4bbd2b2f0c85952f4b1618e3a114465f4b566afc1ebdef465030c56696f94  LICENSE
 cf142973aeaf08b06d328cefb3bbed1b1490fb3e9498260af7270bda9bdcfe94  README.md
-4f68afcb6a7e873ff53987b21e91b98e9e53b3399ecd57d7fd29022e72dce134  assets/css/admin.css
+527f0b9036354386b11a53957831b98aa3c7d6178db944edd87a249f41ac9963  assets/css/admin.css
 59ae9562daa8c748ecd58e6ef615b5fa4beb30cf3458030b6c6e9961c386e91d  assets/css/public.css
 8cce4f63d628a7da81b6fa617788b9e552a1021db06a27c75cf4e67252ef2a89  assets/images/ncli-admin-banner.png
 e83a3f4933240d02f3d8eb88faecc9da92665cf1a6243e461b74f66c36beef8c  assets/images/ncli-logo.png
@@ -38,12 +38,14 @@ ea70a8328af9aa2ad05635160cc513b5a824be07f843ff5e4ada5b2983ae31c8  src/AI/Transpo
 ef877334518775e00acb72b32dc12be84b979ac6bf7bccc8186269a8bf2c7f7b  src/AI/Transport/TransportResult.php
 a3c89ffd15e1a0b0afe65061b75a9399565f231725ef2ca0c340b8a0336f5699  src/AI/Transport/UnavailableTransport.php
 800cd62449faceccd0d8ab708c99a7580b4aef902210560dcc6dddbc3af8c800  src/AI/Transport/WordPressResponsesHttpClient.php
-033daf2347a19959bd733c0742efb3d732e75da7b40c29b463b4d5df8c348fcf  src/Admin/ConversationsPage.php
-a87dd25c93a683bce1b3821643c4b278ace418dfebcfa53f583ed629f827e58b  src/Admin/ExtensionScreens.php
+0c9ed90ebf4ab13fff6ecfd8b28cad760de8d6d26f844d2884178e1eb394cc00  src/Admin/ConversationsPage.php
+a9fb50e006e806d3bd232451a5dc6dc1c352b5b07fd0222121ff7136aeee9d3c  src/Admin/ExtensionScreens.php
+f0f174358d57a285ea2c5d6314a1ca37867fbb6614647a8fc58e2911aed4358f  src/Admin/HelpRenderer.php
 8371ac0a17b5ca01904aad135b0c042c5400b2021d0989f447cea4a2ca9ee64a  src/Admin/ProfileConnectionTest.php
-a01f443389ba19df8beb4625d31920f2c2393b43cae20f531923fd0328b09eb5  src/Admin/ProfileFieldRenderer.php
-940f2c96255e173c87f5e736b91e46a6d948427abeb7f17f31ae8a71aa558c08  src/Admin/ProfileHub.php
-5244e0321a2b074ea3d08845d8f692d6512e804b46c0ad947d7eca587fd334f1  src/Admin/SettingsPage.php
+351ce70474ec7d91d70531d896c439f530b1a9fe7f507d142a735f3f8a57ce88  src/Admin/ProfileFieldRenderer.php
+a6240cb8c0629ee7874a167995126e60301a01a7045d40e7102e8a57ec553e00  src/Admin/ProfileHub.php
+6891045acdd63dec979794629f6eff5cdd306479c14b6a321d68f9f3520fe616  src/Admin/SettingsPage.php
+6e23675dc420dbb757044a966e7352c6d39be8b0f6428f7acf429f912f4e7133  src/Admin/SiteSettingsPage.php
 147abb51fd541fd7f964d61dbe5f5c4ca469043796e165bebab77b70e38c223c  src/Api/V1/Contracts/AnswerCacheV1.php
 1bc562a68ef248f9644e1e5b7f06e61a760beb03ec4d2accbe8064fc84ee20aa  src/Api/V1/Contracts/ChronologyProviderV1.php
 10d70b19d06d828b5f336c845bb0cef838c4002311cb2eda951af73f84bd489c  src/Api/V1/Contracts/CompletedTurnRecorderV1.php
@@ -58,7 +60,7 @@ a01f443389ba19df8beb4625d31920f2c2393b43cae20f531923fd0328b09eb5  src/Admin/Prof
 d28fac139382f9d4d2a4dc0476e32e8c36ae7a5c237636134a76891cdbc7950a  src/Api/V1/Contracts/ViewerAccessV1.php
 12753ff085999e4e7ef8112820e6113a7ac953763739e07b9061426075021aec  src/Api/V1/Contracts/WorkspaceExtensionV1.php
 b1a9ee0bd58c8b49fe37b6a9b68d63ad4221e567ec78a329c4202f69f2330d5f  src/Api/V1/Support/CompletedTurnEligibilityV1.php
-37cc88d20dbd7411f2a20d132d3e14f8bbda95b8416974844fde2f31f372aee8  src/Api/V1/Support/ExtensionRegistryV1.php
+14754976351667b5a334eccf8fec466f0e87d4dce70834554905d4e377d20f13  src/Api/V1/Support/ExtensionRegistryV1.php
 aab8294f11e1203cf1e5bb46fe543fdc2ee87d5693a09dd49e771a80adcd867c  src/Api/V1/Value/AccessDecisionV1.php
 8266f64a6e3a90fce51145d16b1fe30bc0734cbe782438cc0fbbad7065383eef  src/Api/V1/Value/ApprovedLinkV1.php
 07640b1f99cb7807b000908d6142a2ea46f703755be1d553544cc3c39169c2bc  src/Api/V1/Value/ArchivedTurnV1.php
@@ -102,7 +104,7 @@ c247121ab84c0f75748a923d20d6ad525bcd4a587e2fbee1a3abd4e4709f4dcb  src/Conversati
 7b5b47dd9d2accd823bed3841b7bf0db0fcbd23aa47c9c1a10ab8a7f1f1be0af  src/Diagnostics/FailureLog.php
 690001337fa4d6eb199293e4f2d6abf6eabfa85db102639308634baa41009b56  src/Diagnostics/OptionFailureLog.php
 bce82b043b8947213cb6d875c18b3c3ec7f6a9f1b0932083e03cd3b0a0eb8713  src/Frontend/InteractivePanel.php
-d2aec3fc89d0ae034d3bdf5d4001940a7bcbe11bce4ea50dd7a511f1cdbcbdd2  src/Plugin.php
+68d876db3a54908e170d0454a3f523bc739f30955b07a06f7984593aebecd327  src/Plugin.php
 c46d220367202696ffe3f779c736db316af161f2fdaccaf02b0b78cfbd0cd3b9  src/Profile/DefaultProfileResolverV1.php
 76e45627b517895df7bc0f175b3992233025ba3ce4e9f28a2932635ada291c38  src/Profile/OptionProfileTestRecords.php
 a06cc1a4cdf45f9aec2911a3e8fc8cd0ff1c89310e142247d1f899ba59227a4a  src/Profile/ProfileDirectory.php
@@ -166,7 +168,7 @@ foreach (['MISSING' => array_keys($missing), 'DIFFERENT CONTENT' => $different, 
     }
 }
 if ($missing === [] && $different === [] && $extra === []) {
-    echo "\nRESULT: MATCH. This folder is exactly the rc.10 file set (109 files).\n";
+    echo "\nRESULT: MATCH. This folder is exactly the rc.10 file set (111 files).\n";
     exit(0);
 }
 echo "\nRESULT: DOES NOT MATCH rc.10.\n";
