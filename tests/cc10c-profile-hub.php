@@ -393,6 +393,9 @@ $screens = new NicheCleverInteractive\Core\Admin\ExtensionScreens($registry);
 $html = $render(static fn () => $screens->render('settings'));
 $assert(str_contains($html, 'view=profiles">Profiles</a>') && !str_contains($html, '>Settings</a>'), 'With a profile editor the extension tab bar leads back to the Profiles page.');
 
+$hubSource = (string) file_get_contents(dirname(__DIR__) . '/src/Admin/ProfileHub.php');
+$assert(str_contains($hubSource, "'admin_menu', [\$this, 'redirectRetiredPages'], 99"), 'The retired-page redirect runs while the menu is built, before WordPress denies the page.');
+
 // ---- Wiring -----------------------------------------------------------------------------------------------------------------------------------------
 $pluginSource = (string) file_get_contents(dirname(__DIR__) . '/src/Plugin.php');
 $assert(str_contains($pluginSource, 'new ProfileHub(') && str_contains($pluginSource, '$this->profileHub->register()') && str_contains($pluginSource, 'new SettingsPage(null, $connectionTest, null, $this->profileHub)'), 'Core wires the hub into the plugin.');

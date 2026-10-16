@@ -89,7 +89,8 @@ final class ProfileHub
         add_action('admin_post_' . self::SAVE_ACTION, [$this, 'save']);
         add_action('admin_post_' . self::CREATE_ACTION, [$this, 'create']);
         add_action('admin_post_' . self::DELETE_ACTION, [$this, 'delete']);
-        add_action('admin_init', [$this, 'redirectRetiredPages']);
+        // WordPress refuses an unregistered admin page while it builds the menu, before admin_init, so redirect from here.
+        add_action('admin_menu', [$this, 'redirectRetiredPages'], 99);
     }
 
     /** Whether an extension profile editor is registered: the hub exists only then. */
