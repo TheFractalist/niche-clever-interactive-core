@@ -51,6 +51,7 @@ final class ExtensionScreens
             'collections' => 'Collections',
             'cache' => 'Answer cache',
             'archive' => 'Conversation governance',
+            'evidence' => 'Evidence links',
         ];
 
         return Translator::text($labels[$screenId] ?? 'Extension');

@@ -283,7 +283,7 @@
       "kind": "new-authored",
       "owner": "Core",
       "licence": "GPL-2.0-or-later",
-      "target": "EvidenceCitationsV1, EvidenceCitationV1, ApprovedLinkV1, TransportResult::citations, OpenAiResponsesFileSearchTransport::collectCitations, ProfileDirectory::approvedLinks, ChatService, ChatOutcome, assets/js/public.js, assets/css/public.css, docs/ARCHITECTURE.md, docs/PRIVACY-LIFECYCLE.md",
+      "target": "WorkspaceScreenV1 'evidence' id and its Core-owned label, EvidenceCitationsV1, EvidenceCitationV1, ApprovedLinkV1, TransportResult::citations, OpenAiResponsesFileSearchTransport::collectCitations, ProfileDirectory::approvedLinks, ChatService, ChatOutcome, assets/js/public.js, assets/css/public.css, docs/ARCHITECTURE.md, docs/PRIVACY-LIFECYCLE.md",
       "method_scope": "bounded file-citation descriptors passed in-process to an installed extension after evidence validation; Core validates returned public https links (at most five, distinct, any fault means none) and adds an optional links list to the success payload; public.js renders them with DOM nodes only; no change to the payload when no extension is installed; raw citations, file references and names never reach a browser; supersedes the 12 October direction to remove Core approved-evidence mapping only as recorded in NCI-CD-011; no Premium code, no AskFolio material",
       "decision_reference": "NCI-CD-011 (owner decision of 15 October 2026) and NCI-CD-014 (Premium plan CC-6), 2026-10-16 owner approval",
       "test_evidence": ["tests/cc6-evidence.php", "tests/c5-live-transport.php", "tests/c5-public-js.mjs", "tests/contract.php"],

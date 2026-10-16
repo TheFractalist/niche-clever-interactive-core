@@ -9,7 +9,7 @@ final class WorkspaceScreenV1
     /**
      * @var list<string>
      */
-    private const PERMITTED_IDS = ['profiles', 'chronology', 'questions', 'collections', 'cache', 'archive'];
+    private const PERMITTED_IDS = ['profiles', 'chronology', 'questions', 'collections', 'cache', 'archive', 'evidence'];
 
     private string $id;
 

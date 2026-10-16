@@ -36,7 +36,7 @@ final class ExtensionRegistryV1
      *
      * @var list<string>
      */
-    private const CAPABILITIES = ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations'];
+    private const CAPABILITIES = ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen'];
 
     /**
      * @var array<string, object>

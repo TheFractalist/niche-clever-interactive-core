@@ -151,7 +151,7 @@ $assert($host(new class implements WorkspaceExtensionV1 {
 })->screenIds() === ['profiles'], 'A well-formed extension is accepted.');
 
 // Title table covers every permitted id and falls back safely.
-foreach (['profiles', 'chronology', 'questions', 'collections', 'cache', 'archive'] as $id) {
+foreach (['profiles', 'chronology', 'questions', 'collections', 'cache', 'archive', 'evidence'] as $id) {
     $assert(ExtensionScreens::label($id) !== 'Extension', "Screen $id has a Core label.");
 }
 
@@ -179,7 +179,7 @@ $turn = new CompletedTurnV1('c1', $profile, $at, 'Q', 'A', '1.0.0', null, 'corpu
 $assert($turn->question() === 'Q' && $turn->answer() === 'A' && $turn->sourceKind() === 'cache' && $turn->proVersion() === null && $turn->profileId()->value() === 'profile_1' && $turn->completedAt() === $at && $turn->conversationId() === 'c1' && $turn->coreVersion() === '1.0.0' && $turn->corpusVersion() === 'corpus', 'Completed-turn accessors return the stored values.');
 
 // Capability list is truthful.
-$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations'], 'workspace_hosting is advertised now that Core hosts screens.');
+$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen'], 'workspace_hosting is advertised now that Core hosts screens.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");
