@@ -9,6 +9,7 @@ use NicheCleverInteractive\Core\Api\V1\Contracts\ChronologyProviderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\CompletedTurnRecorderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ConversationContextV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\EvidenceCitationsV1;
+use NicheCleverInteractive\Core\Api\V1\Contracts\PanelColoursProviderV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ProfileResolverV1;
 use NicheCleverInteractive\Core\Api\V1\Contracts\ViewerAccessV1;
 use NicheCleverInteractive\Core\Api\V1\Value\AccessDecisionV1;
@@ -17,6 +18,7 @@ use NicheCleverInteractive\Core\Api\V1\Value\EvidenceCitationV1;
 use NicheCleverInteractive\Core\Api\V1\Value\CacheKeyV1;
 use NicheCleverInteractive\Core\Api\V1\Value\CachedAnswerV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ChronologyFactV1;
+use NicheCleverInteractive\Core\Api\V1\Value\PanelColoursV1;
 use NicheCleverInteractive\Core\Api\V1\Value\CompletedTurnV1;
 use NicheCleverInteractive\Core\Api\V1\Value\EarlierTurnV1;
 use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
@@ -102,6 +104,26 @@ final class ProfileDirectory
     public const MAX_CHRONOLOGY_FACTS = 20;
     public const MAX_EARLIER_TURNS = 10;
     public const MAX_LINKS = 5;
+
+    /**
+     * Owner colours for a panel's question and answer blocks, for the default or a named profile.
+     * Any failure or wrong type means no colours, so the style's own are used.
+     */
+    public function colours(ProfileRuntime $profile): ?PanelColoursV1
+    {
+        $provider = $this->registry !== null ? $this->registry->implementation('panel_colours') : null;
+        if (!$provider instanceof PanelColoursProviderV1) {
+            return null;
+        }
+
+        try {
+            $colours = $provider->coloursFor(new ProfileIdV1($profile->id()));
+
+            return $colours instanceof PanelColoursV1 && !$colours->isEmpty() ? $colours : null;
+        } catch (\Throwable $exception) {
+            return null;
+        }
+    }
 
     /**
      * Owner-approved links to show beneath a validated provider answer. Only distinct, valid

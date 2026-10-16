@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-16-cc6.1",
+  "manifest_version": "2026-10-16-cc8.1",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -287,6 +287,17 @@
       "method_scope": "bounded file-citation descriptors passed in-process to an installed extension after evidence validation; Core validates returned public https links (at most five, distinct, any fault means none) and adds an optional links list to the success payload; public.js renders them with DOM nodes only; no change to the payload when no extension is installed; raw citations, file references and names never reach a browser; supersedes the 12 October direction to remove Core approved-evidence mapping only as recorded in NCI-CD-011; no Premium code, no AskFolio material",
       "decision_reference": "NCI-CD-011 (owner decision of 15 October 2026) and NCI-CD-014 (Premium plan CC-6), 2026-10-16 owner approval",
       "test_evidence": ["tests/cc6-evidence.php", "tests/c5-live-transport.php", "tests/c5-public-js.mjs", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc8-panel-colours-and-events",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "PanelColoursProviderV1, PanelColoursV1, PanelAppearance::colourStyle, ProfileDirectory::colours, InteractivePanel, assets/css/public.css, assets/js/public.js, docs/ARCHITECTURE.md",
+      "method_scope": "optional validated question and answer block colours for the default or a named profile via fixed CSS custom properties with a 3:1 readability safeguard; data-ncli-panel marker; ncli:ask and ncli:prefill page events that fill the panel form without bypassing its route, limits or validation; behaviour unchanged when no extension is installed; no Premium code, no AskFolio material",
+      "decision_reference": "NCI-CD-014 (Premium plan CC-8), 2026-10-16 owner approval",
+      "test_evidence": ["tests/cc8-presentation.php", "tests/c5-public-js.mjs", "tests/c2-render.php", "tests/contract.php"],
       "direct_incorporation": false
     }
   ]

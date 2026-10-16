@@ -56,6 +56,50 @@ assert(source.includes('isConnected'), 'A reset during a request must not resurr
   assert(anchors(mixed).length === 1 && anchors(mixed)[0].textContent === '<img src=x onerror=1>', 'A markup-looking title is kept as inert text and the unsafe sibling is dropped.');
 }
 
+
+// Behavioural check of the documented page events, run against a minimal DOM.
+{
+  const handlers = {};
+  const documentStub = { addEventListener(type, fn) { handlers[type] = fn; } };
+  const windowStub = { NCLI_CORE_CHAT: {}, Event: class { constructor(type, options) { this.type = type; Object.assign(this, options); } } };
+  new Function('window', 'document', source)(windowStub, documentStub);
+  assert(typeof handlers['ncli:ask'] === 'function' && typeof handlers['ncli:prefill'] === 'function', 'The panel must listen for ncli:ask and ncli:prefill.');
+  const makePanel = (busy = false, disabled = false) => {
+    const state = { submitted: 0, focused: 0 };
+    const textarea = { value: '', disabled, focus() { state.focused += 1; } };
+    const form = { requestSubmit() { state.submitted += 1; } };
+    const panel = {
+      getAttribute: (name) => (name === 'aria-busy' && busy ? 'true' : null),
+      querySelector: (selector) => (selector.includes('textarea') ? textarea : selector.includes('form') ? form : null),
+    };
+    const target = { closest: (selector) => (selector === '.ncli-panel' ? panel : null) };
+    return { state, textarea, target };
+  };
+  const fire = (type, target, detail) => handlers[type]({ target, detail });
+
+  let p = makePanel();
+  fire('ncli:ask', p.target, { question: '  What is NCI?  ' });
+  assert(p.textarea.value === 'What is NCI?' && p.state.submitted === 1 && p.state.focused === 0, 'ncli:ask fills the question and submits the panel form.');
+  p = makePanel();
+  fire('ncli:prefill', p.target, { question: 'Prefilled?' });
+  assert(p.textarea.value === 'Prefilled?' && p.state.submitted === 0 && p.state.focused === 1, 'ncli:prefill fills and focuses without sending.');
+  for (const [label, panelState, detail] of [
+    ['a busy panel', makePanel(true), { question: 'Q?' }],
+    ['a disabled panel', makePanel(false, true), { question: 'Q?' }],
+    ['an oversized question', makePanel(), { question: 'q'.repeat(2001) }],
+    ['a blank question', makePanel(), { question: '   ' }],
+    ['a non-string question', makePanel(), { question: 42 }],
+    ['missing detail', makePanel(), undefined],
+  ]) {
+    fire('ncli:ask', panelState.target, detail);
+    assert(panelState.state.submitted === 0 && panelState.textarea.value === '', 'ncli:ask does nothing for ' + label + '.');
+  }
+  const outside = makePanel();
+  handlers['ncli:ask']({ target: { closest: () => null }, detail: { question: 'Q?' } });
+  handlers['ncli:ask']({ target: null, detail: { question: 'Q?' } });
+  assert(outside.state.submitted === 0, 'An event outside any panel is ignored.');
+}
+
 if (failures.length) {
   console.error(`FAIL\n- ${failures.join('\n- ')}`);
   process.exit(1);

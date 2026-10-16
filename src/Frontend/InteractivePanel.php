@@ -9,6 +9,7 @@ use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 use NicheCleverInteractive\Core\Configuration\Readiness;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
+use NicheCleverInteractive\Core\Profile\ProfileRuntime;
 use NicheCleverInteractive\Core\Security\PublicError;
 use NicheCleverInteractive\Core\Support\Translator;
 
@@ -86,8 +87,12 @@ final class InteractivePanel
         // renders the default panel's disabled, generic state, never the default corpus.
         $requested = isset($attributes['profile']) && is_string($attributes['profile']) ? trim($attributes['profile']) : '';
         $profileId = '';
+        $colourProfile = null;
+        $panelMarker = 'unavailable';
         if ($requested === '' || $requested === CoreSettings::DEFAULT_PROFILE_ID) {
             $style = $settings->panelStyle();
+            $colourProfile = ProfileRuntime::fromSettings($settings);
+            $panelMarker = CoreSettings::DEFAULT_PROFILE_ID;
             $ready = Readiness::evaluate($settings, new SecretResolver())->isReady();
             $presentation = $settings->presentation();
             $unavailable = $settings->unavailableMessage();
@@ -113,6 +118,8 @@ final class InteractivePanel
                     $unavailable = PublicError::plainText($access->message()) ?? Translator::text('Access to this service has not been granted.');
                 } else {
                     $profileId = $profile->id();
+                    $colourProfile = $profile;
+                    $panelMarker = $profile->id();
                     $ready = Readiness::evaluateProfile($profile, new SecretResolver(), $this->profiles->testRecord($profile, $settings))->isReady();
                 }
             }
@@ -122,12 +129,17 @@ final class InteractivePanel
             : $presentation['title'];
         $status = $ready ? Translator::text('Ready for a verified answer.') : $unavailable;
         $inlineStyle = PanelAppearance::inlineStyle($style, $settings->panelWidth(), $settings->accentColor());
+        $colours = $colourProfile !== null ? $this->profiles->colours($colourProfile) : null;
+        if ($colours !== null) {
+            $colourStyle = PanelAppearance::colourStyle($style, $colours->toArray());
+            $inlineStyle = $inlineStyle === '' ? $colourStyle : ($colourStyle === '' ? $inlineStyle : $inlineStyle . ';' . $colourStyle);
+        }
         $credit = $settings->showCredit()
             ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(Translator::text('Powered by NC Interactive')) . '</a></p>'
             : '';
         $disabled = $ready ? '' : ' disabled';
 
-        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
+        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" data-ncli-panel="' . $this->attr($panelMarker) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
             . '<div class="ncli-panel__frame">'
             . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . $this->html($title) . '</h2>'
             . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'

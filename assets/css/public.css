@@ -23,13 +23,13 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__status { max-width: 46rem; margin: .75rem 0 0; color: var(--ncli-muted); font-size: .95rem; line-height: 1.5; }
 .ncli-panel__transcript { overflow: visible; margin: 1.25rem 0 0; }
 .ncli-panel__turn { display: grid; gap: .6rem; margin: 0 0 .9rem; padding: 0; border: 0; background: transparent; color: var(--ncli-ink); font-size: .95rem; line-height: 1.5; scroll-margin-bottom: 1rem; }
-.ncli-panel__question { margin: 0; padding: .85rem 1rem; border: 1px solid var(--ncli-rule); border-radius: var(--ncli-radius); background: var(--ncli-surface); color: var(--ncli-ink); font-weight: 400; overflow-wrap: anywhere; }
-.ncli-panel__answer { margin: 0; padding: 1rem; border: 1px solid var(--ncli-rule); border-radius: var(--ncli-radius); background: var(--ncli-bg); overflow-wrap: anywhere; }
+.ncli-panel__question { margin: 0; padding: .85rem 1rem; border: 1px solid var(--ncli-q-rule, var(--ncli-rule)); border-radius: var(--ncli-radius); background: var(--ncli-q-bg, var(--ncli-surface)); color: var(--ncli-q-ink, var(--ncli-ink)); font-weight: 400; overflow-wrap: anywhere; }
+.ncli-panel__answer { margin: 0; padding: 1rem; border: 1px solid var(--ncli-a-rule, var(--ncli-rule)); border-radius: var(--ncli-radius); background: var(--ncli-a-bg, var(--ncli-bg)); color: var(--ncli-a-ink, inherit); overflow-wrap: anywhere; }
 .ncli-panel__answer--pending { color: var(--ncli-muted); }
 .ncli-panel__answer > :first-child { margin-top: 0; }
 .ncli-panel__answer > :last-child { margin-bottom: 0; }
 .ncli-panel__answer p { margin: .55rem 0; }
-.ncli-panel__answer h3, .ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { margin: .95rem 0 .35rem; color: var(--ncli-ink); font-family: var(--ncli-heading-font); line-height: 1.2; }
+.ncli-panel__answer h3, .ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { margin: .95rem 0 .35rem; color: var(--ncli-a-ink, var(--ncli-ink)); font-family: var(--ncli-heading-font); line-height: 1.2; }
 .ncli-panel__answer h3 { font-size: 1.12rem; }
 .ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { font-size: 1rem; }
 .ncli-panel__answer ul, .ncli-panel__answer ol { margin: .55rem 0; padding-left: 1.35rem; }

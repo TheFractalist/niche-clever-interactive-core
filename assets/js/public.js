@@ -311,6 +311,46 @@
     }
   });
 
+  // Documented page events (docs/ARCHITECTURE.md, "Panel events"). Another script may dispatch
+  // `ncli:ask` (fill and send) or `ncli:prefill` (fill and focus only) on an element inside a panel
+  // with detail.question. Both do only what a visitor could do by typing: the text still goes through
+  // the panel's own form, route, limits and validation, and nothing happens while the panel is busy,
+  // disabled or unavailable.
+  function externalQuestion(event, send) {
+    var target = event.target;
+    var panel = target && target.closest ? target.closest('.ncli-panel') : null;
+    var detail = event.detail;
+    if (!panel || !detail || typeof detail.question !== 'string') {
+      return;
+    }
+    var question = detail.question.trim();
+    if (!question || question.length > 2000) {
+      return;
+    }
+    var form = panel.querySelector('form[data-ncli-interactive]');
+    var textarea = panel.querySelector('textarea[name="question"]');
+    if (!form || !textarea || textarea.disabled || panel.getAttribute('aria-busy') === 'true') {
+      return;
+    }
+    textarea.value = question;
+    if (!send) {
+      textarea.focus();
+      return;
+    }
+    if (typeof form.requestSubmit === 'function') {
+      form.requestSubmit();
+    } else {
+      form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+    }
+  }
+
+  document.addEventListener('ncli:ask', function (event) {
+    externalQuestion(event, true);
+  });
+  document.addEventListener('ncli:prefill', function (event) {
+    externalQuestion(event, false);
+  });
+
   document.addEventListener('submit', function (event) {
     var form = event.target;
     if (!form || !form.matches('[data-ncli-interactive]')) {

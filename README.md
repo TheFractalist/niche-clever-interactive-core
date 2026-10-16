@@ -4,7 +4,7 @@ This public repository holds the Niche Clever Interactive WordPress plugin. The 
 
 ## Current scope
 
-- PHP 8.1-compatible, provisional API-v1 contracts for eight Core/Pro seams (five original; viewer access, conversation context and evidence citations added in CC-3, CC-5 and CC-6).
+- PHP 8.1-compatible, provisional API-v1 contracts for nine Core/Pro seams (five original; viewer access, conversation context, evidence citations and panel colours added in CC-3, CC-5, CC-6 and CC-8).
 - Pure PHP contract/provenance/source-audit checks.
 - C0 source provenance, ownership, UX and test records plus a generated-data-only Docker fixture topology.
 - C1 NCI-only lifecycle, settings/schema marker, rate-table creation, server-constant secret resolver, readiness/error/validation/policy boundaries and default-profile fail-closed resolution.
@@ -47,6 +47,7 @@ Run the pure local checks:
     & 'C:\xampp\php\php.exe' tests/cc4-chronology-cache.php
     & 'C:\xampp\php\php.exe' tests/cc5-context.php
     & 'C:\xampp\php\php.exe' tests/cc6-evidence.php
+    & 'C:\xampp\php\php.exe' tests/cc8-presentation.php
     node --check assets/js/admin.js
     node --check assets/js/public.js
     node tests/c5-public-js.mjs

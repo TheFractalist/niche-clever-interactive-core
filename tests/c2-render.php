@@ -36,7 +36,7 @@ $assert(str_contains($output, 'ncli-panel--classic'), 'Default panel style shoul
 $assert(str_contains($output, 'aria-live="polite"'), 'Panel should contain an accessible status region.');
 $assert(str_contains($output, 'ncli-panel__frame'), 'Panel should render the NCI frame.');
 $assert(strpos($output, 'ncli-panel__transcript') < strpos($output, '<form') && strpos($output, '<form') < strpos($output, 'ncli-panel__reset') && strpos($output, 'ncli-panel__reset') < strpos($output, '<footer'), 'The thread must come first, then the question input, the reset control and the footer.');
-$assert(str_contains($publicCss, '.ncli-panel__question {') && str_contains($publicCss, 'background: var(--ncli-surface)') && str_contains($publicCss, '.ncli-panel__answer {') && str_contains($publicCss, '.ncli-panel__transcript:empty'), 'Questions must be shaded blocks and answers separate bordered blocks, with no empty gaps.');
+$assert(str_contains($publicCss, '.ncli-panel__question {') && str_contains($publicCss, 'background: var(--ncli-q-bg, var(--ncli-surface))') && str_contains($publicCss, '.ncli-panel__answer {') && str_contains($publicCss, '.ncli-panel__transcript:empty'), 'Questions must be shaded blocks and answers separate bordered blocks, with no empty gaps.');
 $panelSource = (string) file_get_contents(dirname(__DIR__) . '/src/Frontend/InteractivePanel.php');
 $assert(str_contains($panelSource, "'questionLabel' => Translator::text('Question:')") && str_contains($panelSource, "'answerLabel' => Translator::text('Answer:')"), 'The panel must supply translatable hidden labels for question and answer blocks.');
 $assert(str_contains($output, 'ncli-panel__reset'), 'Panel should render the session-only reset control.');

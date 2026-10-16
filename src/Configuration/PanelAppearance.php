@@ -34,7 +34,14 @@ final class PanelAppearance
         'dark' => '#e8eaed',
     ];
 
+    private const STYLE_SURFACES = [
+        'classic' => '#eeeeee',
+        'minimal' => '#f3f4f6',
+        'dark' => '#1a1e27',
+    ];
+
     private const MINIMUM_ACCENT_CONTRAST = 3.0;
+    private const MINIMUM_TEXT_CONTRAST = 3.0;
 
     public static function isHexColour(string $value): bool
     {
@@ -102,6 +109,52 @@ final class PanelAppearance
             if (self::contrastRatio($effective, $background) < self::MINIMUM_ACCENT_CONTRAST) {
                 $declarations[] = '--ncli-focus:' . self::defaultAccent($style);
                 $declarations[] = '--ncli-edge:' . (self::STYLE_INKS[$style] ?? self::STYLE_INKS['classic']);
+            }
+        }
+
+        return implode(';', $declarations);
+    }
+
+    /**
+     * Custom properties for the owner's question and answer block colours. A block's background and
+     * text are used only if the text can be read on the background (WCAG contrast of at least 3:1),
+     * measured against the style's own colour for whichever of the two was not chosen; otherwise both
+     * fall back to the style. Borders are always used when valid. Values are validated #rrggbb.
+     *
+     * @param array<string, string> $colours Keys of PanelColoursV1::KEYS.
+     */
+    public static function colourStyle(string $style, array $colours): string
+    {
+        $background = self::STYLE_BACKGROUNDS[$style] ?? self::STYLE_BACKGROUNDS['classic'];
+        $surface = self::STYLE_SURFACES[$style] ?? self::STYLE_SURFACES['classic'];
+        $ink = self::STYLE_INKS[$style] ?? self::STYLE_INKS['classic'];
+        $declarations = [];
+
+        foreach ([
+            'question' => ['q', $surface],
+            'answer' => ['a', $background],
+        ] as $block => [$short, $defaultBackground]) {
+            $bg = $colours[$block . '_background'] ?? null;
+            $text = $colours[$block . '_text'] ?? null;
+            $border = $colours[$block . '_border'] ?? null;
+            foreach ([$bg, $text, $border] as $value) {
+                if ($value !== null && !self::isHexColour($value)) {
+                    return '';
+                }
+            }
+
+            $effectiveBackground = $bg ?? $defaultBackground;
+            $effectiveText = $text ?? $ink;
+            if (($bg !== null || $text !== null) && self::contrastRatio($effectiveText, $effectiveBackground) >= self::MINIMUM_TEXT_CONTRAST) {
+                if ($bg !== null) {
+                    $declarations[] = '--ncli-' . $short . '-bg:' . strtolower($bg);
+                }
+                if ($text !== null) {
+                    $declarations[] = '--ncli-' . $short . '-ink:' . strtolower($text);
+                }
+            }
+            if ($border !== null) {
+                $declarations[] = '--ncli-' . $short . '-rule:' . strtolower($border);
             }
         }
 
