@@ -180,7 +180,7 @@ final class InteractivePanel
     private function markUncacheable(): void
     {
         if (!defined('DONOTCACHEPAGE')) {
-            define('DONOTCACHEPAGE', true);
+            define('DONOTCACHEPAGE', true); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- The constant name is the page-cache convention WordPress caching plugins read.
         }
         if (function_exists('nocache_headers') && !headers_sent()) {
             nocache_headers();

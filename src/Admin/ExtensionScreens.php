@@ -56,7 +56,7 @@ final class ExtensionScreens
             'cache' => 'Answer cache',
             'archive' => 'Conversation governance',
             'evidence' => 'Evidence links',
-            'settings' => 'Premium settings',
+            'settings' => 'Extension settings',
         ];
 
         return Translator::text($labels[$screenId] ?? 'Extension');
@@ -231,7 +231,7 @@ final class ExtensionScreens
     {
         $admin = static fn (string $page): string => function_exists('admin_url') ? (string) admin_url('admin.php?page=' . $page) : 'admin.php?page=' . $page;
 
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attribute(Translator::text('Niche Clever Interactive Premium screens')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attribute(Translator::text('Extension screens')) . '">';
         // With the profile hub the way back is the Profiles page; without it, Core's Settings.
         $hub = $this->registry->implementation('profile_editor') instanceof ProfileEditorV1;
         $back = $hub ? $admin(SettingsPage::PAGE_SLUG) . '&view=profiles' : $admin(SettingsPage::PAGE_SLUG);

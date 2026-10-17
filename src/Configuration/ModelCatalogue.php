@@ -23,7 +23,7 @@ final class ModelCatalogue
     public const DEFAULT_OUTPUT_TOKENS = 4000;
 
     /**
-     * Ordered Economy, Balanced, Premium, then previous default.
+     * Ordered Economy, Balanced, Flagship, then previous default.
      *
      * @return array<string, array{id: string, label: string, tier: string, best_for: string, cost_note: string, efforts: list<string>}>
      */
@@ -49,7 +49,7 @@ final class ModelCatalogue
             'gpt-6-astra' => [
                 'id' => 'gpt-6-astra',
                 'label' => 'GPT-6 Astra',
-                'tier' => 'Premium',
+                'tier' => 'Flagship',
                 'best_for' => 'Nuanced or high-stakes answers',
                 'cost_note' => 'Highest cost',
                 'efforts' => ['low', 'medium', 'high', 'xhigh', 'max'],

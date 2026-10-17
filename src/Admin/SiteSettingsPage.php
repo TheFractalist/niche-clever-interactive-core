@@ -122,7 +122,7 @@ final class SiteSettingsPage
 
         $body = $this->screens !== null ? $this->screens->bodyHtml('settings') : '';
         if ($body !== '') {
-            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html($this->t('NCI Premium')) . '</h2>' . $body . '</section>';
+            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html($this->t('Extension settings')) . '</h2>' . $body . '</section>';
         }
     }
 

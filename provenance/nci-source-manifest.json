@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manifest_version": "2026-10-17-cc11.1",
+  "manifest_version": "2026-10-17-cc11.2",
   "protected_source": {
     "repository": "C:\\Software Dev\\Niche Clever Website Rebrand",
     "checkpoint": "1c3290f1f70f7df5193978eed3717882584e3af8",
@@ -375,6 +375,17 @@
       "method_scope": "while the profile hub is active: a site-wide Settings page (daily provider allowance, Delete data on uninstall, the extension's site settings, Help) and a Help menu entry; the extension's settings and governance screens are hosted inside Core's Settings and Conversations pages instead of being menu entries; the Help Centre is extracted into a renderer (byte-identical output); retired addresses redirect; the Profiles table has separate Tag, Connection test and Last tested columns; the profile switcher and All profiles link sit in the title strip; capability site_pages; without an extension Core's pages are unchanged; no Premium code, no AskFolio material",
       "decision_reference": "2026-10-17 owner review of the merged profile hub; plan approved the same day",
       "test_evidence": ["tests/cc10c-profile-hub.php", "tests/c2-render.php", "tests/c2-admin-chrome.php", "tests/contract.php"],
+      "direct_incorporation": false
+    },
+    {
+      "id": "cc11b-standalone-guard-and-plugin-check",
+      "kind": "new-authored",
+      "owner": "Core",
+      "licence": "GPL-2.0-or-later",
+      "target": "tests/standalone.php, src/Admin/{ExtensionScreens,ProfileHub,SiteSettingsPage,SettingsPage,HelpRenderer}.php, src/Configuration/ModelCatalogue.php, src/AI/Transport/*.php, src/Api/V1/Value/ApprovedLinkV1.php, src/Security/PublicError.php, src/Conversation/WordPressConversationStore.php, src/Frontend/InteractivePanel.php",
+      "method_scope": "Core's own code no longer names the separate edition outside the Help Centre and one Placement note (labels are neutral: Extension settings, Extension screens, the extension); the model tier formerly labelled Premium is labelled Flagship; a guard test fails if Core's shipped code refers to, detects or depends on another plugin, contains licence or paywall code, makes HTTP requests outside the provider client, or if any page, tab or menu differs with no extension registered; Plugin Check findings addressed: WordPress URL and sanitising functions used when available, justified phpcs ignores for closed-code exceptions, dynamic placeholder lists and the page-cache constant; no behaviour change",
+      "decision_reference": "2026-10-17 owner request to confirm Core stands alone and is free of Premium content before WordPress.org submission",
+      "test_evidence": ["tests/standalone.php", "tests/cc10c-profile-hub.php", "tests/c2-admin-chrome.php"],
       "direct_incorporation": false
     }
   ]

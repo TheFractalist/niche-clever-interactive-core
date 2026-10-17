@@ -271,7 +271,7 @@ final class ProfileHub
         echo '<p class="description">' . $this->html($this->t('"Current" means the profile passed a connection test with its present settings. Changing its vector store, corpus version, guidance, preset or model requires a new test.')) . '</p></section>';
 
         echo '<section class="ncli-admin__cards">';
-        echo '<div class="ncli-admin__card"><h3>' . $this->html($this->t('Edition')) . '</h3><p><strong>' . $this->html($this->t('Premium')) . '</strong></p><p class="description">' . $this->html($this->t('The installed package supplies these capabilities.')) . '</p></div>';
+        echo '<div class="ncli-admin__card"><h3>' . $this->html($this->t('Extension')) . '</h3><p class="description">' . $this->html($this->t('An installed extension supplies the list of profiles and the extra tabs shown here.')) . '</p></div>';
         echo '<div class="ncli-admin__card"><h3>' . $this->html($this->t('Help and settings')) . '</h3><p><a href="' . $this->attr($this->adminUrl(['page' => SiteSettingsPage::PAGE_SLUG, 'tab' => 'help'])) . '">' . $this->html($this->t('Open the Help Centre')) . '</a></p></div>';
         echo '</section></div>';
     }
@@ -402,7 +402,7 @@ final class ProfileHub
             if (function_exists('wp_nonce_field')) {
                 wp_nonce_field(self::DELETE_ACTION, '_ncli_nonce');
             }
-            echo '<p>' . $this->html($this->t('Deleting a profile removes its settings and the data NCI Premium keeps for it. Conversation history already recorded by Core is not removed.')) . '</p>';
+            echo '<p>' . $this->html($this->t('Deleting a profile removes its settings and the data the extension keeps for it. Conversation history already recorded by Core is not removed.')) . '</p>';
             echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . $this->html($this->t('I want to delete this profile')) . '</label> <button type="submit" class="button button-link-delete">' . $this->html($this->t('Delete profile')) . '</button></p></form></section>';
         }
     }

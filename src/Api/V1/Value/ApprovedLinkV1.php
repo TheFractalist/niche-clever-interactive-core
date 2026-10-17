@@ -19,7 +19,8 @@ final class ApprovedLinkV1
     public function __construct(string $title, string $url)
     {
         $title = trim($title);
-        if ($title === '' || strlen($title) > self::MAX_TITLE || preg_match('/[\x00-\x1F\x7F]/', $title) === 1 || $title !== strip_tags($title)) {
+        if ($title === '' || strlen($title) > self::MAX_TITLE || preg_match('/[\x00-\x1F\x7F]/', $title) === 1 || $title !== strip_tags($title) // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- Only detects markup in a title (it is rejected, never output); the stricter WordPress function is not loaded in pure tests.
+        ) {
             throw new InvalidArgumentException('A link title must be short plain text.');
         }
         if (!self::isPublicHttpsUrl($url)) {
@@ -36,7 +37,7 @@ final class ApprovedLinkV1
             return false;
         }
 
-        $parts = parse_url($url);
+        $parts = function_exists('wp_parse_url') ? wp_parse_url($url) : parse_url($url); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback when WordPress is not loaded (pure tests).
         if (!is_array($parts) || strtolower((string) ($parts['scheme'] ?? '')) !== 'https' || isset($parts['user']) || isset($parts['pass'])) {
             return false;
         }

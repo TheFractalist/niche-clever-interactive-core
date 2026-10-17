@@ -44,7 +44,7 @@ final class PublicError
             return null;
         }
 
-        $text = function_exists('wp_strip_all_tags') ? (string) wp_strip_all_tags($message) : strip_tags($message);
+        $text = function_exists('wp_strip_all_tags') ? (string) wp_strip_all_tags($message) : strip_tags($message); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- Fallback when WordPress is not loaded (pure tests).
         $text = trim(preg_replace('/[\x00-\x1F\x7F]+/', ' ', $text) ?? '');
         if ($text === '' || strlen($text) > self::MAX_ACCESS_MESSAGE) {
             return null;

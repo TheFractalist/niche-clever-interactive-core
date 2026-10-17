@@ -464,7 +464,7 @@ $site = new NicheCleverInteractive\Core\Admin\SiteSettingsPage($hub, $hostedScre
 $_GET = [];
 $html = $render(static fn () => $site->render());
 $assert(str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'name="provider_requests_per_day"') && str_contains($html, 'name="delete_on_uninstall"') && str_contains($html, 'name="action" value="ncli_save_site_settings"'), 'Settings > General has the provider allowance and Delete data on uninstall.');
-$assert(str_contains($html, '<h2>NCI Premium</h2>') && str_contains($html, 'settings nonce nonce-for-ncli_ext_settings'), 'The extension\'s site settings are hosted under General.');
+$assert(str_contains($html, '<h2>Extension settings</h2>') && str_contains($html, 'settings nonce nonce-for-ncli_ext_settings'), 'The extension\'s site settings are hosted under General.');
 $assert(preg_match('/<a class="nav-tab nav-tab-active"[^>]*>General<\/a><a class="nav-tab"[^>]*>Help<\/a>/', $html) === 1, 'The tab bar has General and Help.');
 $_GET = ['tab' => 'help', 'help' => 'faq'];
 $html = $render(static fn () => $site->render());

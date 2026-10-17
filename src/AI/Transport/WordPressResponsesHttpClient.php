@@ -25,7 +25,7 @@ final class WordPressResponsesHttpClient implements ResponsesHttpClient
 
         if (function_exists('is_wp_error') && is_wp_error($response)) {
             // Only the closed reason is kept; the error text is never stored or shown.
-            throw ProviderFailure::fromTransportError((string) $response->get_error_message());
+            throw ProviderFailure::fromTransportError((string) $response->get_error_message()); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         return new ResponsesHttpResponse(

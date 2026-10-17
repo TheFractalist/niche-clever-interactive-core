@@ -27,13 +27,13 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         $key = $this->secrets->forProvider();
         $vectorStore = $request->vectorStoreReference();
         if ($key === null || preg_match('/^vs_[A-Za-z0-9_-]{6,}$/', $vectorStore) !== 1) {
-            throw new ProviderFailure(ProviderFailure::NOT_CONFIGURED);
+            throw new ProviderFailure(ProviderFailure::NOT_CONFIGURED); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         try {
             $body = json_encode(self::requestPayloadFor($request), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         } catch (JsonException $exception) {
-            throw new ProviderFailure(ProviderFailure::NOT_CONFIGURED);
+            throw new ProviderFailure(ProviderFailure::NOT_CONFIGURED); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         $response = $this->http->post(self::RESPONSES_URL, [
@@ -42,17 +42,17 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         ], $body, $request->options()->timeoutSeconds());
 
         if ($response->statusCode() < 200 || $response->statusCode() >= 300) {
-            throw ProviderFailure::fromHttpStatus($response->statusCode());
+            throw ProviderFailure::fromHttpStatus($response->statusCode()); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         try {
             $payload = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
-            throw new ProviderFailure(ProviderFailure::MALFORMED_RESPONSE);
+            throw new ProviderFailure(ProviderFailure::MALFORMED_RESPONSE); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         if (!is_array($payload)) {
-            throw new ProviderFailure(ProviderFailure::MALFORMED_RESPONSE);
+            throw new ProviderFailure(ProviderFailure::MALFORMED_RESPONSE); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         return $this->toTransportResult($payload, $request);
@@ -111,7 +111,7 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
     {
         $output = $payload['output'] ?? null;
         if (!is_array($output) || count($output) > 100) {
-            throw new ProviderFailure(ProviderFailure::INCOMPLETE_RESPONSE);
+            throw new ProviderFailure(ProviderFailure::INCOMPLETE_RESPONSE); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
         }
 
         $completedFileSearch = false;

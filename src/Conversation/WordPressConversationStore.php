@@ -114,7 +114,7 @@ final class WordPressConversationStore implements ConversationStore, Conversatio
         $removed = 0;
         foreach (array_chunk($valid, 50) as $chunk) {
             $placeholders = implode(', ', array_fill(0, count($chunk), '%s'));
-            $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE conversation_id IN ({$placeholders})", ...$chunk));
+            $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE conversation_id IN ({$placeholders})", ...$chunk)); // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- One %s per value is built above; the table name is this plugin's own.
             if ($result === false) {
                 throw new RuntimeException('Conversation deletion failed.');
             }
@@ -165,7 +165,7 @@ final class WordPressConversationStore implements ConversationStore, Conversatio
         [$where, $args] = $this->criteria($profileId, $fromUtc, $toUtc);
         $args[] = max(0, $afterId);
         $args[] = max(1, $limit);
-        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table} WHERE {$where} AND id > %d ORDER BY id ASC LIMIT %d", ...$args), ARRAY_A);
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table} WHERE {$where} AND id > %d ORDER BY id ASC LIMIT %d", ...$args), ARRAY_A); // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $where holds only placeholders built by criteria(); the arguments match them in order.
         if (!is_array($rows)) {
             return [];
         }
