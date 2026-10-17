@@ -6,6 +6,7 @@
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
+ * Plugin URI: https://nicheclever.co.uk/nc-interactive/
  * Author: Niche Clever
  * Author URI: https://nicheclever.co.uk/
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html

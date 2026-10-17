@@ -20,7 +20,19 @@ Niche Clever Interactive does not create or manage a vector store, upload docume
 
 Niche Clever is the creator of this plugin, including its administrator artwork and screenshots, and releases them under the same GPLv2 or later licence as the code.
 
-This RC10 package is a local release candidate. It is not a WordPress.org submission, directory listing or public 1.0.0 release.
+More information, setup guidance and the optional NCI Premium companion plugin are on the plugin page: https://nicheclever.co.uk/nc-interactive/
+
+== External services ==
+
+This plugin connects to the OpenAI API (api.openai.com) to generate answers. It needs your own OpenAI account and API key, and an OpenAI File Search vector store that you create and manage yourself.
+
+* **What is sent:** the visitor's question each time the public panel is used, together with the instructions and settings you have configured. OpenAI File Search may use the material in your vector store to generate the answer. The connection test sends a short test request. Nothing is sent until you add an API key, run a successful connection test and enable public answers.
+* **When:** only when a visitor asks a question in the panel, or when an administrator runs the connection test.
+* **Your account:** requests are made with your API key and billed to your OpenAI account. The plugin does not send data to Niche Clever.
+* **OpenAI Terms of Use:** https://openai.com/policies/terms-of-use/
+* **OpenAI Privacy Policy:** https://openai.com/policies/privacy-policy/
+
+You are responsible for telling your visitors, in your own privacy notice, that questions are processed by OpenAI and, if you switch on conversation history, that questions and answers are stored on your site.
 
 == Installation ==
 
@@ -116,7 +128,7 @@ The panel and the settings screens are built with labelled controls, keyboard op
 
 = Does Niche Clever Interactive have a Premium edition? =
 
-NCI Premium is a separately supplied edition from Niche Clever. It adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. This plugin contains no Premium code, and nothing in it is locked, limited or time-restricted.
+NCI Premium is a separately supplied edition from Niche Clever. Details, purchase and download are at https://nicheclever.co.uk/nc-interactive-pro/. It adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. This plugin contains no Premium code, and nothing in it is locked, limited or time-restricted.
 
 == Screenshots ==
 
@@ -135,7 +147,8 @@ NCI Premium is a separately supplied edition from Niche Clever. It adds several 
 
 * The Help Centre now has Overview, Frequently asked questions and NCI Premium sections, with a fuller comparison of Core and NCI Premium.
 * Diagnostics show the latest provider problem as a plain reason (for example a timeout) with a suggestion, without storing any question, answer or provider message.
-* The visitor request allowance needs no extra setup: its server-side secret is derived from WordPress's own salts unless the optional NCLI_CORE_SCOPE_SECRET constant is defined.\n* Local-only candidate: optional conversation history (off by default) with a Conversations screen, delete-one, delete-selected and delete-all controls, configurable retention and an owner-controlled uninstall routine; panel width, accent colour and an opt-in credit line; an editable unavailable message; the administrator menu is now "NC Interactive". Corrects a wiring defect from RC5 that left the public route without its daily request limits.
+* The visitor request allowance needs no extra setup: its server-side secret is derived from WordPress's own salts unless the optional NCLI_CORE_SCOPE_SECRET constant is defined.
+* Local-only candidate: optional conversation history (off by default) with a Conversations screen, delete-one, delete-selected and delete-all controls, configurable retention and an owner-controlled uninstall routine; panel width, accent colour and an opt-in credit line; an editable unavailable message; the administrator menu is now "NC Interactive". Corrects a wiring defect from RC5 that left the public route without its daily request limits.
 * Local-only model-cost configuration: curated model choice, reasoning effort, retrieval depth, maximum answer length and request timeout in AI & Corpus, with qualitative Help Centre cost guidance and no prices. All new settings require a fresh connection test.
 
 = 1.0.0-rc.8 =
