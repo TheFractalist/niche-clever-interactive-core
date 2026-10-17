@@ -255,6 +255,9 @@ $assert(str_contains($html, 'Questions &amp; sharing') && str_contains($html, 'C
 $assert(preg_match('/<div class="ncli-admin__titlebar">.*Switch profile.*All profiles.*Profile workspace.*<\/div><\/div><header/s', $html) === 1 && !str_contains(substr($html, strpos($html, '<header')), 'Switch profile'), 'The profile switcher, All profiles and the workspace label sit in the title strip, not below the banner.');
 $assert(str_contains($html, 'body access for docs nonce nonce-for-ncli_ext_access action ncli_ext_access'), 'A section is drawn with a Core-issued nonce.');
 $assert(str_contains($html, 'name="action" value="ncli_save_profile"') && str_contains($html, 'Delete this profile') && str_contains($html, 'Save this profile'), 'The setup tab has the save form and the delete form.');
+$_GET = ['profile' => 'docs', 'tab' => 'setup'];
+$html = $render(static fn () => $hub->render());
+$assert(substr_count($html, 'name="_ncli_nonce"') === 2 && !str_contains($html, 'id="_ncli_nonce"') && str_contains($html, 'value="nonce-for-ncli_save_profile"') && str_contains($html, 'value="nonce-for-ncli_delete_profile"'), 'The save and delete forms carry their own nonces without a repeated id.');
 $_GET = ['profile' => 'docs', 'tab' => 'ai-corpus'];
 $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'name="vector_store_reference"') && str_contains($html, 'Saved. Leave blank to keep it.') && !str_contains($html, 'vs_docs') && str_contains($html, 'name="model_id"'), 'AI & Corpus has a write-only reference field and the model fields.');
@@ -345,7 +348,7 @@ $assert(end($redirects)['ncli_notice'] === 'invalid' && !isset($editor->items['n
 $delPost = static fn (array $more): array => $more + ['_ncli_nonce' => 'nonce-ncli_delete_profile'];
 $_POST = $delPost(['profile_id' => 'fresh']);
 $hub->delete();
-$assert(isset($editor->items['fresh']) && end($redirects)['ncli_notice'] === 'missing', 'Deleting needs the confirmation box.');
+$assert(isset($editor->items['fresh']) && end($redirects) === ['profile' => 'fresh', 'tab' => 'setup', 'ncli_notice' => 'confirm'], 'Deleting needs the confirmation box, and says so.');
 $_POST = $delPost(['profile_id' => 'fresh', 'confirm' => '1']);
 $hub->delete();
 $assert(!isset($editor->items['fresh']) && end($redirects) === ['view' => 'profiles', 'ncli_notice' => 'deleted'], 'A confirmed delete removes the profile.');

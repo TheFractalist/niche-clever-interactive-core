@@ -334,9 +334,7 @@ final class ProfileHub
         }
 
         echo '<form class="ncli-admin__workspace" method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::CREATE_ACTION . '">';
-        if (function_exists('wp_nonce_field')) {
-            wp_nonce_field(self::CREATE_ACTION, '_ncli_nonce');
-        }
+        echo $this->nonceField(self::CREATE_ACTION);
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-new_id">' . $this->html($this->t('Profile id')) . '</label></th><td><input id="ncli-new_id" class="regular-text" type="text" name="profile_id" maxlength="64" required autocomplete="off"><p class="description">' . $this->html($this->t('Lower-case letters, numbers, hyphens and underscores. Used in the shortcode and the request; it cannot be changed later.')) . '</p></td></tr>';
         echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-label">' . $this->html($this->t('Profile name')) . '</label></th><td><input id="ncli-label" class="regular-text" type="text" name="label" maxlength="80" required></td></tr>';
@@ -389,9 +387,7 @@ final class ProfileHub
             $this->checklist($id, $values);
         }
         echo '<form class="ncli-admin__workspace" method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::SAVE_ACTION . '"><input type="hidden" name="profile_id" value="' . $this->attr($id) . '"><input type="hidden" name="ncli_tab" value="' . $this->attr($tab) . '">';
-        if (function_exists('wp_nonce_field')) {
-            wp_nonce_field(self::SAVE_ACTION, '_ncli_nonce');
-        }
+        echo $this->nonceField(self::SAVE_ACTION);
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         (new ProfileFieldRenderer())->profileRows($tab, $values);
         echo '</tbody></table>';
@@ -399,9 +395,7 @@ final class ProfileHub
 
         if ($tab === 'setup') {
             echo '<section class="ncli-admin__tab-panel ncli-admin__extension"><h2>' . $this->html($this->t('Delete this profile')) . '</h2><form method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::DELETE_ACTION . '"><input type="hidden" name="profile_id" value="' . $this->attr($id) . '">';
-            if (function_exists('wp_nonce_field')) {
-                wp_nonce_field(self::DELETE_ACTION, '_ncli_nonce');
-            }
+            echo $this->nonceField(self::DELETE_ACTION);
             echo '<p>' . $this->html($this->t('Deleting a profile removes its settings and the data the extension keeps for it. Conversation history already recorded by Core is not removed.')) . '</p>';
             echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . $this->html($this->t('I want to delete this profile')) . '</label> <button type="submit" class="button button-link-delete">' . $this->html($this->t('Delete profile')) . '</button></p></form></section>';
         }
@@ -506,7 +500,11 @@ final class ProfileHub
 
         $id = $this->postId();
         $editor = $this->profiles->editor();
-        if ($id === null || $id === CoreSettings::DEFAULT_PROFILE_ID || $editor === null || ($_POST['confirm'] ?? null) !== '1') {
+        if ($id !== null && $id !== CoreSettings::DEFAULT_PROFILE_ID && $editor !== null && ($_POST['confirm'] ?? null) !== '1') {
+            call_user_func($this->redirect, ['profile' => $id, 'tab' => 'setup', 'ncli_notice' => 'confirm']);
+            return;
+        }
+        if ($id === null || $id === CoreSettings::DEFAULT_PROFILE_ID || $editor === null) {
             call_user_func($this->redirect, ['view' => 'profiles', 'ncli_notice' => 'missing']);
             return;
         }
@@ -750,6 +748,7 @@ final class ProfileHub
             'invalid' => ['error', 'The profile could not be saved. Check the values: the id uses lower-case letters, numbers, hyphens or underscores, and every value has a maximum length.'],
             'exists' => ['error', 'A profile with that id already exists, or the maximum number of profiles has been reached.'],
             'missing' => ['error', 'That profile no longer exists.'],
+            'confirm' => ['error', 'Tick the box to confirm before deleting the profile. Nothing was deleted.'],
             'failed' => ['error', 'The request could not be completed. Nothing was changed.'],
         ];
         $notice = $_GET['ncli_notice'] ?? null;
@@ -794,6 +793,14 @@ final class ProfileHub
     private function postUrl(): string
     {
         return function_exists('admin_url') ? (string) admin_url('admin-post.php') : '/wp-admin/admin-post.php';
+    }
+
+    /** The nonce as a hidden field. WordPress's own helper gives every field the same id, which is invalid when a page has two forms. */
+    private function nonceField(string $action): string
+    {
+        $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
+
+        return '<input type="hidden" name="_ncli_nonce" value="' . $this->attr($nonce) . '">';
     }
 
     private function html(string $value): string

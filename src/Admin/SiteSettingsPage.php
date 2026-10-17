@@ -112,9 +112,7 @@ final class SiteSettingsPage
     {
         $values = $this->load()->toArray();
         echo '<form class="ncli-admin__workspace" method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::SAVE_ACTION . '">';
-        if (function_exists('wp_nonce_field')) {
-            wp_nonce_field(self::SAVE_ACTION, '_ncli_nonce');
-        }
+        echo $this->nonceField(self::SAVE_ACTION);
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         (new ProfileFieldRenderer())->siteRows($values);
         echo '</tbody></table>';
@@ -196,6 +194,14 @@ final class SiteSettingsPage
     private function postUrl(): string
     {
         return function_exists('admin_url') ? (string) admin_url('admin-post.php') : '/wp-admin/admin-post.php';
+    }
+
+    /** The nonce as a hidden field. WordPress's own helper gives every field the same id, which is invalid when a page has two forms. */
+    private function nonceField(string $action): string
+    {
+        $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
+
+        return '<input type="hidden" name="_ncli_nonce" value="' . $this->attr($nonce) . '">';
     }
 
     private function html(string $value): string

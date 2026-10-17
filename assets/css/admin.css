@@ -117,3 +117,7 @@
 .ncli-admin__titlebar-label { color: #fff; font-size: 13px; font-weight: 600; }
 .ncli-admin__save-bar .button:not(.button-primary) { min-height: 36px; border-color: rgba(255, 255, 255, .7); background: transparent; color: #fff; }
 .ncli-admin__save-bar .button:not(.button-primary):hover, .ncli-admin__save-bar .button:not(.button-primary):focus { border-color: #fff; background: rgba(255, 255, 255, .16); color: #fff; }
+.ncli-admin__help-toggle { width: 24px; height: 24px; }
+.ncli-admin .button-link, .ncli-admin .button-link-delete { min-height: 24px; padding: 2px 6px; }
+.ncli-admin__profile-table code { white-space: nowrap; }
+@media screen and (max-width: 782px) { .ncli-admin__tab-panel { overflow-x: auto; } .ncli-admin__save-bar { flex-wrap: wrap; } }
