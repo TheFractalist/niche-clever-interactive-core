@@ -37,7 +37,7 @@ final class ProfileHub
     private const TEST_NONCE_ACTION = 'ncli_ext_profiles';
     private const TABS = [
         'setup' => 'Setup', 'profile' => 'Profile', 'ai-corpus' => 'AI & Corpus', 'conversation' => 'Conversation',
-        'questions' => 'Authored questions', 'collections' => 'Question collections', 'appearance-limits' => 'Appearance & Limits', 'placement' => 'Placement',
+        'appearance-limits' => 'Appearance & Limits', 'questions' => 'Authored questions', 'collections' => 'Question collections', 'placement' => 'Placement',
         'cache' => 'Cached answers', 'diagnostics' => 'Diagnostics',
     ];
     private const FORM_TABS = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits'];
