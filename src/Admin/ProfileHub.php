@@ -183,7 +183,7 @@ final class ProfileHub
     }
 
     /** Draws the extension's sections for one tab, each in its own panel beneath the tab's own content. */
-    public function sections(string $profileId, string $tab): void
+    public function sections(string $profileId, string $tab, ?string $only = null): void
     {
         if (!in_array($tab, ProfileSectionV1::TABS, true)) {
             return;
@@ -196,7 +196,7 @@ final class ProfileHub
 
         $id = new ProfileIdV1($profileId);
         foreach ($this->profiles->sections($profileId) as $section) {
-            if ($section->tab() !== $tab) {
+            if ($section->tab() !== $tab || ($only !== null && $only !== 'panel' && $only !== $section->key())) {
                 continue;
             }
             echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html($section->title()) . '</h2>';
@@ -369,15 +369,62 @@ final class ProfileHub
         echo '</nav>';
         $this->notice();
 
+        // Where an extension adds sections to a form tab, the tab splits in two: Core's own fields and one
+        // sub-tab for each section. Only the chosen part is drawn, so each page stays short.
+        $sub = $this->subTab($id, $tab);
+        if ($sub !== null) {
+            $this->subTabStrip($id, $tab, $sub);
+        }
         if (in_array($tab, self::FORM_TABS, true)) {
-            $this->renderForm($id, $tab, $edit);
+            if ($sub === null || $sub === 'panel') {
+                $this->renderForm($id, $tab, $edit);
+            }
         } elseif ($tab === 'placement') {
             echo '<section class="ncli-admin__tab-panel"><h2>' . $this->html($this->t('Placement')) . '</h2><p>' . $this->html($this->t('Place this profile with the shortcode')) . ' <code>[ncli_interactive profile="' . $this->html($id) . '"]</code> ' . $this->html($this->t('or the NC Interactive block with its profile setting.')) . '</p></section>';
         } elseif ($tab === 'diagnostics') {
             $this->renderDiagnostics($id, $edit);
         }
-        $this->sections($id, $tab);
+        if ($sub === null || $sub !== 'panel') {
+            $this->sections($id, $tab, $sub);
+        }
         echo '</div>';
+    }
+
+    /** The sub-tabs offered on a form tab: those whose extension sections target it. Only Appearance & Limits splits. */
+    private function subTabs(string $profileId, string $tab): array
+    {
+        if ($tab !== 'appearance-limits') {
+            return [];
+        }
+        $tabs = ['panel' => $this->t('Panel style')];
+        foreach ($this->profiles->sections($profileId) as $section) {
+            if ($section->tab() === $tab) {
+                $tabs[$section->key()] = $section->title();
+            }
+        }
+
+        return count($tabs) > 1 ? $tabs : [];
+    }
+
+    /** The chosen sub-tab (default: Core's own panel fields), or null when this tab does not split. */
+    private function subTab(string $profileId, string $tab): ?string
+    {
+        $tabs = $this->subTabs($profileId, $tab);
+        if ($tabs === []) {
+            return null;
+        }
+        $wanted = isset($_GET['ncli_sub']) && is_string($_GET['ncli_sub']) ? $_GET['ncli_sub'] : 'panel'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only; matched against the fixed list of sub-tabs.
+
+        return array_key_exists($wanted, $tabs) ? $wanted : 'panel';
+    }
+
+    private function subTabStrip(string $profileId, string $tab, string $current): void
+    {
+        echo '<nav class="ncli-admin__substrip" aria-label="' . $this->attr($this->t('Sections of this tab')) . '">';
+        foreach ($this->subTabs($profileId, $tab) as $key => $label) {
+            echo '<a class="ncli-admin__subtab' . ($key === $current ? ' ncli-admin__subtab--active' : '') . '"' . ($key === $current ? ' aria-current="page"' : '') . ' href="' . $this->attr($this->adminUrl(['profile' => $profileId, 'tab' => $tab, 'ncli_sub' => $key])) . '">' . $this->html($label) . '</a>';
+        }
+        echo '</nav>';
     }
 
     private function renderForm(string $id, string $tab, ProfileEditV1 $edit): void
