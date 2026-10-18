@@ -309,7 +309,7 @@ $cache->throwOnLookup = false;
 $cache->throwOnStore = true;
 $assert($ask($chat, 'Another new question?')['answer'] === 'A provider answer.', 'A failing store never changes the visitor\'s answer.');
 $cache->throwOnStore = false;
-foreach ([str_repeat('a', 5001) => 'oversized', "bad\x01answer" => 'control characters'] as $bad => $label) {
+foreach ([str_repeat('a', 20001) => 'oversized', "bad\x01answer" => 'control characters'] as $bad => $label) {
     $cache->forceAnswer = (string) $bad;
     $callsBefore = $transport->calls;
     $res = $ask($chat, 'Bad cache entry ' . $label . '?');

@@ -11,7 +11,7 @@ interface ConversationStore
     /**
      * Newest conversation first.
      *
-     * @return list<array{conversation_id: string, turn_count: int, started_at: string, last_at: string, first_question: string}>
+     * @return list<array{conversation_id: string, turn_count: int, started_at: string, last_at: string, first_question: string, corpus_version?: string}>
      */
     public function listConversations(int $limit, int $offset): array;
 

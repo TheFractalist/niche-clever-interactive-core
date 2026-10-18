@@ -13,7 +13,7 @@ use InvalidArgumentException;
 final class ConversationTurn
 {
     public const MAX_QUESTION_BYTES = 2000;
-    public const MAX_ANSWER_BYTES = 5000;
+    public const MAX_ANSWER_BYTES = 20000;
 
     private string $conversationId;
     private string $profileId;

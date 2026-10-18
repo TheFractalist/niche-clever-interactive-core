@@ -15,6 +15,9 @@ use NicheCleverInteractive\Core\Support\Translator;
  */
 final class HelpRenderer
 {
+    /** Where NCI Premium is described, bought and downloaded. */
+    public const PREMIUM_URL = 'https://nicheclever.co.uk/nc-interactive-pro/';
+
     private ProfileFieldRenderer $fields;
     /** @var callable(string): string */
     private $helpUrl;
@@ -142,7 +145,7 @@ final class HelpRenderer
                 ['What does Diagnostics show?', 'The readiness state, the connection test result and the latest provider problem. It never shows a credential, provider payload, file identifier or retrieved content.'],
             ],
             'Editions' => [
-                ['What is NCI Premium?', 'NCI Premium is a separately supplied edition from Niche Clever that adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. The NCI Premium tab lists what each edition includes. This plugin, NCI Core, contains no Premium code, and nothing in Core is locked, limited or time-restricted.'],
+                ['What is NCI Premium?', 'NCI Premium is a separately supplied edition from Niche Clever that adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. The NCI Premium tab lists what each edition includes and links to the NCI Premium page (nicheclever.co.uk/nc-interactive-pro). This plugin, NCI Core, contains no Premium code, and nothing in Core is locked, limited or time-restricted.'],
             ],
         ];
 
@@ -159,6 +162,7 @@ final class HelpRenderer
     {
         echo '<h3>' . $this->escapeHtml($this->t('NCI Core and NCI Premium')) . '</h3>';
         echo '<p>' . $this->escapeHtml($this->t('NCI Core is complete for one focused question-and-answer panel. NCI Premium, supplied separately by Niche Clever, is for sites that need several knowledge profiles, curated evidence, authored questions, deeper conversation governance and cost-saving answer reuse. The table shows what each edition includes.')) . '</p>';
+        echo '<p><a class="button button-primary" href="' . $this->escapeAttribute(self::PREMIUM_URL) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('See NCI Premium: details, purchase and download')) . '</a></p>';
         $this->renderComparisonTable();
         echo '<p class="ncli-admin__comparison-note">' . $this->escapeHtml($this->t('NCI Premium is a separately supplied edition. NCI Core contains no Premium code, and nothing in Core is locked, limited or time-restricted. Core never publishes provider citations or source links; Premium\'s evidence links would be titles and addresses that you approve yourself.')) . '</p>';
     }

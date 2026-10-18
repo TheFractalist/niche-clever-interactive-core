@@ -154,7 +154,7 @@ final class ChatService
         }
 
         $answer = trim($result->answer());
-        if ($answer === '' || strlen($answer) > 5000) {
+        if ($answer === '' || strlen($answer) > 20000) {
             $this->noteFailure($answer === '' ? ProviderFailure::EMPTY_ANSWER : ProviderFailure::ANSWER_TOO_LONG, $started);
             if (!$this->commitReservation($reservation)) {
                 return ChatOutcome::failure('provider_failure');

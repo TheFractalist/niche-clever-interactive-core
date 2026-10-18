@@ -343,7 +343,7 @@ final class ProfileDirectory
             }
             $answer = trim($hit->renderedAnswer());
 
-            return $answer !== '' && strlen($answer) <= 5000 && preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $answer) !== 1 ? $answer : null;
+            return $answer !== '' && strlen($answer) <= 20000 && preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $answer) !== 1 ? $answer : null;
         } catch (\Throwable $exception) {
             return null;
         }

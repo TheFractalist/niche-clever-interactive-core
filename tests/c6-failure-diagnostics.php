@@ -172,7 +172,7 @@ $assert(!str_contains(json_encode($payload, JSON_THROW_ON_ERROR), 'timeout') && 
 
 [$payload, $records] = $run(static fn (TransportRequest $r): TransportResult => new TransportResult('', true, $r->policyFingerprint(), $r->corpusFingerprint()));
 $assert(count($records) === 1 && $records[0][1] === ProviderFailure::EMPTY_ANSWER, 'An empty answer must be recorded as empty_answer.');
-[$payload, $records] = $run(static fn (TransportRequest $r): TransportResult => new TransportResult(str_repeat('a', 5001), true, $r->policyFingerprint(), $r->corpusFingerprint()));
+[$payload, $records] = $run(static fn (TransportRequest $r): TransportResult => new TransportResult(str_repeat('a', 20001), true, $r->policyFingerprint(), $r->corpusFingerprint()));
 $assert(count($records) === 1 && $records[0][1] === ProviderFailure::ANSWER_TOO_LONG && $payload['error']['code'] === 'provider_failure', 'An over-long answer must be recorded as answer_too_long.');
 [$payload, $records] = $run(static fn (TransportRequest $r): TransportResult => new TransportResult('Answer.', false, $r->policyFingerprint(), $r->corpusFingerprint()));
 $assert(count($records) === 1 && $records[0][1] === ProviderFailure::EVIDENCE_MISMATCH && $payload['error']['code'] === 'evidence_failure', 'An incomplete search must be recorded as evidence_mismatch.');

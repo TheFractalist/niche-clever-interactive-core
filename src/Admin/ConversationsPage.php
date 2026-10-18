@@ -198,6 +198,7 @@ final class ConversationsPage
         echo '<th scope="col">' . $this->escapeHtml($this->t('Questions')) . '</th>';
         echo '<th scope="col">' . $this->escapeHtml($this->t('Started (UTC)')) . '</th>';
         echo '<th scope="col">' . $this->escapeHtml($this->t('Last activity (UTC)')) . '</th>';
+        echo '<th scope="col">' . $this->escapeHtml($this->t('Corpus')) . '</th>';
         echo '</tr></thead><tbody>';
         foreach ($conversations as $conversation) {
             $id = $conversation['conversation_id'];
@@ -208,6 +209,7 @@ final class ConversationsPage
             echo '<td>' . $this->escapeHtml((string) $conversation['turn_count']) . '</td>';
             echo '<td>' . $this->escapeHtml($conversation['started_at']) . '</td>';
             echo '<td>' . $this->escapeHtml($conversation['last_at']) . '</td>';
+            echo '<td>' . $this->escapeHtml((string) ($conversation['corpus_version'] ?? '')) . '</td>';
             echo '</tr>';
         }
         echo '</tbody></table>';
@@ -232,7 +234,7 @@ final class ConversationsPage
         echo '<h2>' . $this->escapeHtml($this->t('Conversation')) . '</h2>';
         foreach ($turns as $turn) {
             echo '<article class="ncli-admin__turn">';
-            echo '<p class="ncli-admin__turn-meta">' . $this->escapeHtml($turn->createdAt()) . ' UTC</p>';
+            echo '<p class="ncli-admin__turn-meta">' . $this->escapeHtml($turn->createdAt()) . ' UTC' . ($turn->corpusVersion() !== '' ? ' &middot; ' . $this->escapeHtml($this->t('Corpus')) . ' ' . $this->escapeHtml($turn->corpusVersion()) : '') . '</p>';
             echo '<p class="ncli-admin__turn-question"><strong>' . $this->escapeHtml($this->t('Question')) . '</strong><br>' . nl2br($this->escapeHtml($turn->question())) . '</p>';
             echo '<div class="ncli-admin__turn-answer"><strong>' . $this->escapeHtml($this->t('Answer')) . '</strong><br>' . nl2br($this->escapeHtml($turn->answer())) . '</div>';
             echo '</article>';

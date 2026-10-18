@@ -62,7 +62,7 @@ $throws = static function (callable $fn): bool {
 $turn = new EarlierTurnV1('  Q?  ', ' A. ');
 $assert($turn->question() === 'Q?' && $turn->answer() === 'A.', 'An earlier turn is trimmed.');
 $assert($throws(static fn () => new EarlierTurnV1('', 'A')) && $throws(static fn () => new EarlierTurnV1('Q', '')), 'Empty text is rejected.');
-$assert($throws(static fn () => new EarlierTurnV1(str_repeat('q', 2001), 'A')) && $throws(static fn () => new EarlierTurnV1('Q', str_repeat('a', 5001))), 'Oversized text is rejected.');
+$assert($throws(static fn () => new EarlierTurnV1(str_repeat('q', 2001), 'A')) && $throws(static fn () => new EarlierTurnV1('Q', str_repeat('a', 20001))), 'Oversized text is rejected.');
 $assert($throws(static fn () => new EarlierTurnV1("Q\x00", 'A')), 'Control characters are rejected.');
 $assert((new EarlierTurnV1('Q', "Line one\nLine two\ttabbed"))->answer() === "Line one\nLine two\ttabbed", 'Ordinary newlines and tabs in an answer are kept.');
 

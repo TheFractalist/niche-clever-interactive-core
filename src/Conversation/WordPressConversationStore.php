@@ -37,7 +37,7 @@ final class WordPressConversationStore implements ConversationStore, Conversatio
         [$wpdb, $table] = $this->database();
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT conversation_id, COUNT(*) AS turn_count, MIN(created_at) AS started_at, MAX(created_at) AS last_at, MIN(id) AS first_id FROM {$table} GROUP BY conversation_id ORDER BY last_at DESC, first_id DESC LIMIT %d OFFSET %d",
+                "SELECT conversation_id, COUNT(*) AS turn_count, MIN(created_at) AS started_at, MAX(created_at) AS last_at, MIN(id) AS first_id, MAX(id) AS last_id FROM {$table} GROUP BY conversation_id ORDER BY last_at DESC, first_id DESC LIMIT %d OFFSET %d",
                 max(1, $limit),
                 max(0, $offset)
             ),
@@ -50,12 +50,14 @@ final class WordPressConversationStore implements ConversationStore, Conversatio
         $conversations = [];
         foreach ($rows as $row) {
             $question = $wpdb->get_var($wpdb->prepare("SELECT question FROM {$table} WHERE id = %d", (int) $row['first_id']));
+            $corpus = $wpdb->get_var($wpdb->prepare("SELECT corpus_version FROM {$table} WHERE id = %d", (int) $row['last_id']));
             $conversations[] = [
                 'conversation_id' => (string) $row['conversation_id'],
                 'turn_count' => (int) $row['turn_count'],
                 'started_at' => (string) $row['started_at'],
                 'last_at' => (string) $row['last_at'],
                 'first_question' => is_string($question) ? $question : '',
+                'corpus_version' => is_string($corpus) ? $corpus : '',
             ];
         }
 

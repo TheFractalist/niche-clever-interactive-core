@@ -234,7 +234,7 @@ final class SettingsPage
         echo '</tbody></table>';
 
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-corpus' || $tab === 'conversation' || $tab === 'appearance-limits') {
-            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Save settings')) . '</button>' . ($this->hubActive() ? '<a class="button" href="' . $this->escapeAttribute($this->hub->landingUrl()) . '">' . $this->escapeHtml($this->t('All profiles')) . '</a>' : '') . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute($this->t('Niche Clever')) . '" width="180" height="35"></a></div>';
+            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Save settings')) . '</button>' . ($this->hubActive() ? '<a class="button" href="' . $this->escapeAttribute($this->hub->landingUrl()) . '">' . $this->escapeHtml($this->t('All profiles')) . '</a>' : '') . ($this->hubActive() ? '' : '<a class="ncli-admin__upgrade" href="' . $this->escapeAttribute(HelpRenderer::PREMIUM_URL) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('Explore NCI Premium')) . '</a>') . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute($this->t('Niche Clever')) . '" width="180" height="35"></a></div>';
         }
         echo '</form>';
     }

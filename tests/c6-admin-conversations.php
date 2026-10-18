@@ -98,7 +98,7 @@ $store = new class implements ConversationStore {
         $groups = [];
         foreach ($this->rows as $row) {
             $id = $row->conversationId();
-            $groups[$id] = $groups[$id] ?? ['conversation_id' => $id, 'turn_count' => 0, 'started_at' => $row->createdAt(), 'last_at' => $row->createdAt(), 'first_question' => $row->question()];
+            $groups[$id] = $groups[$id] ?? ['conversation_id' => $id, 'turn_count' => 0, 'started_at' => $row->createdAt(), 'last_at' => $row->createdAt(), 'first_question' => $row->question(), 'corpus_version' => $row->corpusVersion()];
             ++$groups[$id]['turn_count'];
             $groups[$id]['last_at'] = $row->createdAt();
         }
@@ -130,6 +130,11 @@ $render = static function (array $get) use ($page): string {
     $page->render();
     return (string) ob_get_clean();
 };
+
+// The owner sees which corpus version a conversation used, in the list and in each turn.
+$listHtml = $render([]);
+$assert(str_contains($listHtml, '>Corpus</th>') && str_contains($listHtml, '<td>c</td>'), 'The conversation list shows the corpus version.');
+$assert(str_contains($render(['conversation' => $idA]), 'Corpus c'), 'A conversation shows its corpus version.');
 
 // Menu structure.
 $settingsPage = new SettingsPage($allow);

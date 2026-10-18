@@ -11,7 +11,7 @@ use InvalidArgumentException;
 final class EarlierTurnV1
 {
     public const MAX_QUESTION = 2000;
-    public const MAX_ANSWER = 5000;
+    public const MAX_ANSWER = 20000;
 
     private string $question;
     private string $answer;
