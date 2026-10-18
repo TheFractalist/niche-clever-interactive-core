@@ -37,7 +37,7 @@ final class ProfileHub
     private const TEST_NONCE_ACTION = 'ncli_ext_profiles';
     private const TABS = [
         'setup' => 'Setup', 'profile' => 'Profile', 'ai-corpus' => 'AI & Corpus', 'conversation' => 'Conversation',
-        'questions' => 'Questions & sharing', 'appearance-limits' => 'Appearance & Limits', 'placement' => 'Placement',
+        'questions' => 'Authored questions', 'collections' => 'Question collections', 'appearance-limits' => 'Appearance & Limits', 'placement' => 'Placement',
         'cache' => 'Cached answers', 'diagnostics' => 'Diagnostics',
     ];
     private const FORM_TABS = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits'];
@@ -169,7 +169,7 @@ final class ProfileHub
         foreach (self::TABS as $id => $label) {
             if (isset($coreTabs[$id])) {
                 $tabs[$id] = $coreTabs[$id];
-            } elseif (isset($wanted[$id]) && in_array($id, ['questions', 'cache'], true)) {
+            } elseif (isset($wanted[$id]) && in_array($id, ['questions', 'collections', 'cache'], true)) {
                 $tabs[$id] = $this->t($label);
             }
         }
@@ -338,7 +338,7 @@ final class ProfileHub
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-new_id">' . $this->html($this->t('Profile id')) . '</label></th><td><input id="ncli-new_id" class="regular-text" type="text" name="profile_id" maxlength="64" required autocomplete="off"><p class="description">' . $this->html($this->t('Lower-case letters, numbers, hyphens and underscores. Used in the shortcode and the request; it cannot be changed later.')) . '</p></td></tr>';
         echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-label">' . $this->html($this->t('Profile name')) . '</label></th><td><input id="ncli-label" class="regular-text" type="text" name="label" maxlength="80" required></td></tr>';
-        $fields->profileRows('setup', $this->effective($this->blank()));
+        $fields->profileRows('setup', $this->effective($this->blank()), true);
         echo '</tbody></table>';
         echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->html($this->t('Add profile')) . '</button><a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html($this->t('All profiles')) . '</a></div></form></div>';
     }
@@ -410,7 +410,7 @@ final class ProfileHub
         $test = $this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]);
         $items = [
             [$this->t('Enter your vector store'), $values['reference_saved'] ? $this->t('A vector store reference is saved for this profile.') : $this->t('Save the vector store reference in AI & Corpus.'), $values['reference_saved'], ''],
-            [$this->t('Set a corpus version'), $values['corpus_version'] !== '' ? $this->t('A corpus version is saved.') : $this->t('Enter a corpus version below.'), $values['corpus_version'] !== '', ''],
+            [$this->t('Set a corpus version'), $values['corpus_version'] !== '' ? $this->t('A corpus version is saved.') : $this->t('Enter a corpus version in the Profile tab.'), $values['corpus_version'] !== '', ''],
             [$this->t('Test the connection'), $tested ? $this->t('The current configuration passed its File Search connection test.') : $this->t('Run a new test after changing the vector store, corpus version, guidance, preset or any model setting.'), $tested, $test],
         ];
         $done = count(array_filter($items, static fn (array $item): bool => $item[2]));
@@ -690,7 +690,7 @@ final class ProfileHub
 
     private function isCoreTab(string $tab): bool
     {
-        return !in_array($tab, ['questions', 'cache'], true);
+        return !in_array($tab, ['questions', 'collections', 'cache'], true);
     }
 
     private function safeTab($value): string

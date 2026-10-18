@@ -1,8 +1,8 @@
 .ncli-admin { max-width: 1000px; margin: 16px 0 40px; color: #1d2935; }
 .ncli-admin__masthead { margin: 16px 0 20px; overflow: hidden; border: 1px solid #ced5da; border-radius: 10px; background: #fcfbf8; box-sizing: border-box; }
 .ncli-admin__masthead-art { display: block; width: 100%; height: auto; background: #fcfbf8; }
-.ncli-admin__tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border-bottom: 1px solid #d5dbe0; }
-.ncli-admin__tabs .nav-tab { margin: 0; padding: 10px 18px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; background: transparent; color: #17324a; font-size: 14px; font-weight: 500; }
+.ncli-admin__tabs { display: flex; flex-wrap: wrap; gap: 2px; margin: 0; padding: 0; border-bottom: 1px solid #d5dbe0; }
+.ncli-admin__tabs .nav-tab { margin: 0; padding: 8px 11px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; background: transparent; color: #17324a; font-size: 13px; font-weight: 500; white-space: nowrap; }
 .ncli-admin__tabs .nav-tab:hover { border-color: transparent; background: #eef3f6; box-shadow: none; }
 .ncli-admin__tabs .nav-tab:focus-visible { outline: 0; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2a4f6e; }
 .ncli-admin__tabs .nav-tab-active, .ncli-admin__tabs .nav-tab-active:hover { margin-bottom: -1px; border-color: #d5dbe0 #d5dbe0 #fff; background: #fff; color: #123b5a; font-weight: 650; }
@@ -121,3 +121,6 @@
 .ncli-admin .button-link, .ncli-admin .button-link-delete { min-height: 24px; padding: 2px 6px; }
 .ncli-admin__profile-table code { white-space: nowrap; }
 @media screen and (max-width: 782px) { .ncli-admin__tab-panel { overflow-x: auto; } .ncli-admin__save-bar { flex-wrap: wrap; } }
+.ncli-admin__upgrade { flex: 0 1 auto; color: #fff; font-size: 13px; text-decoration: underline; }
+.ncli-admin__upgrade:hover, .ncli-admin__upgrade:focus { color: #dbe6ee; }
+.ncli-admin__upgrade:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }

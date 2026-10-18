@@ -251,7 +251,7 @@ $assert($render(static fn () => $assert($hub->render() === false, 'A bare tab ad
 $_GET = ['profile' => 'docs', 'tab' => 'setup'];
 $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'Profile workspace') && str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'Get started') && str_contains($html, 'name="vector_store_reference"') === false, 'A profile opens in the same workspace; the setup tab has its checklist.');
-$assert(str_contains($html, 'Questions &amp; sharing') && str_contains($html, 'Cached answers') && str_contains($html, 'Setup'), 'The tab bar carries the extension tabs.');
+$assert(str_contains($html, 'Authored questions') && str_contains($html, 'Cached answers') && str_contains($html, 'Setup'), 'The tab bar carries the extension tabs.');
 $assert(preg_match('/<div class="ncli-admin__titlebar">.*Switch profile.*All profiles.*Profile workspace.*<\/div><\/div><header/s', $html) === 1 && !str_contains(substr($html, strpos($html, '<header')), 'Switch profile'), 'The profile switcher, All profiles and the workspace label sit in the title strip, not below the banner.');
 $assert(str_contains($html, 'body access for docs nonce nonce-for-ncli_ext_access action ncli_ext_access'), 'A section is drawn with a Core-issued nonce.');
 $assert(str_contains($html, 'name="action" value="ncli_save_profile"') && str_contains($html, 'Delete this profile') && str_contains($html, 'Save this profile'), 'The setup tab has the save form and the delete form.');
@@ -391,7 +391,7 @@ $page = new SettingsPage(null, null, null, $hub);
 $_GET = ['tab' => 'setup'];
 $html = $render(static fn () => $page->render());
 $assert(str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'Default profile') && str_contains($html, 'Switch profile') && str_contains($html, 'All profiles') && str_contains($html, 'ncli-admin__save-bar'), 'The default profile gets the title strip, switcher and an All profiles link.');
-$assert(str_contains($html, 'Questions &amp; sharing') && str_contains($html, 'Cached answers') && str_contains($html, 'body access for default'), 'The default profile\'s tab bar and tabs carry the extension\'s tabs and sections.');
+$assert(str_contains($html, 'Authored questions') && str_contains($html, 'Cached answers') && str_contains($html, 'body access for default'), 'The default profile\'s tab bar and tabs carry the extension\'s tabs and sections.');
 $assert(!str_contains($html, '>Help</a>'), 'With the hub the default profile\'s tab bar has no Help tab; Help lives in Settings.');
 $_GET = ['tab' => 'questions'];
 $html = $render(static fn () => $page->render());

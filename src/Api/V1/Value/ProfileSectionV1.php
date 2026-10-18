@@ -12,7 +12,7 @@ use InvalidArgumentException;
 final class ProfileSectionV1
 {
     /** Tabs of the profile workspace. `questions` and `cache` appear only when an extension adds a section to them. */
-    public const TABS = ['setup', 'profile', 'ai-corpus', 'conversation', 'questions', 'appearance-limits', 'placement', 'cache', 'diagnostics'];
+    public const TABS = ['setup', 'profile', 'ai-corpus', 'conversation', 'questions', 'collections', 'appearance-limits', 'placement', 'cache', 'diagnostics'];
 
     private string $tab;
     private string $key;

@@ -26,8 +26,9 @@ $render = static function (string $tab) use ($values): string {
 };
 
 $setup = $render('setup');
-$assert(str_contains($setup, 'name="enabled"') && str_contains($setup, 'name="corpus_version"') && substr_count($setup, 'ncli-admin__field') >= 2, 'Setup draws availability and corpus rows.');
-$assert(str_contains($setup, 'v7 &lt;b&gt;') && !str_contains($setup, 'v7 <b>'), 'Values are escaped.');
+$assert(str_contains($setup, 'name="enabled"') && str_contains($setup, 'The corpus version is set on the Profile tab.') && !str_contains($setup, 'name="corpus_version"'), 'Setup draws availability and points to the Profile tab for the corpus version.');
+$profileTab = $render('profile');
+$assert(str_contains($profileTab, 'name="corpus_version"') && str_contains($profileTab, 'v7 &lt;b&gt;') && !str_contains($profileTab, 'v7 <b>'), 'The Profile tab draws the corpus version and escapes values.');
 $ai = $render('ai-corpus');
 $assert(str_contains($ai, 'name="vector_store_reference"') && str_contains($ai, 'name="model_id"') && str_contains($ai, 'name="model_timeout_seconds"'), 'AI & Corpus draws the store and every model field.');
 $conversation = $render('conversation');

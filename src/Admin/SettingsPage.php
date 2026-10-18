@@ -157,7 +157,7 @@ final class SettingsPage
             $this->help->render();
         } elseif ($tab === 'placement') {
             echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.')) . '</p></section>';
-        } elseif ($tab === 'questions' || $tab === 'cache') {
+        } elseif ($tab === 'questions' || $tab === 'collections' || $tab === 'cache') {
             // Only the extension's sections, drawn below.
         } else {
             $this->renderForm($settings, $tab);
@@ -273,7 +273,7 @@ final class SettingsPage
         $keyState = $secrets->isAvailable() ? $this->t('The server-side constant is available.') : $this->t('Add the constant to the server configuration before testing.');
         $corpusState = $settings->vectorStoreReference() !== '' && $settings->corpusVersion() !== ''
             ? $this->t('A vector-store reference and corpus version are saved.')
-            : $this->t('Save the vector-store reference and corpus version in AI & Corpus.');
+            : $this->t('Save the vector-store reference in AI & Corpus and the corpus version in Profile.');
         $testState = $settings->connectionTestStatus() === 'passed' && $readiness->isReady()
             ? $this->t('The current configuration passed its File Search connection test.')
             : $this->t('Run a new test after changing the key, transport mode, vector store, corpus version, response guidance, response preset or any model setting.');
@@ -442,7 +442,7 @@ final class SettingsPage
         $valid = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'placement', 'diagnostics', 'help'];
         if ($this->hubActive()) {
             // An installed extension may add these two tabs; they carry only its sections.
-            $valid = array_merge($valid, ['questions', 'cache']);
+            $valid = array_merge($valid, ['questions', 'collections', 'cache']);
         }
         return is_string($value) && in_array($value, $valid, true) ? $value : 'setup';
     }

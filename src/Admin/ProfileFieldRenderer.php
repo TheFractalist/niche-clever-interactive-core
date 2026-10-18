@@ -32,7 +32,11 @@ final class ProfileFieldRenderer
                 echo '<input type="hidden" name="enabled" value="0">';
                 $this->checkbox('enabled', 'Enable the Core profile', (bool) $values['enabled'], 'Enable this only when the saved configuration is ready for public visitors. A current connection test is also required.');
             }
+        }
+        if ($tab === 'profile') {
             $this->text('corpus_version', 'Corpus version', (string) $values['profile']['corpus_version'], 'Use your own short version or date label for the prepared material in the connected vector store. Updating it makes the existing connection test stale.');
+        } elseif ($tab === 'setup') {
+            $this->descriptionRow('The corpus version is set on the Profile tab.');
         }
 
         if ($tab === 'profile') {
@@ -99,7 +103,7 @@ final class ProfileFieldRenderer
      *
      * @param array<string, mixed> $values
      */
-    public function profileRows(string $tab, array $values): void
+    public function profileRows(string $tab, array $values, bool $creating = false): void
     {
         if ($tab === 'setup' || $tab === 'profile') {
             if ($tab === 'setup') {
@@ -109,7 +113,11 @@ final class ProfileFieldRenderer
                 $this->checkbox('enabled', 'Enable this profile', (bool) $values['enabled'], 'Enable this only when the saved configuration is ready for public visitors. A current connection test is also required.', 'Enable public answers for this profile.');
                 $this->text('label', 'Profile name', (string) $values['label'], 'A short name for this profile, shown only to you in the Profiles list and the profile switcher.');
             }
+        }
+        if ($tab === 'profile' || $creating) {
             $this->text('corpus_version', 'Corpus version', (string) $values['corpus_version'], 'Use your own short version or date label for the prepared material in this profile\'s vector store. Updating it makes the existing connection test stale.');
+        } elseif ($tab === 'setup') {
+            $this->descriptionRow('The corpus version is set on the Profile tab.');
         }
 
         if ($tab === 'profile') {

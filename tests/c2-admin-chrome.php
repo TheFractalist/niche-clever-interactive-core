@@ -91,7 +91,12 @@ $assert(str_contains($setup, 'ncli-admin__save-bar'), 'The Setup tab should rend
 $assert(str_contains($setup, 'aria-label="Niche Clever Interactive settings"'), 'The public tab navigation should remain labelled.');
 $assert(str_contains($setup, 'ncli-admin__help-toggle'), 'Technical fields must expose the accessible question-mark help controls.');
 $assert(str_contains($setup, 'aria-controls="ncli-help-enabled"'), 'The availability control must associate its help button with a labelled help note.');
-$assert(str_contains($setup, '&lt;unsafe version&gt;'), 'Settings values must remain escaped in the new table layout.');
+$_GET = ['tab' => 'profile'];
+ob_start();
+(new SettingsPage())->render();
+$profileTabHtml = (string) ob_get_clean();
+$_GET = ['tab' => 'setup'];
+$assert(str_contains($profileTabHtml, '&lt;unsafe version&gt;') && !str_contains($setup, 'name="corpus_version"'), 'Settings values stay escaped, and the corpus version lives on the Profile tab only.');
 $assert(!str_contains($setup, 'profile-picker'), 'The Core setup must not render a multi-profile picker.');
 
 $_GET = ['tab' => 'conversation'];
