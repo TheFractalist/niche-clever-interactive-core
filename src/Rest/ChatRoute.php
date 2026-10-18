@@ -36,7 +36,7 @@ final class ChatRoute
     {
         $body = is_object($request) && method_exists($request, 'get_json_params') ? $request->get_json_params() : null;
         $settings = $this->loadSettings();
-        $outcome = $this->chat->handle($body, $settings);
+        $outcome = $this->chat->handle($body, $settings, is_array($_SERVER ?? null) ? $_SERVER : []);
         $status = $this->statusFor($outcome->errorCode());
 
         if (class_exists('WP_REST_Response')) {

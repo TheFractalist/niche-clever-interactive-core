@@ -261,7 +261,7 @@ $hit = $ask($chat, "  what IS   the policy?  ");
 $assert($hit['ok'] === true && $hit['answer'] === 'An approved answer.', 'An approved answer is reused for a repeated question.');
 $assert($transport->calls === $beforeCalls && $bucket->reserved === $beforeReserved, 'A hit makes no provider call and uses no allowance.');
 $assert(count($history->rows) === $beforeHistory + 1 && $history->rows[count($history->rows) - 1]->answer() === 'An approved answer.' && $history->rows[count($history->rows) - 1]->profileId() === 'default', 'A hit is recorded in conversation history.');
-$assert(array_keys($hit) === ['ok', 'answer'], 'A hit returns the same public payload as a provider answer.');
+$assert(array_keys($hit) === ['ok', 'answer', 'cached'] && $hit['cached'] === true, 'A hit returns the provider payload plus a cached flag.');
 $stored = count($cache->stored);
 $ask($chat, "  what IS   the policy?  ");
 $assert(count($cache->stored) === $stored, 'A hit is not offered back to the cache.');

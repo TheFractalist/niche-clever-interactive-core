@@ -55,14 +55,14 @@ final class ClientScopeResolver
         return hash_hmac('sha256', 'ncli-core-visitor-scope-secret', $salt);
     }
 
-    /** @param array<string, mixed> $server */
-    public function hash(array $server): ?string
+    /**
+     * The visitor's network address under the same trusted-proxy rule as the daily allowance:
+     * X-Forwarded-For is read only when REMOTE_ADDR is inside the configured proxy allowlist.
+     *
+     * @param array<string, mixed> $server
+     */
+    public function clientAddress(array $server): ?string
     {
-        $secret = $this->secret();
-        if ($secret === null) {
-            return null;
-        }
-
         $remote = $server['REMOTE_ADDR'] ?? null;
         if (!is_string($remote) || filter_var($remote, FILTER_VALIDATE_IP) === false) {
             return null;
@@ -74,6 +74,18 @@ final class ClientScopeResolver
             if (filter_var($candidate, FILTER_VALIDATE_IP) !== false) {
                 $client = $candidate;
             }
+        }
+
+        return $client;
+    }
+
+    /** @param array<string, mixed> $server */
+    public function hash(array $server): ?string
+    {
+        $secret = $this->secret();
+        $client = $secret === null ? null : $this->clientAddress($server);
+        if ($client === null) {
+            return null;
         }
 
         return hash_hmac('sha256', 'visitor:' . $client, $secret);

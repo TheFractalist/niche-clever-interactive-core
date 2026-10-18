@@ -12,19 +12,21 @@ final class ChatOutcome
     private ?PublicError $error;
     /** @var list<\NicheCleverInteractive\Core\Api\V1\Value\ApprovedLinkV1> */
     private array $links;
+    private bool $cached;
 
     /** @param list<\NicheCleverInteractive\Core\Api\V1\Value\ApprovedLinkV1> $links */
-    private function __construct(?string $answer, ?PublicError $error, array $links = [])
+    private function __construct(?string $answer, ?PublicError $error, array $links = [], bool $cached = false)
     {
         $this->answer = $answer;
         $this->error = $error;
         $this->links = $links;
+        $this->cached = $cached;
     }
 
     /** @param list<\NicheCleverInteractive\Core\Api\V1\Value\ApprovedLinkV1> $links Owner-approved links, already validated by Core. */
-    public static function success(string $answer, array $links = []): self
+    public static function success(string $answer, array $links = [], bool $cached = false): self
     {
-        return new self($answer, null, $links);
+        return new self($answer, null, $links, $cached);
     }
 
     public static function failure(string $code): self
@@ -55,6 +57,11 @@ final class ChatOutcome
         ];
         if ($this->links !== []) {
             $payload['links'] = array_map(static fn ($link): array => ['title' => $link->title(), 'url' => $link->url()], $this->links);
+        }
+
+        if ($this->cached) {
+            // Tells the panel the answer was reused, not generated for this visitor just now.
+            $payload['cached'] = true;
         }
 
         return $payload;

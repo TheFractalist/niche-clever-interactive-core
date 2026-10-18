@@ -7,7 +7,9 @@ namespace NicheCleverInteractive\Core\AI;
 use NicheCleverInteractive\Core\Api\V1\Value\CacheKeyV1;
 use NicheCleverInteractive\Core\Api\V1\Value\CompletedTurnV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
+use NicheCleverInteractive\Core\Api\V1\Value\RequestContextV1;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\Budget\ClientScopeResolver;
 use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
@@ -53,8 +55,11 @@ final class ChatService
         $this->profiles = $profiles ?? new ProfileDirectory();
     }
 
-    /** @param mixed $request */
-    public function handle($request, CoreSettings $settings): ChatOutcome
+    /**
+     * @param mixed $request
+     * @param array<string, mixed> $server Request environment; used only to give an installed extension in-memory request details.
+     */
+    public function handle($request, CoreSettings $settings, array $server = []): ChatOutcome
     {
         if (is_array($request) && is_string($request['question'] ?? null) && $this->policy->isRefused($request['question'])) {
             return ChatOutcome::failure('policy_refusal');
@@ -108,9 +113,9 @@ final class ChatService
                 if ($this->conversations !== null) {
                     $this->conversations->recordCachedAnswer($settings, $validated['conversation_id'], $profile->id(), $validated['question'], $cached, $policyFingerprint, $profile->corpusVersion());
                 }
-                $this->completeTurn('cache', $validated['conversation_id'], $profile, $validated['question'], $cached, $policyFingerprint, $corpusFingerprint);
+                $this->completeTurn('cache', $validated['conversation_id'], $profile, $validated['question'], $cached, $policyFingerprint, $corpusFingerprint, $this->requestContext($validated['visitor_id'], $server));
 
-                return ChatOutcome::success($cached);
+                return ChatOutcome::success($cached, [], true);
             }
         }
 
@@ -188,7 +193,7 @@ final class ChatService
         if ($cacheKey !== null) {
             $this->profiles->offerAnswer($cacheKey, $answer, $validated['question']);
         }
-        $this->completeTurn('provider', $validated['conversation_id'], $profile, $validated['question'], $answer, $policyFingerprint, $corpusFingerprint);
+        $this->completeTurn('provider', $validated['conversation_id'], $profile, $validated['question'], $answer, $policyFingerprint, $corpusFingerprint, $this->requestContext($validated['visitor_id'], $server));
 
         // Links come only from the owner's approvals via the seam; raw provider citations never leave Core.
         return ChatOutcome::success($answer, $this->profiles->approvedLinks($profile, $result->citations()));
@@ -200,7 +205,7 @@ final class ChatService
      *
      * @param mixed $conversationId
      */
-    private function completeTurn(string $source, $conversationId, ProfileRuntime $profile, string $question, string $answer, string $policyFingerprint, string $corpusFingerprint): void
+    private function completeTurn(string $source, $conversationId, ProfileRuntime $profile, string $question, string $answer, string $policyFingerprint, string $corpusFingerprint, ?RequestContextV1 $context = null): void
     {
         if (!is_string($conversationId)) {
             return;
@@ -218,10 +223,30 @@ final class ChatService
                 $profile->corpusVersion(),
                 hash('sha256', $answer),
                 hash('sha256', $policyFingerprint . '|' . $corpusFingerprint),
-                $source
+                $source,
+                $context
             ));
         } catch (\Throwable $exception) {
             // An invalid value must never change the response.
+        }
+    }
+
+    /**
+     * Request details handed to the recorder seam in memory only. Core stores none of them; an
+     * extension that keeps them must disclose that in its own privacy notice.
+     *
+     * @param mixed $visitorId
+     * @param array<string, mixed> $server
+     */
+    private function requestContext($visitorId, array $server): ?RequestContextV1
+    {
+        try {
+            $address = (new ClientScopeResolver())->clientAddress($server);
+            $agent = is_string($server['HTTP_USER_AGENT'] ?? null) ? substr(trim($server['HTTP_USER_AGENT']), 0, 512) : null;
+
+            return new RequestContextV1(is_string($visitorId) ? $visitorId : null, $address, $agent === '' ? null : $agent);
+        } catch (\Throwable $exception) {
+            return null;
         }
     }
 

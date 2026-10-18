@@ -19,7 +19,7 @@ final class ChatRequestValidator
     /**
      * @param mixed $request
      * @param bool $namedProfiles Whether an extension may resolve non-default profile ids. When false, only the default id is valid.
-     * @return array{question: string, profile_id: string, response_preset: ?string, conversation_id: ?string}|null
+     * @return array{question: string, profile_id: string, response_preset: ?string, conversation_id: ?string, visitor_id: ?string}|null
      */
     public function validate($request, CoreSettings $settings, bool $namedProfiles = false): ?array
     {
@@ -57,11 +57,18 @@ final class ChatRequestValidator
             return null;
         }
 
+        // An optional opaque browser identifier, sent only when an extension asks the panel to send one.
+        $visitor = $request['visitor_id'] ?? null;
+        if ($visitor !== null && !ConversationId::isValid($visitor)) {
+            return null;
+        }
+
         return [
             'question' => $question,
             'profile_id' => $profile,
             'response_preset' => $preset,
             'conversation_id' => $conversation,
+            'visitor_id' => $visitor,
         ];
     }
 }

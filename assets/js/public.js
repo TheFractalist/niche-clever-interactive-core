@@ -232,7 +232,19 @@
     return wrapper;
   }
 
-  function completeTurn(pending, answer, links) {
+  // Reused answers carry a quiet note only when an extension supplied its wording.
+  function renderCachedNote(cached) {
+    var note = text('cachedNote', '');
+    if (cached !== true || !note) {
+      return null;
+    }
+    var element = document.createElement('p');
+    element.className = 'ncli-panel__cached-note';
+    element.textContent = note;
+    return element;
+  }
+
+  function completeTurn(pending, answer, links, cached) {
     var answerElement = pending.answer;
     answerElement.className = 'ncli-panel__answer';
     answerElement.textContent = '';
@@ -241,6 +253,10 @@
     var sources = renderApprovedLinks(links);
     if (sources) {
       answerElement.appendChild(sources);
+    }
+    var cachedNote = renderCachedNote(cached);
+    if (cachedNote) {
+      answerElement.appendChild(cachedNote);
     }
     scrollIntoViewGently(pending.turn);
   }
@@ -270,8 +286,28 @@
     return id;
   }
 
+  // Core never reads or writes a cookie or browser storage. An installed extension may set
+  // `window.NCLI_CORE_CHAT.visitorId` to a function returning its own 32-character hexadecimal
+  // identifier; anything else is ignored and no identifier is sent.
+  function visitorId() {
+    var provider = window.NCLI_CORE_CHAT && window.NCLI_CORE_CHAT.visitorId;
+    if (typeof provider !== 'function') {
+      return '';
+    }
+    try {
+      var value = provider();
+      return typeof value === 'string' && /^[a-f0-9]{32}$/.test(value) ? value : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
   function conversationPayload(question, id, profile) {
     var body = id ? { question: question, conversation_id: id } : { question: question };
+    var visitor = visitorId();
+    if (visitor) {
+      body.visitor_id = visitor;
+    }
     if (profile && profile !== 'default') {
       body.profile_id = profile;
     }
@@ -404,7 +440,7 @@
         return;
       }
       if (pending && !detached) {
-        completeTurn(pending, payload.answer, payload.links);
+        completeTurn(pending, payload.answer, payload.links, payload.cached);
         setStatus(panel, text('answerAdded', 'Verified answer added to this session.'), true);
       }
     }).catch(function () {

@@ -49,7 +49,7 @@ final class InteractivePanel
         wp_register_style('ncli-core-public', plugins_url('assets/css/public.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
         wp_register_script('ncli-core-public', plugins_url('assets/js/public.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
         if (function_exists('wp_add_inline_script') && function_exists('rest_url') && function_exists('wp_json_encode')) {
-            wp_add_inline_script('ncli-core-public', 'window.NCLI_CORE_CHAT = ' . wp_json_encode([
+            $config = [
                 'route' => rest_url('ncli/v1/chat'),
                 // Lets the route recognise a logged-in viewer; the client sends it only for named profiles.
                 'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('wp_rest') : '',
@@ -64,7 +64,14 @@ final class InteractivePanel
                     'answerLabel' => Translator::text('Answer:'),
                     'sourcesLabel' => Translator::text('Sources'),
                 ],
-            ]) . ';', 'before');
+            ];
+            // An installed extension may add to the public script's configuration, for example a
+            // `cachedNote` string shown under reused answers. Core adds none.
+            if (function_exists('apply_filters')) {
+                $filtered = apply_filters('ncli_core_public_config', $config);
+                $config = is_array($filtered) ? $filtered : $config;
+            }
+            wp_add_inline_script('ncli-core-public', 'window.NCLI_CORE_CHAT = ' . wp_json_encode($config) . ';', 'before');
         }
     }
 

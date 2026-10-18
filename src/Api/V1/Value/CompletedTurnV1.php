@@ -18,6 +18,7 @@ final class CompletedTurnV1
     private string $answerFingerprint;
     private string $evidenceFingerprint;
     private string $sourceKind;
+    private ?RequestContextV1 $requestContext;
 
     public function __construct(
         string $conversationId,
@@ -30,7 +31,8 @@ final class CompletedTurnV1
         string $corpusVersion,
         string $answerFingerprint,
         string $evidenceFingerprint,
-        string $sourceKind
+        string $sourceKind,
+        ?RequestContextV1 $requestContext = null
     ) {
         foreach ([$conversationId, $question, $answer, $coreVersion, $corpusVersion, $answerFingerprint, $evidenceFingerprint] as $value) {
             if ($value === '') {
@@ -57,6 +59,13 @@ final class CompletedTurnV1
         $this->answerFingerprint = $answerFingerprint;
         $this->evidenceFingerprint = $evidenceFingerprint;
         $this->sourceKind = $sourceKind;
+        $this->requestContext = $requestContext;
+    }
+
+    /** In-memory request details for an installed extension; Core itself stores none of it. */
+    public function requestContext(): ?RequestContextV1
+    {
+        return $this->requestContext;
     }
 
     public function conversationId(): string
