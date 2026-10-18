@@ -151,6 +151,12 @@ final class SettingsPage
             echo '<div class="notice ' . ($success ? 'notice-success' : 'notice-error') . '"><p>' . $this->escapeHtml($messages[$notice]) . '</p></div>';
         }
 
+        // The default profile's Appearance & Limits splits like any profile's: Panel style, then each extension section.
+        $sub = $this->hubActive() ? $this->hub->subTab(CoreSettings::DEFAULT_PROFILE_ID, $tab) : null;
+        if ($sub !== null) {
+            $this->hub->subTabStrip(CoreSettings::DEFAULT_PROFILE_ID, $tab, $sub);
+        }
+
         if ($tab === 'diagnostics') {
             $this->renderDiagnostics($readiness);
         } elseif ($tab === 'help') {
@@ -159,12 +165,12 @@ final class SettingsPage
             echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.')) . '</p></section>';
         } elseif ($tab === 'questions' || $tab === 'collections' || $tab === 'cache') {
             // Only the extension's sections, drawn below.
-        } else {
+        } elseif ($sub === null || $sub === 'panel') {
             $this->renderForm($settings, $tab);
         }
 
-        if ($this->hubActive()) {
-            $this->hub->sections(CoreSettings::DEFAULT_PROFILE_ID, $tab);
+        if ($this->hubActive() && ($sub === null || $sub !== 'panel')) {
+            $this->hub->sections(CoreSettings::DEFAULT_PROFILE_ID, $tab, $sub);
         }
 
         echo '</div>';

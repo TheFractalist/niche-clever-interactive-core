@@ -407,7 +407,7 @@ final class ProfileHub
     }
 
     /** The chosen sub-tab (default: Core's own panel fields), or null when this tab does not split. */
-    private function subTab(string $profileId, string $tab): ?string
+    public function subTab(string $profileId, string $tab): ?string
     {
         $tabs = $this->subTabs($profileId, $tab);
         if ($tabs === []) {
@@ -418,7 +418,7 @@ final class ProfileHub
         return array_key_exists($wanted, $tabs) ? $wanted : 'panel';
     }
 
-    private function subTabStrip(string $profileId, string $tab, string $current): void
+    public function subTabStrip(string $profileId, string $tab, string $current): void
     {
         echo '<nav class="ncli-admin__substrip" aria-label="' . $this->attr($this->t('Sections of this tab')) . '">';
         foreach ($this->subTabs($profileId, $tab) as $key => $label) {
