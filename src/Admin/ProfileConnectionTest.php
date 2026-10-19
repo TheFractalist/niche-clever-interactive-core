@@ -56,7 +56,7 @@ final class ProfileConnectionTest
 
     public function handle(): void
     {
-        $nonce = $_POST[self::NONCE_FIELD] ?? null;
+        $nonce = AdminRequest::postText(self::NONCE_FIELD);
         if (!$this->guard->allows(ExtensionScreens::NONCE_PREFIX . self::SCREEN, $nonce)) {
             if (function_exists('wp_die')) {
                 wp_die('You do not have permission to do that.', '', ['response' => 403]);
@@ -64,7 +64,7 @@ final class ProfileConnectionTest
             return;
         }
 
-        $id = $_POST['profile_id'] ?? null;
+        $id = AdminRequest::postText('profile_id');
         $settings = call_user_func($this->settings);
         $profile = is_string($id) && $id !== CoreSettings::DEFAULT_PROFILE_ID && preg_match('/^[a-z0-9][a-z0-9_-]{0,63}$/D', $id) === 1
             ? $this->profiles->resolve($id, $settings)

@@ -32,7 +32,6 @@ use NicheCleverInteractive\Core\Rest\ChatRoute;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
 use NicheCleverInteractive\Core\AI\ConnectionTestService;
-use NicheCleverInteractive\Core\Support\Translator;
 
 final class Plugin
 {
@@ -179,20 +178,20 @@ final class Plugin
             return;
         }
 
-        $content = '<p>' . $this->escapeHtml(Translator::text('Niche Clever Interactive sends each public visitor question to OpenAI when the site administrator has enabled the public panel.') . ' ' . $this->contextSentence() . ' ' . Translator::text('OpenAI File Search may use material in the administrator-selected vector store to generate an answer.')) . '</p>'
-            . '<p>' . $this->escapeHtml(Translator::text('The plugin does not store the OpenAI API key in WordPress options. To enforce daily limits it stores a server-secret HMAC of the visitor network scope, rather than a raw IP address.')) . '</p>'
-            . '<p>' . $this->escapeHtml(Translator::text('Conversation history is off by default. If the site owner turns it on, each successfully answered question and its answer are stored in the site database with a random conversation identifier, the time, and the plugin and corpus versions, until the owner deletes them or the chosen retention period ends. No IP address, account or browser identifier is stored with them. Visitors can type personal information into a question, so tell them if questions and answers are kept and for how long.')) . '</p>'
-            . '<p>' . $this->escapeHtml(Translator::text('Site owners are responsible for their own OpenAI account, provider terms, billing, retention choices and privacy information.')) . '</p>';
+        $content = '<p>' . $this->escapeHtml(__('Niche Clever Interactive sends each public visitor question to OpenAI when the site administrator has enabled the public panel.', 'niche-clever-interactive') . ' ' . $this->contextSentence() . ' ' . __('OpenAI File Search may use material in the administrator-selected vector store to generate an answer.', 'niche-clever-interactive')) . '</p>'
+            . '<p>' . $this->escapeHtml(__('The plugin does not store the OpenAI API key in WordPress options. To enforce daily limits it stores a server-secret HMAC of the visitor network scope, rather than a raw IP address.', 'niche-clever-interactive')) . '</p>'
+            . '<p>' . $this->escapeHtml(__('Conversation history is off by default. If the site owner turns it on, each successfully answered question and its answer are stored in the site database with a random conversation identifier, the time, and the plugin and corpus versions, until the owner deletes them or the chosen retention period ends. No IP address, account or browser identifier is stored with them. Visitors can type personal information into a question, so tell them if questions and answers are kept and for how long.', 'niche-clever-interactive')) . '</p>'
+            . '<p>' . $this->escapeHtml(__('Site owners are responsible for their own OpenAI account, provider terms, billing, retention choices and privacy information.', 'niche-clever-interactive')) . '</p>';
 
-        wp_add_privacy_policy_content(Translator::text('Niche Clever Interactive'), wp_kses_post($content));
+        wp_add_privacy_policy_content(__('Niche Clever Interactive', 'niche-clever-interactive'), wp_kses_post($content));
     }
 
     /** The privacy-policy statement about earlier questions must match what Core actually sends. */
     private function contextSentence(): string
     {
         return $this->profiles->hasContextProvider()
-            ? Translator::text('A limited number of earlier questions and answers from the same conversation may be sent with it, as set by the site administrator.')
-            : Translator::text('Earlier questions in the same conversation are not sent with it.');
+            ? __('A limited number of earlier questions and answers from the same conversation may be sent with it, as set by the site administrator.', 'niche-clever-interactive')
+            : __('Earlier questions in the same conversation are not sent with it.', 'niche-clever-interactive');
     }
 
     /**
@@ -206,7 +205,7 @@ final class Plugin
         }
 
         $exporters['niche-clever-interactive'] = [
-            'exporter_friendly_name' => Translator::text('Niche Clever Interactive'),
+            'exporter_friendly_name' => __('Niche Clever Interactive', 'niche-clever-interactive'),
             'callback' => [$this, 'exportPersonalData'],
         ];
 
@@ -224,7 +223,7 @@ final class Plugin
         }
 
         $erasers['niche-clever-interactive'] = [
-            'eraser_friendly_name' => Translator::text('Niche Clever Interactive'),
+            'eraser_friendly_name' => __('Niche Clever Interactive', 'niche-clever-interactive'),
             'callback' => [$this, 'erasePersonalData'],
         ];
 
@@ -250,7 +249,7 @@ final class Plugin
         return [
             'items_removed' => false,
             'items_retained' => false,
-            'messages' => [Translator::text('Niche Clever Interactive stores no email address, account or other identifier with a conversation, so records cannot be matched to this person automatically. A site owner can review and delete stored conversations from NC Interactive > Conversations.')],
+            'messages' => [__('Niche Clever Interactive stores no email address, account or other identifier with a conversation, so records cannot be matched to this person automatically. A site owner can review and delete stored conversations from NC Interactive > Conversations.', 'niche-clever-interactive')],
             'done' => true,
         ];
     }

@@ -6,7 +6,6 @@ namespace NicheCleverInteractive\Core\Admin;
 
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
-use NicheCleverInteractive\Core\Support\Translator;
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Core's own markup uses the escape wrappers below; the hosted extension panel is administrator-only output from a registered extension, which escapes its own content.
 // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- AdminActionGuard verifies capability and nonce before any POST value is read; GET values only choose a tab and are matched against fixed values.
@@ -62,10 +61,10 @@ final class SiteSettingsPage
             return;
         }
 
-        $hook = add_submenu_page(SettingsPage::PAGE_SLUG, $this->t('Settings'), $this->t('Settings'), 'manage_options', self::PAGE_SLUG, [$this, 'render']);
+        $hook = add_submenu_page(SettingsPage::PAGE_SLUG, __('Settings', 'niche-clever-interactive'), __('Settings', 'niche-clever-interactive'), 'manage_options', self::PAGE_SLUG, [$this, 'render']);
         $this->hook = is_string($hook) ? $hook : null;
         // A menu entry that opens the Help tab directly: WordPress links a slug that is not a registered page as written.
-        add_submenu_page(SettingsPage::PAGE_SLUG, $this->t('Help'), $this->t('Help'), 'manage_options', 'admin.php?page=' . self::PAGE_SLUG . '&tab=help');
+        add_submenu_page(SettingsPage::PAGE_SLUG, __('Help', 'niche-clever-interactive'), __('Help', 'niche-clever-interactive'), 'manage_options', 'admin.php?page=' . self::PAGE_SLUG . '&tab=help');
     }
 
     public function enqueueAssets(string $hook): void
@@ -82,18 +81,18 @@ final class SiteSettingsPage
     {
         if (!function_exists('current_user_can') || !current_user_can('manage_options')) {
             if (function_exists('wp_die')) {
-                wp_die($this->t('You are not permitted to change NCI Core settings.'));
+                wp_die(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive'));
             }
             return;
         }
 
         $tab = $this->tab();
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->html($this->t('Niche Clever Interactive settings')) . '</h1>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->html(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '</h1>';
         if ($this->hub !== null) {
-            $this->hub->titleBar($this->t('Settings'), $this->t('Site settings'));
+            $this->hub->titleBar(__('Settings', 'niche-clever-interactive'), __('Site settings', 'niche-clever-interactive'));
             $this->hub->masthead();
         }
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attr($this->t('Niche Clever Interactive settings')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
         foreach (self::TABS as $id => $label) {
             echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"' . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . $this->attr($this->url(['tab' => $id])) . '">' . $this->html($this->t($label)) . '</a>';
         }
@@ -116,29 +115,27 @@ final class SiteSettingsPage
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         (new ProfileFieldRenderer())->siteRows($values);
         echo '</tbody></table>';
-        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->html($this->t('Save settings')) . '</button></div></form>';
+        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->html(__('Save settings', 'niche-clever-interactive')) . '</button></div></form>';
 
         $body = $this->screens !== null ? $this->screens->bodyHtml('settings') : '';
         if ($body !== '') {
-            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html($this->t('Extension settings')) . '</h2>' . $body . '</section>';
+            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html(__('Extension settings', 'niche-clever-interactive')) . '</h2>' . $body . '</section>';
         }
     }
 
     public function save(): void
     {
-        if (!$this->guard->allows(self::SAVE_ACTION, $_POST['_ncli_nonce'] ?? null)) {
+        if (!$this->guard->allows(self::SAVE_ACTION, AdminRequest::postText('_ncli_nonce'))) {
             if (function_exists('wp_die')) {
-                wp_die($this->t('You are not permitted to change NCI Core settings.'));
+                wp_die(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive'));
             }
             return;
         }
 
         $existing = $this->load()->toArray();
-        $cap = $_POST['provider_requests_per_day'] ?? null;
-        $existing['limits']['provider_requests_per_day'] = is_string($cap) && ctype_digit($cap) ? (int) $cap : $existing['limits']['provider_requests_per_day'];
-        if (isset($_POST['delete_on_uninstall'])) {
-            $existing['lifecycle']['delete_on_uninstall'] = $_POST['delete_on_uninstall'] === '1';
-        }
+        $cap = AdminRequest::postPositiveInt('provider_requests_per_day');
+        $existing['limits']['provider_requests_per_day'] = $cap ?? $existing['limits']['provider_requests_per_day'];
+        $existing['lifecycle']['delete_on_uninstall'] = AdminRequest::postCheckbox('delete_on_uninstall');
 
         try {
             $settings = CoreSettings::fromArray($existing);
@@ -168,18 +165,18 @@ final class SiteSettingsPage
 
     private function tab(): string
     {
-        $tab = $_GET['tab'] ?? 'general';
+        $tab = AdminRequest::queryText('tab');
 
         return is_string($tab) && isset(self::TABS[$tab]) ? $tab : 'general';
     }
 
     private function notice(): void
     {
-        $notice = $_GET['ncli_notice'] ?? '';
+        $notice = AdminRequest::queryText('ncli_notice');
         if ($notice === 'saved') {
-            echo '<div class="notice notice-success"><p>' . $this->html($this->t('Settings saved.')) . '</p></div>';
+            echo '<div class="notice notice-success"><p>' . $this->html(__('Settings saved.', 'niche-clever-interactive')) . '</p></div>';
         } elseif ($notice === 'invalid') {
-            echo '<div class="notice notice-error"><p>' . $this->html($this->t('Settings could not be saved. Review the field values and try again.')) . '</p></div>';
+            echo '<div class="notice notice-error"><p>' . $this->html(__('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive')) . '</p></div>';
         }
     }
 
@@ -216,6 +213,6 @@ final class SiteSettingsPage
 
     private function t(string $text): string
     {
-        return Translator::text($text);
+        return $text;
     }
 }

@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-if ( ! defined( 'ABSPATH' ) ) {
-	return;
-}
+defined( 'ABSPATH' ) || exit;
 
 use NicheCleverInteractive\Core\Plugin;
 

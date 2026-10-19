@@ -40,6 +40,7 @@ function get_option($name, $default = false) {
 }
 function delete_option($name) { $GLOBALS['log'][] = 'delete_option:' . $GLOBALS['site'] . ':' . $name; return true; }
 function wp_clear_scheduled_hook($hook) { $GLOBALS['log'][] = 'clear_cron:' . $GLOBALS['site'] . ':' . $hook; }
+function esc_sql($value) { return $value; }
 $GLOBALS['wpdb'] = new class { public $prefix = 'wp_'; public function query($sql) { $GLOBALS['log'][] = 'sql:' . $sql; return 1; } };
 require getenv('NCLI_UNINSTALL');
 echo json_encode($GLOBALS['log']);

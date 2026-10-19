@@ -9,7 +9,6 @@ use NicheCleverInteractive\Core\Conversation\ConversationId;
 use NicheCleverInteractive\Core\Conversation\ConversationStore;
 use NicheCleverInteractive\Core\Conversation\WordPressConversationStore;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
-use NicheCleverInteractive\Core\Support\Translator;
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All dynamic markup uses the tested escapeHtml()/escapeAttribute() wrappers, which keep this PHP 8.1-compatible class usable in pure tests.
 // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- AdminActionGuard centralises capability and nonce verification before a state-changing request is read; GET parameters only select a read-only view and are validated against fixed patterns.
@@ -54,8 +53,8 @@ final class ConversationsPage
 
         $hook = add_submenu_page(
             SettingsPage::PAGE_SLUG,
-            $this->t('Conversations'),
-            $this->t('Conversations'),
+            __('Conversations', 'niche-clever-interactive'),
+            __('Conversations', 'niche-clever-interactive'),
             'manage_options',
             self::PAGE_SLUG,
             [$this, 'render']
@@ -82,16 +81,16 @@ final class ConversationsPage
         $settings = $this->settings();
 
         echo '<div class="wrap ncli-admin ncli-admin--workspace">';
-        echo '<h1 class="screen-reader-text">' . $this->escapeHtml($this->t('Niche Clever Interactive conversations')) . '</h1>';
+        echo '<h1 class="screen-reader-text">' . $this->escapeHtml(__('Niche Clever Interactive conversations', 'niche-clever-interactive')) . '</h1>';
         echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute($this->t('Niche Clever Interactive conversations')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute(__('Niche Clever Interactive conversations', 'niche-clever-interactive')) . '">';
         $governance = $this->governanceActive() && $this->requestedTab() === 'governance';
         if (!$this->governanceActive()) {
-            echo '<a class="nav-tab" href="' . $this->escapeAttribute($this->adminUrl(['page' => SettingsPage::PAGE_SLUG, 'tab' => 'conversation'])) . '">' . $this->escapeHtml($this->t('Conversation settings')) . '</a>';
+            echo '<a class="nav-tab" href="' . $this->escapeAttribute($this->adminUrl(['page' => SettingsPage::PAGE_SLUG, 'tab' => 'conversation'])) . '">' . $this->escapeHtml(__('Conversation settings', 'niche-clever-interactive')) . '</a>';
         }
-        echo '<a class="nav-tab' . ($governance ? '' : ' nav-tab-active') . '" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '"' . ($governance ? '' : ' aria-current="page"') . '>' . $this->escapeHtml($this->t('Conversation history')) . '</a>';
+        echo '<a class="nav-tab' . ($governance ? '' : ' nav-tab-active') . '" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '"' . ($governance ? '' : ' aria-current="page"') . '>' . $this->escapeHtml(__('Conversation history', 'niche-clever-interactive')) . '</a>';
         if ($this->governanceActive()) {
-            echo '<a class="nav-tab' . ($governance ? ' nav-tab-active' : '') . '" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'governance'])) . '"' . ($governance ? ' aria-current="page"' : '') . '>' . $this->escapeHtml($this->t('Governance')) . '</a>';
+            echo '<a class="nav-tab' . ($governance ? ' nav-tab-active' : '') . '" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'governance'])) . '"' . ($governance ? ' aria-current="page"' : '') . '>' . $this->escapeHtml(__('Governance', 'niche-clever-interactive')) . '</a>';
         }
         echo '</nav>';
 
@@ -112,7 +111,7 @@ final class ConversationsPage
                 $this->renderList($settings);
             }
         } catch (\Throwable $exception) {
-            echo '<section class="ncli-admin__tab-panel"><p>' . $this->escapeHtml($this->t('Conversation history is not available right now. Check that the plugin has been activated and its database table exists.')) . '</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><p>' . $this->escapeHtml(__('Conversation history is not available right now. Check that the plugin has been activated and its database table exists.', 'niche-clever-interactive')) . '</p></section>';
         }
 
         echo '</div>';
@@ -126,25 +125,25 @@ final class ConversationsPage
 
     private function requestedTab(): string
     {
-        $tab = $_GET['tab'] ?? '';
+        $tab = AdminRequest::queryText('tab');
 
-        return is_string($tab) && $tab === 'governance' ? $tab : '';
+        return $tab === 'governance' ? $tab : '';
     }
 
     public function handleDelete(): void
     {
-        $nonce = $_POST['_ncli_conversations_nonce'] ?? null;
+        $nonce = AdminRequest::postText('_ncli_conversations_nonce');
         if (!$this->guard->allows(self::DELETE_ACTION, $nonce)) {
             $this->deny();
             return;
         }
 
-        $mode = isset($_POST['mode']) && is_string($_POST['mode']) ? $_POST['mode'] : '';
+        $mode = AdminRequest::postText('mode');
         $removed = 0;
         $notice = 'nothing-selected';
 
         try {
-            if ($mode === 'all' && isset($_POST['confirm']) && $_POST['confirm'] === '1') {
+            if ($mode === 'all' && AdminRequest::postCheckbox('confirm')) {
                 $removed = $this->store->deleteAll();
                 $notice = 'deleted';
             } elseif ($mode === 'selected') {
@@ -169,20 +168,20 @@ final class ConversationsPage
         $conversations = $this->store->listConversations(self::PER_PAGE, ($page - 1) * self::PER_PAGE);
 
         echo '<section class="ncli-admin__tab-panel ncli-admin__conversations">';
-        echo '<h2>' . $this->escapeHtml($this->t('Conversation history')) . '</h2>';
+        echo '<h2>' . $this->escapeHtml(__('Conversation history', 'niche-clever-interactive')) . '</h2>';
 
         if ($settings->conversationLogEnabled()) {
             $retention = $settings->conversationRetentionDays();
             $text = $retention > 0
-                ? sprintf($this->t('Recording is on. Conversations are removed automatically after %d days.'), $retention)
-                : $this->t('Recording is on. Conversations are kept until you delete them.');
+                ? /* translators: %d: number of days that conversations are retained. */ sprintf(__('Recording is on. Conversations are removed automatically after %d days.', 'niche-clever-interactive'), $retention)
+                : __('Recording is on. Conversations are kept until you delete them.', 'niche-clever-interactive');
             echo '<p>' . $this->escapeHtml($text) . '</p>';
         } else {
-            echo '<p>' . $this->escapeHtml($this->t('Recording is off, so no new conversations are being stored.')) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => SettingsPage::PAGE_SLUG, 'tab' => 'conversation'])) . '">' . $this->escapeHtml($this->t('Change this in Conversation settings.')) . '</a></p>';
+            echo '<p>' . $this->escapeHtml(__('Recording is off, so no new conversations are being stored.', 'niche-clever-interactive')) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => SettingsPage::PAGE_SLUG, 'tab' => 'conversation'])) . '">' . $this->escapeHtml(__('Change this in Conversation settings.', 'niche-clever-interactive')) . '</a></p>';
         }
 
         if ($conversations === []) {
-            echo '<p>' . $this->escapeHtml($this->t('There are no stored conversations.')) . '</p></section>';
+            echo '<p>' . $this->escapeHtml(__('There are no stored conversations.', 'niche-clever-interactive')) . '</p></section>';
             return;
         }
 
@@ -193,18 +192,18 @@ final class ConversationsPage
             wp_nonce_field(self::DELETE_ACTION, '_ncli_conversations_nonce');
         }
         echo '<table class="widefat striped ncli-admin__conversation-table"><thead><tr>';
-        echo '<td class="check-column"><span class="screen-reader-text">' . $this->escapeHtml($this->t('Select')) . '</span></td>';
-        echo '<th scope="col">' . $this->escapeHtml($this->t('First question')) . '</th>';
-        echo '<th scope="col">' . $this->escapeHtml($this->t('Questions')) . '</th>';
-        echo '<th scope="col">' . $this->escapeHtml($this->t('Started (UTC)')) . '</th>';
-        echo '<th scope="col">' . $this->escapeHtml($this->t('Last activity (UTC)')) . '</th>';
-        echo '<th scope="col">' . $this->escapeHtml($this->t('Corpus')) . '</th>';
+        echo '<td class="check-column"><span class="screen-reader-text">' . $this->escapeHtml(__('Select', 'niche-clever-interactive')) . '</span></td>';
+        echo '<th scope="col">' . $this->escapeHtml(__('First question', 'niche-clever-interactive')) . '</th>';
+        echo '<th scope="col">' . $this->escapeHtml(__('Questions', 'niche-clever-interactive')) . '</th>';
+        echo '<th scope="col">' . $this->escapeHtml(__('Started (UTC)', 'niche-clever-interactive')) . '</th>';
+        echo '<th scope="col">' . $this->escapeHtml(__('Last activity (UTC)', 'niche-clever-interactive')) . '</th>';
+        echo '<th scope="col">' . $this->escapeHtml(__('Corpus', 'niche-clever-interactive')) . '</th>';
         echo '</tr></thead><tbody>';
         foreach ($conversations as $conversation) {
             $id = $conversation['conversation_id'];
             $url = $this->adminUrl(['page' => self::PAGE_SLUG, 'conversation' => $id]);
             echo '<tr>';
-            echo '<th scope="row" class="check-column"><input type="checkbox" name="conversation_ids[]" value="' . $this->escapeAttribute($id) . '"><span class="screen-reader-text">' . $this->escapeHtml($this->t('Select this conversation')) . '</span></th>';
+            echo '<th scope="row" class="check-column"><input type="checkbox" name="conversation_ids[]" value="' . $this->escapeAttribute($id) . '"><span class="screen-reader-text">' . $this->escapeHtml(__('Select this conversation', 'niche-clever-interactive')) . '</span></th>';
             echo '<td><a href="' . $this->escapeAttribute($url) . '">' . $this->escapeHtml($this->excerpt($conversation['first_question'])) . '</a></td>';
             echo '<td>' . $this->escapeHtml((string) $conversation['turn_count']) . '</td>';
             echo '<td>' . $this->escapeHtml($conversation['started_at']) . '</td>';
@@ -213,8 +212,8 @@ final class ConversationsPage
             echo '</tr>';
         }
         echo '</tbody></table>';
-        echo '<p class="ncli-admin__conversation-actions"><button type="submit" class="button button-secondary">' . $this->escapeHtml($this->t('Delete selected')) . '</button> ';
-        echo '<a class="button button-link-delete" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'confirm' => 'delete-all'])) . '">' . $this->escapeHtml($this->t('Delete all conversations…')) . '</a></p>';
+        echo '<p class="ncli-admin__conversation-actions"><button type="submit" class="button button-secondary">' . $this->escapeHtml(__('Delete selected', 'niche-clever-interactive')) . '</button> ';
+        echo '<a class="button button-link-delete" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'confirm' => 'delete-all'])) . '">' . $this->escapeHtml(__('Delete all conversations…', 'niche-clever-interactive')) . '</a></p>';
         echo '</form>';
 
         $this->renderPagination($page, $pages, $total);
@@ -225,18 +224,18 @@ final class ConversationsPage
     {
         $turns = $this->store->turns($conversationId);
         echo '<section class="ncli-admin__tab-panel ncli-admin__conversations">';
-        echo '<p><a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '">&larr; ' . $this->escapeHtml($this->t('All conversations')) . '</a></p>';
+        echo '<p><a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '">&larr; ' . $this->escapeHtml(__('All conversations', 'niche-clever-interactive')) . '</a></p>';
         if ($turns === []) {
-            echo '<p>' . $this->escapeHtml($this->t('This conversation no longer exists.')) . '</p></section>';
+            echo '<p>' . $this->escapeHtml(__('This conversation no longer exists.', 'niche-clever-interactive')) . '</p></section>';
             return;
         }
 
-        echo '<h2>' . $this->escapeHtml($this->t('Conversation')) . '</h2>';
+        echo '<h2>' . $this->escapeHtml(__('Conversation', 'niche-clever-interactive')) . '</h2>';
         foreach ($turns as $turn) {
             echo '<article class="ncli-admin__turn">';
-            echo '<p class="ncli-admin__turn-meta">' . $this->escapeHtml($turn->createdAt()) . ' UTC' . ($turn->corpusVersion() !== '' ? ' &middot; ' . $this->escapeHtml($this->t('Corpus')) . ' ' . $this->escapeHtml($turn->corpusVersion()) : '') . '</p>';
-            echo '<p class="ncli-admin__turn-question"><strong>' . $this->escapeHtml($this->t('Question')) . '</strong><br>' . nl2br($this->escapeHtml($turn->question())) . '</p>';
-            echo '<div class="ncli-admin__turn-answer"><strong>' . $this->escapeHtml($this->t('Answer')) . '</strong><br>' . nl2br($this->escapeHtml($turn->answer())) . '</div>';
+            echo '<p class="ncli-admin__turn-meta">' . $this->escapeHtml($turn->createdAt()) . ' UTC' . ($turn->corpusVersion() !== '' ? ' &middot; ' . $this->escapeHtml(__('Corpus', 'niche-clever-interactive')) . ' ' . $this->escapeHtml($turn->corpusVersion()) : '') . '</p>';
+            echo '<p class="ncli-admin__turn-question"><strong>' . $this->escapeHtml(__('Question', 'niche-clever-interactive')) . '</strong><br>' . nl2br($this->escapeHtml($turn->question())) . '</p>';
+            echo '<div class="ncli-admin__turn-answer"><strong>' . $this->escapeHtml(__('Answer', 'niche-clever-interactive')) . '</strong><br>' . nl2br($this->escapeHtml($turn->answer())) . '</div>';
             echo '</article>';
         }
 
@@ -247,15 +246,16 @@ final class ConversationsPage
         if (function_exists('wp_nonce_field')) {
             wp_nonce_field(self::DELETE_ACTION, '_ncli_conversations_nonce');
         }
-        echo '<p><button type="submit" class="button button-secondary">' . $this->escapeHtml($this->t('Delete this conversation')) . '</button></p>';
+        echo '<p><button type="submit" class="button button-secondary">' . $this->escapeHtml(__('Delete this conversation', 'niche-clever-interactive')) . '</button></p>';
         echo '</form></section>';
     }
 
     private function renderConfirmDeleteAll(): void
     {
         $total = $this->store->countConversations();
-        echo '<section class="ncli-admin__tab-panel ncli-admin__conversations"><h2>' . $this->escapeHtml($this->t('Delete all conversations')) . '</h2>';
-        echo '<p>' . $this->escapeHtml(sprintf($this->t('This permanently deletes all %d stored conversations. It cannot be undone, although an older database backup may still contain them.'), $total)) . '</p>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__conversations"><h2>' . $this->escapeHtml(__('Delete all conversations', 'niche-clever-interactive')) . '</h2>';
+        /* translators: %d: number of stored conversations that will be deleted. */
+        echo '<p>' . $this->escapeHtml(sprintf(__('This permanently deletes all %d stored conversations. It cannot be undone, although an older database backup may still contain them.', 'niche-clever-interactive'), $total)) . '</p>';
         echo '<form method="post" action="' . $this->escapeAttribute($this->postUrl()) . '">';
         echo '<input type="hidden" name="action" value="' . self::DELETE_ACTION . '">';
         echo '<input type="hidden" name="mode" value="all">';
@@ -263,40 +263,42 @@ final class ConversationsPage
         if (function_exists('wp_nonce_field')) {
             wp_nonce_field(self::DELETE_ACTION, '_ncli_conversations_nonce');
         }
-        echo '<p><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Permanently delete everything')) . '</button> ';
-        echo '<a class="button" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '">' . $this->escapeHtml($this->t('Cancel')) . '</a></p>';
+        echo '<p><button type="submit" class="button button-primary">' . $this->escapeHtml(__('Permanently delete everything', 'niche-clever-interactive')) . '</button> ';
+        echo '<a class="button" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG])) . '">' . $this->escapeHtml(__('Cancel', 'niche-clever-interactive')) . '</a></p>';
         echo '</form></section>';
     }
 
     private function renderPagination(int $page, int $pages, int $total): void
     {
         if ($pages <= 1) {
-            echo '<p class="description">' . $this->escapeHtml(sprintf($this->t('%d conversations'), $total)) . '</p>';
+            /* translators: %d: total number of stored conversations. */
+            echo '<p class="description">' . $this->escapeHtml(sprintf(__('%d conversations', 'niche-clever-interactive'), $total)) . '</p>';
             return;
         }
 
-        echo '<p class="ncli-admin__pagination">' . $this->escapeHtml(sprintf($this->t('Page %1$d of %2$d (%3$d conversations)'), $page, $pages, $total)) . ' ';
+        /* translators: 1: current page number, 2: total pages, 3: total stored conversations. */
+        echo '<p class="ncli-admin__pagination">' . $this->escapeHtml(sprintf(__('Page %1$d of %2$d (%3$d conversations)', 'niche-clever-interactive'), $page, $pages, $total)) . ' ';
         if ($page > 1) {
-            echo '<a class="button" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'paged' => (string) ($page - 1)])) . '">' . $this->escapeHtml($this->t('Previous')) . '</a> ';
+            echo '<a class="button" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'paged' => (string) ($page - 1)])) . '">' . $this->escapeHtml(__('Previous', 'niche-clever-interactive')) . '</a> ';
         }
         if ($page < $pages) {
-            echo '<a class="button" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'paged' => (string) ($page + 1)])) . '">' . $this->escapeHtml($this->t('Next')) . '</a>';
+            echo '<a class="button" href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'paged' => (string) ($page + 1)])) . '">' . $this->escapeHtml(__('Next', 'niche-clever-interactive')) . '</a>';
         }
         echo '</p>';
     }
 
     private function renderNotice(): void
     {
-        $notice = $_GET['ncli_notice'] ?? '';
-        if (!is_string($notice) || !in_array($notice, ['deleted', 'nothing-selected', 'delete-failed'], true)) {
+        $notice = AdminRequest::queryText('ncli_notice');
+        if (!in_array($notice, ['deleted', 'nothing-selected', 'delete-failed'], true)) {
             return;
         }
 
-        $count = isset($_GET['ncli_count']) && is_string($_GET['ncli_count']) && ctype_digit($_GET['ncli_count']) ? (int) $_GET['ncli_count'] : 0;
+        $count = AdminRequest::queryPositiveInt('ncli_count', 0);
         $messages = [
-            'deleted' => sprintf($this->t('%d stored questions and answers were deleted.'), $count),
-            'nothing-selected' => $this->t('No conversation was selected, so nothing was deleted.'),
-            'delete-failed' => $this->t('The conversations could not be deleted. Nothing further was changed.'),
+            'deleted' => /* translators: %d: number of stored questions and answers deleted. */ sprintf(__('%d stored questions and answers were deleted.', 'niche-clever-interactive'), $count),
+            'nothing-selected' => __('No conversation was selected, so nothing was deleted.', 'niche-clever-interactive'),
+            'delete-failed' => __('The conversations could not be deleted. Nothing further was changed.', 'niche-clever-interactive'),
         ];
         $class = $notice === 'deleted' ? 'notice-success' : 'notice-error';
         echo '<div class="notice ' . $class . '"><p>' . $this->escapeHtml($messages[$notice]) . '</p></div>';
@@ -314,38 +316,28 @@ final class ConversationsPage
 
     private function requestedConversation(): ?string
     {
-        $value = $_GET['conversation'] ?? null;
+        $value = AdminRequest::queryText('conversation');
 
         return ConversationId::isValid($value) ? $value : null;
     }
 
     private function requestedConfirmation(): bool
     {
-        return ($_GET['confirm'] ?? null) === 'delete-all';
+        return AdminRequest::queryText('confirm') === 'delete-all';
     }
 
     private function requestedPage(): int
     {
-        $value = $_GET['paged'] ?? '1';
-
-        return is_string($value) && ctype_digit($value) && (int) $value >= 1 ? min((int) $value, 100000) : 1;
+        return min(AdminRequest::queryPositiveInt('paged'), 100000);
     }
 
     /** @return list<string> */
     private function postedIds(): array
     {
-        $raw = $_POST['conversation_ids'] ?? [];
-        if (!is_array($raw)) {
-            return [];
-        }
-
         $ids = [];
-        foreach ($raw as $value) {
-            if (is_string($value)) {
-                $value = $this->unslash($value);
-                if (ConversationId::isValid($value)) {
-                    $ids[] = $value;
-                }
+        foreach (AdminRequest::postList('conversation_ids') as $value) {
+            if (ConversationId::isValid($value)) {
+                $ids[] = $value;
             }
         }
 
@@ -373,7 +365,7 @@ final class ConversationsPage
     private function deny(): void
     {
         if (function_exists('wp_die')) {
-            wp_die($this->t('You are not permitted to manage NCI conversations.'));
+            wp_die(__('You are not permitted to manage NCI conversations.', 'niche-clever-interactive'));
         }
     }
 
@@ -422,6 +414,6 @@ final class ConversationsPage
 
     private function t(string $text): string
     {
-        return Translator::text($text);
+        return $text;
     }
 }

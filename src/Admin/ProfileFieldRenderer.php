@@ -6,7 +6,6 @@ namespace NicheCleverInteractive\Core\Admin;
 
 use NicheCleverInteractive\Core\Configuration\ModelCatalogue;
 use NicheCleverInteractive\Core\Configuration\PanelAppearance;
-use NicheCleverInteractive\Core\Support\Translator;
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All dynamic markup uses the tested escapeHtml()/escapeAttribute() wrappers, which keep this PHP 8.1-compatible class usable in pure tests.
 /**
@@ -65,7 +64,7 @@ final class ProfileFieldRenderer
             if (!$hubMode) {
                 $this->checkbox('delete_on_uninstall', 'Delete data on uninstall', (bool) $values['lifecycle']['delete_on_uninstall'], 'By default, deleting the plugin leaves your settings, request counters and conversations in the database so a reinstall can pick them up. Turn this on to remove all of them when the plugin is deleted from the Plugins screen.', 'Delete all Niche Clever Interactive settings, counters and conversations when the plugin is deleted.', true);
             }
-            echo '<tr class="ncli-admin__field"><th scope="row"><span>' . $this->escapeHtml($this->t('Conversation history')) . '</span></th><td><a class="button button-secondary" href="' . $this->escapeAttribute($conversationsUrl) . '">' . $this->escapeHtml($this->t('View conversation history')) . '</a></td></tr>';
+            echo '<tr class="ncli-admin__field"><th scope="row"><span>' . $this->escapeHtml(__('Conversation history', 'niche-clever-interactive')) . '</span></th><td><a class="button button-secondary" href="' . $this->escapeAttribute($conversationsUrl) . '">' . $this->escapeHtml(__('View conversation history', 'niche-clever-interactive')) . '</a></td></tr>';
         }
 
         if ($tab === 'appearance-limits') {
@@ -131,7 +130,7 @@ final class ProfileFieldRenderer
         if ($tab === 'ai-corpus') {
             $saved = (bool) $values['reference_saved'];
             echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('vector_store_reference', 'Vector store reference', 'Enter the identifier for an existing OpenAI File Search vector store that you control. It is write-only: once saved it is never shown again, and leaving the field blank keeps the saved value. Changing it requires a new connection test.') . '</th><td>'
-                . '<input id="ncli-vector_store_reference" class="regular-text" type="text" name="vector_store_reference" value="" maxlength="256" autocomplete="off"' . ($saved ? ' placeholder="' . $this->escapeAttribute($this->t('Saved. Leave blank to keep it.')) . '"' : '') . '></td></tr>';
+                . '<input id="ncli-vector_store_reference" class="regular-text" type="text" name="vector_store_reference" value="" maxlength="256" autocomplete="off"' . ($saved ? ' placeholder="' . $this->escapeAttribute(__('Saved. Leave blank to keep it.', 'niche-clever-interactive')) . '"' : '') . '></td></tr>';
             $this->renderModelFields($values['model']);
         }
 
@@ -164,7 +163,7 @@ final class ProfileFieldRenderer
         foreach (ModelCatalogue::all() as $entry) {
             $modelOptions .= '<option value="' . $this->escapeAttribute($entry['id']) . '" data-efforts="' . $this->escapeAttribute(implode(',', $entry['efforts'])) . '"' . ($model['id'] === $entry['id'] ? ' selected' : '') . '>' . $this->escapeHtml($this->t($entry['tier']) . ' – ' . $entry['label'] . ' (' . $entry['id'] . ')') . '</option>';
         }
-        $helpHtml = '<span class="ncli-admin__model-help-intro">' . $this->escapeHtml($this->t('Choose the OpenAI model that writes answers. Higher tiers usually cost more per answer. Changing this requires a new connection test.')) . '</span>' . $this->renderModelTable();
+        $helpHtml = '<span class="ncli-admin__model-help-intro">' . $this->escapeHtml(__('Choose the OpenAI model that writes answers. Higher tiers usually cost more per answer. Changing this requires a new connection test.', 'niche-clever-interactive')) . '</span>' . $this->renderModelTable();
         echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('model_id', 'Model', '', true, $helpHtml) . '</th><td><select id="ncli-model_id" name="model_id">' . $modelOptions . '</select></td></tr>';
 
         $efforts = ['default' => 'Provider default (not sent)'];
@@ -183,7 +182,8 @@ final class ProfileFieldRenderer
 
         $timeouts = [];
         foreach (ModelCatalogue::TIMEOUT_SECONDS as $seconds) {
-            $timeouts[(string) $seconds] = sprintf($this->t('%d seconds'), $seconds);
+            /* translators: %d: request timeout in seconds. */
+            $timeouts[(string) $seconds] = sprintf(__('%d seconds', 'niche-clever-interactive'), $seconds);
         }
         $this->select('model_timeout_seconds', 'Request timeout', $timeouts, (string) $model['timeout_seconds'], 'How long Core waits for OpenAI before giving up. Higher reasoning effort may need longer. Your hosting limits may stop a request earlier. Core does not retry automatically. Changing this requires a new connection test.');
         $this->descriptionRow('See the Help Centre for guidance on how these choices affect cost. Set a usage limit in your OpenAI dashboard as well; Core\'s request limits do not replace it.');
@@ -192,14 +192,14 @@ final class ProfileFieldRenderer
     public function renderModelTable(): string
     {
         $html = '<span class="ncli-admin__model-table-wrap"><table class="widefat striped ncli-admin__model-table"><thead><tr>'
-            . '<th scope="col">' . $this->escapeHtml($this->t('Model')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml($this->t('Tier')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml($this->t('Best for')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml($this->t('Relative cost')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml($this->t('Reasoning effort')) . '</th>'
+            . '<th scope="col">' . $this->escapeHtml(__('Model', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . $this->escapeHtml(__('Tier', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . $this->escapeHtml(__('Best for', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . $this->escapeHtml(__('Relative cost', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . $this->escapeHtml(__('Reasoning effort', 'niche-clever-interactive')) . '</th>'
             . '</tr></thead><tbody>';
         foreach (ModelCatalogue::all() as $entry) {
-            $efforts = $entry['efforts'] === [] ? $this->t('Not offered') : implode(', ', $entry['efforts']);
+            $efforts = $entry['efforts'] === [] ? __('Not offered', 'niche-clever-interactive') : implode(', ', $entry['efforts']);
             $html .= '<tr><th scope="row"><code>' . $this->escapeHtml($entry['id']) . '</code></th>'
                 . '<td>' . $this->escapeHtml($this->t($entry['tier'])) . '</td>'
                 . '<td>' . $this->escapeHtml($this->t($entry['best_for'])) . '</td>'
@@ -229,7 +229,7 @@ final class ProfileFieldRenderer
         $help = 'Sets the colour of the question button and the keyboard focus outline, in every panel style and at every width. A very pale or very dark colour is still used: Core adds an edge to the button, and keeps the style\'s own colour for the focus outline, so both stay visible.';
         echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('accent_color', 'Accent colour', $help) . '</th><td>'
             . '<input id="ncli-accent_color" class="ncli-admin__colour" type="color" name="accent_color" value="' . $this->escapeAttribute($picker) . '"> '
-            . '<label><input id="ncli-accent_color_default" type="checkbox" name="accent_color_default" value="1"' . ($accent === '' ? ' checked' : '') . '> ' . $this->escapeHtml($this->t('Use the panel style\'s own colour')) . '</label>'
+            . '<label><input id="ncli-accent_color_default" type="checkbox" name="accent_color_default" value="1"' . ($accent === '' ? ' checked' : '') . '> ' . $this->escapeHtml(__('Use the panel style\'s own colour', 'niche-clever-interactive')) . '</label>'
             . '</td></tr>';
     }
 
@@ -277,7 +277,7 @@ final class ProfileFieldRenderer
             : '<span>' . $this->escapeHtml($this->t($label)) . '</span>';
 
         return '<span class="ncli-admin__field-label">' . $labelMarkup
-            . '<button type="button" class="ncli-admin__help-toggle" aria-controls="' . $this->escapeAttribute($id) . '" aria-expanded="false" aria-label="' . $this->escapeAttribute($this->t('Help for ') . $this->t($label)) . '"><span aria-hidden="true">?</span><span class="screen-reader-text">' . $this->escapeHtml($this->t('Help for ') . $this->t($label)) . '</span></button>'
+            . '<button type="button" class="ncli-admin__help-toggle" aria-controls="' . $this->escapeAttribute($id) . '" aria-expanded="false" aria-label="' . $this->escapeAttribute(__('Help for ', 'niche-clever-interactive') . $this->t($label)) . '"><span aria-hidden="true">?</span><span class="screen-reader-text">' . $this->escapeHtml(__('Help for ', 'niche-clever-interactive') . $this->t($label)) . '</span></button>'
             . '<span id="' . $this->escapeAttribute($id) . '" class="ncli-admin__field-help' . ($helpHtml !== null ? ' ncli-admin__field-help--wide' : '') . '" role="note" hidden>' . ($helpHtml ?? $this->escapeHtml($this->t($help))) . '</span></span>';
     }
 
@@ -293,6 +293,6 @@ final class ProfileFieldRenderer
 
     private function t(string $text): string
     {
-        return Translator::text($text);
+        return $text;
     }
 }

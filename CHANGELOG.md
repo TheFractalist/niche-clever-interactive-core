@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 — 19 October 2026
+
+Corrects the WordPress.org review findings before resubmission. Fixed strings now use literal NCI gettext calls, administrator request primitives are unslashed and sanitised at a single boundary before capability and nonce validation, and Core sanitises the small administrator markup contract it hosts for an installed extension. The block renderer now uses the conventional direct-access guard. The package metadata names the submitting WordPress.org account as a contributor. This remains a pending review candidate, not an approved directory release.
+
 ## 1.0.0-rc.10 — 15 October 2026
 
 Local-only candidate. Adds an extension handshake for a separately supplied edition: a declared API minor revision (`NCLI_CORE_API_MINOR`, 1), an `ExtensionRegistryV1::capabilities()` list of the extension capabilities this build really implements (currently only `handshake`), and a Core-side `implementation()` getter. No extension seam is invoked yet, no Premium code is included, and behaviour for a site with no extension is unchanged. Documentation now says five seams, not six. Because the plugin version is part of the connection fingerprint, the administrator connection test must be run again after installing this candidate. Not published, deployed, tagged or submitted to WordPress.org.

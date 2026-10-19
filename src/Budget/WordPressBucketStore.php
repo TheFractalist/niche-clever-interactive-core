@@ -8,6 +8,7 @@ use RuntimeException;
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Daily rate reservations require uncached, row-locked InnoDB transactions; each value is prepared and the table name is derived solely from $wpdb->prefix.
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- PHPCS cannot track the already prepared SQL value or the safe dynamic table identifier used by the transaction boundary.
+// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter -- Values are passed through $wpdb->prepare(); the identifier is a fixed suffix joined to and SQL-escaped from WordPress's site prefix. Transactions are required to keep the rate limit race-safe.
 final class WordPressBucketStore implements BucketStore
 {
     public function reserve(string $kind, string $scopeHash, string $periodStart, int $limit): bool
@@ -16,7 +17,7 @@ final class WordPressBucketStore implements BucketStore
         if (!isset($wpdb) || !is_object($wpdb) || !isset($wpdb->prefix)) {
             throw new RuntimeException('Rate storage is unavailable.');
         }
-        $table = $wpdb->prefix . 'ncli_core_rate_buckets';
+        $table = esc_sql($wpdb->prefix . 'ncli_core_rate_buckets');
         // Establish the unique row in autocommit mode. Holding an insert-intention
         // lock while taking a row lock caused avoidable first-use deadlocks.
         $insert = $wpdb->prepare("INSERT IGNORE INTO {$table} (kind, scope_hash, period_start) VALUES (%s, %s, %s)", $kind, $scopeHash, $periodStart);
@@ -67,7 +68,7 @@ final class WordPressBucketStore implements BucketStore
         if (!isset($wpdb) || !is_object($wpdb) || !isset($wpdb->prefix)) {
             throw new RuntimeException('Rate storage is unavailable.');
         }
-        $table = $wpdb->prefix . 'ncli_core_rate_buckets';
+        $table = esc_sql($wpdb->prefix . 'ncli_core_rate_buckets');
         if ($wpdb->query('START TRANSACTION') === false) {
             throw new RuntimeException('Rate transaction could not start.');
         }

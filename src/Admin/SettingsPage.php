@@ -17,7 +17,6 @@ use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Diagnostics\FailureLog;
 use NicheCleverInteractive\Core\Diagnostics\OptionFailureLog;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
-use NicheCleverInteractive\Core\Support\Translator;
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All dynamic markup uses the tested escapeHtml()/escapeAttribute() wrappers, which keep this PHP 8.1-compatible class usable in pure tests.
 // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- AdminActionGuard centralises capability and nonce verification before this class reads a request.
@@ -61,8 +60,8 @@ final class SettingsPage
     {
         if (function_exists('add_menu_page')) {
             add_menu_page(
-                $this->t('Niche Clever Interactive'),
-                $this->t('NC Interactive'),
+                __('Niche Clever Interactive', 'niche-clever-interactive'),
+                __('NC Interactive', 'niche-clever-interactive'),
                 'manage_options',
                 self::PAGE_SLUG,
                 [$this, 'render'],
@@ -76,8 +75,8 @@ final class SettingsPage
             // instead of repeating the top-level menu title.
             add_submenu_page(
                 self::PAGE_SLUG,
-                $this->t('Niche Clever Interactive'),
-                $this->hubActive() ? $this->t('Profiles') : $this->t('Settings'),
+                __('Niche Clever Interactive', 'niche-clever-interactive'),
+                $this->hubActive() ? __('Profiles', 'niche-clever-interactive') : __('Settings', 'niche-clever-interactive'),
                 'manage_options',
                 self::PAGE_SLUG,
                 [$this, 'render']
@@ -110,14 +109,14 @@ final class SettingsPage
         $tab = $this->currentTab();
         $readiness = Readiness::evaluate($settings, new SecretResolver());
         $tabs = [
-            'setup' => $this->t('Setup'),
-            'profile' => $this->t('Profile'),
-            'ai-corpus' => $this->t('AI & Corpus'),
-            'conversation' => $this->t('Conversation'),
-            'appearance-limits' => $this->t('Appearance & Limits'),
-            'placement' => $this->t('Placement'),
-            'diagnostics' => $this->t('Diagnostics'),
-            'help' => $this->t('Help'),
+            'setup' => __('Setup', 'niche-clever-interactive'),
+            'profile' => __('Profile', 'niche-clever-interactive'),
+            'ai-corpus' => __('AI & Corpus', 'niche-clever-interactive'),
+            'conversation' => __('Conversation', 'niche-clever-interactive'),
+            'appearance-limits' => __('Appearance & Limits', 'niche-clever-interactive'),
+            'placement' => __('Placement', 'niche-clever-interactive'),
+            'diagnostics' => __('Diagnostics', 'niche-clever-interactive'),
+            'help' => __('Help', 'niche-clever-interactive'),
         ];
         if ($this->hubActive()) {
             // Help lives on the site Settings page while the hub is active.
@@ -126,12 +125,12 @@ final class SettingsPage
         }
 
         echo '<div class="wrap ncli-admin ncli-admin--workspace">';
-        echo '<h1 class="screen-reader-text">' . $this->escapeHtml($this->t('Niche Clever Interactive workspace')) . '</h1>';
+        echo '<h1 class="screen-reader-text">' . $this->escapeHtml(__('Niche Clever Interactive workspace', 'niche-clever-interactive')) . '</h1>';
         if ($this->hubActive()) {
-            $this->hub->header(CoreSettings::DEFAULT_PROFILE_ID, $this->t('Default profile'));
+            $this->hub->header(CoreSettings::DEFAULT_PROFILE_ID, __('Default profile', 'niche-clever-interactive'));
         }
         echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute($this->t('Niche Clever Interactive settings')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->escapeAttribute(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
         foreach ($tabs as $id => $label) {
             $class = $id === $tab ? ' nav-tab-active' : '';
             $url = $this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => $id]);
@@ -142,10 +141,10 @@ final class SettingsPage
         $notice = $this->currentNotice();
         if ($notice !== '') {
             $messages = [
-                'saved' => $this->t('Settings saved.'),
-                'invalid' => $this->t('Settings could not be saved. Review the field values and try again.'),
-                'connection-passed' => $this->t('Connection test passed. Public chat can become ready when the other requirements are met.'),
-                'connection-failed' => $this->t('Connection test did not complete. Check server configuration and try again without exposing provider details here.'),
+                'saved' => __('Settings saved.', 'niche-clever-interactive'),
+                'invalid' => __('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive'),
+                'connection-passed' => __('Connection test passed. Public chat can become ready when the other requirements are met.', 'niche-clever-interactive'),
+                'connection-failed' => __('Connection test did not complete. Check server configuration and try again without exposing provider details here.', 'niche-clever-interactive'),
             ];
             $success = in_array($notice, ['saved', 'connection-passed'], true);
             echo '<div class="notice ' . ($success ? 'notice-success' : 'notice-error') . '"><p>' . $this->escapeHtml($messages[$notice]) . '</p></div>';
@@ -162,7 +161,7 @@ final class SettingsPage
         } elseif ($tab === 'help') {
             $this->help->render();
         } elseif ($tab === 'placement') {
-            echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Placement')) . '</h2><p>' . $this->escapeHtml($this->t('Use the')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.')) . '</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml(__('Placement', 'niche-clever-interactive')) . '</h2><p>' . $this->escapeHtml(__('Use the', 'niche-clever-interactive')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml(__('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.', 'niche-clever-interactive')) . '</p></section>';
         } elseif ($tab === 'questions' || $tab === 'collections' || $tab === 'cache') {
             // Only the extension's sections, drawn below.
         } elseif ($sub === null || $sub === 'panel') {
@@ -178,7 +177,7 @@ final class SettingsPage
 
     public function save(): void
     {
-        $nonce = $_POST['_ncli_nonce'] ?? null;
+        $nonce = AdminRequest::postText('_ncli_nonce');
         if (!$this->guard->allows(self::SAVE_ACTION, $nonce)) {
             $this->deny();
             return;
@@ -188,15 +187,15 @@ final class SettingsPage
         try {
             $settings = CoreSettings::fromArray($input);
             update_option(CoreSettings::OPTION_NAME, $settings->toArray(), false);
-            $this->redirect(['page' => self::PAGE_SLUG, 'tab' => $this->safeTab($_POST['ncli_tab'] ?? 'setup'), 'ncli_notice' => 'saved']);
+            $this->redirect(['page' => self::PAGE_SLUG, 'tab' => $this->safeTab(AdminRequest::postText('ncli_tab')), 'ncli_notice' => 'saved']);
         } catch (\InvalidArgumentException $exception) {
-            $this->redirect(['page' => self::PAGE_SLUG, 'tab' => $this->safeTab($_POST['ncli_tab'] ?? 'setup'), 'ncli_notice' => 'invalid']);
+            $this->redirect(['page' => self::PAGE_SLUG, 'tab' => $this->safeTab(AdminRequest::postText('ncli_tab')), 'ncli_notice' => 'invalid']);
         }
     }
 
     public function testConnection(): void
     {
-        $nonce = $_POST['_ncli_connection_nonce'] ?? null;
+        $nonce = AdminRequest::postText('_ncli_connection_nonce');
         if (!$this->guard->allows(self::CONNECTION_TEST_ACTION, $nonce)) {
             $this->deny();
             return;
@@ -240,70 +239,70 @@ final class SettingsPage
         echo '</tbody></table>';
 
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-corpus' || $tab === 'conversation' || $tab === 'appearance-limits') {
-            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml($this->t('Save settings')) . '</button>' . ($this->hubActive() ? '<a class="button" href="' . $this->escapeAttribute($this->hub->landingUrl()) . '">' . $this->escapeHtml($this->t('All profiles')) . '</a>' : '') . ($this->hubActive() ? '' : '<a class="ncli-admin__upgrade" href="' . $this->escapeAttribute(HelpRenderer::PREMIUM_URL) . '" target="_blank" rel="noopener">' . $this->escapeHtml($this->t('Explore NCI Premium')) . '</a>') . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute($this->t('Niche Clever')) . '" width="180" height="35"></a></div>';
+            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->escapeHtml(__('Save settings', 'niche-clever-interactive')) . '</button>' . ($this->hubActive() ? '<a class="button" href="' . $this->escapeAttribute($this->hub->landingUrl()) . '">' . $this->escapeHtml(__('All profiles', 'niche-clever-interactive')) . '</a>' : '') . ($this->hubActive() ? '' : '<a class="ncli-admin__upgrade" href="' . $this->escapeAttribute(HelpRenderer::PREMIUM_URL) . '" target="_blank" rel="noopener">' . $this->escapeHtml(__('Explore NCI Premium', 'niche-clever-interactive')) . '</a>') . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . $this->escapeAttribute($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . $this->escapeAttribute(__('Niche Clever', 'niche-clever-interactive')) . '" width="180" height="35"></a></div>';
         }
         echo '</form>';
     }
 
     private function renderDiagnostics(Readiness $readiness): void
     {
-        echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml($this->t('Diagnostics')) . '</h2>';
-        echo '<p>' . $this->escapeHtml($this->t('Readiness:')) . ' <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
+        echo '<section class="ncli-admin__tab-panel"><h2>' . $this->escapeHtml(__('Diagnostics', 'niche-clever-interactive')) . '</h2>';
+        echo '<p>' . $this->escapeHtml(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . $this->escapeHtml($readiness->state()) . '</strong></p>';
         $settings = $this->load();
         $status = $settings->connectionTestStatus();
         $time = $settings->connectionTestTime();
-        echo '<p>' . $this->escapeHtml($this->t('Connection test:')) . ' <strong>' . $this->escapeHtml($status) . '</strong>' . ($time !== '' ? ' (' . $this->escapeHtml($this->t('UTC')) . ' ' . $this->escapeHtml($time) . ')' : '') . '</p>';
+        echo '<p>' . $this->escapeHtml(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . $this->escapeHtml($status) . '</strong>' . ($time !== '' ? ' (' . $this->escapeHtml(__('UTC', 'niche-clever-interactive')) . ' ' . $this->escapeHtml($time) . ')' : '') . '</p>';
         $this->renderLastFailure();
-        echo '<p>' . $this->escapeHtml($this->t('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.')) . '</p></section>';
+        echo '<p>' . $this->escapeHtml(__('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.', 'niche-clever-interactive')) . '</p></section>';
     }
 
     private function renderLastFailure(): void
     {
         $last = $this->failures->last();
-        echo '<h3>' . $this->escapeHtml($this->t('Last provider problem')) . '</h3>';
+        echo '<h3>' . $this->escapeHtml(__('Last provider problem', 'niche-clever-interactive')) . '</h3>';
         if ($last === null) {
-            echo '<p>' . $this->escapeHtml($this->t('No provider problem has been recorded.')) . '</p>';
+            echo '<p>' . $this->escapeHtml(__('No provider problem has been recorded.', 'niche-clever-interactive')) . '</p>';
             return;
         }
-        $where = $last['source'] === 'connection_test' ? $this->t('connection test') : $this->t('public question');
+        $where = $last['source'] === 'connection_test' ? __('connection test', 'niche-clever-interactive') : __('public question', 'niche-clever-interactive');
         echo '<p><strong>' . $this->escapeHtml($this->t(ProviderFailure::label($last['reason']))) . '</strong> (' . $this->escapeHtml($last['reason']) . ')</p>';
-        echo '<p>' . $this->escapeHtml($this->t('Seen in a')) . ' ' . $this->escapeHtml($where) . ', ' . $this->escapeHtml($this->t('UTC')) . ' ' . $this->escapeHtml($last['at']) . ', ' . $this->escapeHtml($this->t('after about')) . ' ' . $this->escapeHtml((string) $last['elapsed']) . ' ' . $this->escapeHtml($this->t('seconds')) . '.</p>';
-        echo '<p>' . $this->escapeHtml($this->t('What to try:')) . ' ' . $this->escapeHtml($this->t(ProviderFailure::advice($last['reason']))) . '</p>';
-        echo '<p>' . $this->escapeHtml($this->t('Only the reason, time and duration are kept. Visitors always see the same generic message. Only the latest problem is shown.')) . '</p>';
+        echo '<p>' . $this->escapeHtml(__('Seen in a', 'niche-clever-interactive')) . ' ' . $this->escapeHtml($where) . ', ' . $this->escapeHtml(__('UTC', 'niche-clever-interactive')) . ' ' . $this->escapeHtml($last['at']) . ', ' . $this->escapeHtml(__('after about', 'niche-clever-interactive')) . ' ' . $this->escapeHtml((string) $last['elapsed']) . ' ' . $this->escapeHtml(__('seconds', 'niche-clever-interactive')) . '.</p>';
+        echo '<p>' . $this->escapeHtml(__('What to try:', 'niche-clever-interactive')) . ' ' . $this->escapeHtml($this->t(ProviderFailure::advice($last['reason']))) . '</p>';
+        echo '<p>' . $this->escapeHtml(__('Only the reason, time and duration are kept. Visitors always see the same generic message. Only the latest problem is shown.', 'niche-clever-interactive')) . '</p>';
     }
 
     private function renderSetupChecklist(CoreSettings $settings): void
     {
         $readiness = Readiness::evaluate($settings, new SecretResolver());
         $secrets = new SecretResolver();
-        $keyState = $secrets->isAvailable() ? $this->t('The server-side constant is available.') : $this->t('Add the constant to the server configuration before testing.');
+        $keyState = $secrets->isAvailable() ? __('The server-side constant is available.', 'niche-clever-interactive') : __('Add the constant to the server configuration before testing.', 'niche-clever-interactive');
         $corpusState = $settings->vectorStoreReference() !== '' && $settings->corpusVersion() !== ''
-            ? $this->t('A vector-store reference and corpus version are saved.')
-            : $this->t('Save the vector-store reference in AI & Corpus and the corpus version in Profile.');
+            ? __('A vector-store reference and corpus version are saved.', 'niche-clever-interactive')
+            : __('Save the vector-store reference in AI & Corpus and the corpus version in Profile.', 'niche-clever-interactive');
         $testState = $settings->connectionTestStatus() === 'passed' && $readiness->isReady()
-            ? $this->t('The current configuration passed its File Search connection test.')
-            : $this->t('Run a new test after changing the key, transport mode, vector store, corpus version, response guidance, response preset or any model setting.');
+            ? __('The current configuration passed its File Search connection test.', 'niche-clever-interactive')
+            : __('Run a new test after changing the key, transport mode, vector store, corpus version, response guidance, response preset or any model setting.', 'niche-clever-interactive');
         $placements = $this->publishedPlacements();
 
-        echo '<section class="ncli-admin__get-started"><h2><span>' . $this->escapeHtml($this->t('Get started')) . '</span><span class="ncli-admin__get-started-count">' . $this->escapeHtml($this->t('4 Core steps')) . '</span></h2>';
-        echo '<p>' . $this->escapeHtml($this->t('Niche Clever Interactive serves one carefully bounded public profile. It does not expose provider details.')) . '</p>';
+        echo '<section class="ncli-admin__get-started"><h2><span>' . $this->escapeHtml(__('Get started', 'niche-clever-interactive')) . '</span><span class="ncli-admin__get-started-count">' . $this->escapeHtml(__('4 Core steps', 'niche-clever-interactive')) . '</span></h2>';
+        echo '<p>' . $this->escapeHtml(__('Niche Clever Interactive serves one carefully bounded public profile. It does not expose provider details.', 'niche-clever-interactive')) . '</p>';
         echo '<ol class="ncli-admin__checklist">';
-        echo '<li><span class="ncli-admin__check">1</span><div><strong>' . $this->escapeHtml($this->t('Add your API key')) . '</strong><p>' . $this->escapeHtml($keyState) . ' ' . $this->escapeHtml($this->t('Configure')) . ' <code>NCLI_OPENAI_API_KEY_DEFAULT</code> ' . $this->escapeHtml($this->t('in server configuration only, for example')) . ' <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.</p></div></li>';
-        echo '<li><span class="ncli-admin__check">2</span><div><strong>' . $this->escapeHtml($this->t('Choose your vector store')) . '</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">' . $this->escapeHtml($this->t('Open AI & Corpus')) . '</a>.</p></div></li>';
-        echo '<li><span class="ncli-admin__check">3</span><div><strong>' . $this->escapeHtml($this->t('Test your connection')) . '</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">' . $this->escapeHtml($this->t('Test connection')) . '</button></div></li>';
-        echo '<li><span class="ncli-admin__check">4</span><div><strong>' . $this->escapeHtml($this->t('Place your conversation')) . '</strong><p>';
+        echo '<li><span class="ncli-admin__check">1</span><div><strong>' . $this->escapeHtml(__('Add your API key', 'niche-clever-interactive')) . '</strong><p>' . $this->escapeHtml($keyState) . ' ' . $this->escapeHtml(__('Configure', 'niche-clever-interactive')) . ' <code>NCLI_OPENAI_API_KEY_DEFAULT</code> ' . $this->escapeHtml(__('in server configuration only, for example', 'niche-clever-interactive')) . ' <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">2</span><div><strong>' . $this->escapeHtml(__('Choose your vector store', 'niche-clever-interactive')) . '</strong><p>' . $this->escapeHtml($corpusState) . ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">' . $this->escapeHtml(__('Open AI & Corpus', 'niche-clever-interactive')) . '</a>.</p></div></li>';
+        echo '<li><span class="ncli-admin__check">3</span><div><strong>' . $this->escapeHtml(__('Test your connection', 'niche-clever-interactive')) . '</strong><p>' . $this->escapeHtml($testState) . '</p><button type="submit" class="button button-secondary" form="ncli-connection-test">' . $this->escapeHtml(__('Test connection', 'niche-clever-interactive')) . '</button></div></li>';
+        echo '<li><span class="ncli-admin__check">4</span><div><strong>' . $this->escapeHtml(__('Place your conversation', 'niche-clever-interactive')) . '</strong><p>';
         if ($placements === []) {
-            echo $this->escapeHtml($this->t('Add the NC Interactive block or')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml($this->t('shortcode to a published page.'));
+            echo $this->escapeHtml(__('Add the NC Interactive block or', 'niche-clever-interactive')) . ' <code>[ncli_interactive]</code> ' . $this->escapeHtml(__('shortcode to a published page.', 'niche-clever-interactive'));
         } else {
-            echo $this->escapeHtml($this->t('Detected placement:')) . ' ' . implode(', ', $placements) . '.';
+            echo $this->escapeHtml(__('Detected placement:', 'niche-clever-interactive')) . ' ' . implode(', ', $placements) . '.';
         }
-        echo ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">' . $this->escapeHtml($this->t('Open placement guidance')) . '</a>.</p></div></li>';
+        echo ' <a href="' . $this->escapeAttribute($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">' . $this->escapeHtml(__('Open placement guidance', 'niche-clever-interactive')) . '</a>.</p></div></li>';
         echo '</ol></section>';
     }
 
     private function currentNotice(): string
     {
-        $notice = $_GET['ncli_notice'] ?? '';
+        $notice = AdminRequest::queryText('ncli_notice');
         return is_string($notice) && in_array($notice, ['saved', 'invalid', 'connection-passed', 'connection-failed'], true) ? $notice : '';
     }
 
@@ -334,7 +333,7 @@ final class SettingsPage
             if (!$isPlaced) {
                 continue;
             }
-            $title = is_string($post->post_title) && $post->post_title !== '' ? $post->post_title : $this->t('Published page');
+            $title = is_string($post->post_title) && $post->post_title !== '' ? $post->post_title : __('Published page', 'niche-clever-interactive');
             $url = function_exists('get_edit_post_link') ? get_edit_post_link((int) $post->ID, 'raw') : false;
             $placements[] = is_string($url) && $url !== '' ? '<a href="' . $this->escapeAttribute($url) . '">' . $this->escapeHtml($title) . '</a>' : $this->escapeHtml($title);
         }
@@ -373,7 +372,7 @@ final class SettingsPage
     {
         $existing = $this->load()->toArray();
         return [
-            'enabled' => isset($_POST['enabled']) ? $_POST['enabled'] === '1' : $existing['enabled'],
+            'enabled' => AdminRequest::postOptionalText('enabled') !== null ? AdminRequest::postCheckbox('enabled') : $existing['enabled'],
             'profile' => [
                 'id' => CoreSettings::DEFAULT_PROFILE_ID,
                 'corpus_version' => $this->stringPost('corpus_version', $existing['profile']['corpus_version']),
@@ -390,14 +389,14 @@ final class SettingsPage
                 'panel_style' => $this->stringPost('panel_style', $existing['appearance']['panel_style']),
                 'panel_width' => $this->stringPost('panel_width', $existing['appearance']['panel_width']),
                 'accent_color' => $this->accentPost($existing['appearance']['accent_color']),
-                'show_credit' => isset($_POST['show_credit']) ? $_POST['show_credit'] === '1' : $existing['appearance']['show_credit'],
+                'show_credit' => AdminRequest::postOptionalText('show_credit') !== null ? AdminRequest::postCheckbox('show_credit') : $existing['appearance']['show_credit'],
             ],
             'conversation_log' => [
-                'enabled' => isset($_POST['conversation_log_enabled']) ? $_POST['conversation_log_enabled'] === '1' : $existing['conversation_log']['enabled'],
+                'enabled' => AdminRequest::postOptionalText('conversation_log_enabled') !== null ? AdminRequest::postCheckbox('conversation_log_enabled') : $existing['conversation_log']['enabled'],
                 'retention_days' => $this->intPost('conversation_retention_days', $existing['conversation_log']['retention_days']),
             ],
             'lifecycle' => [
-                'delete_on_uninstall' => isset($_POST['delete_on_uninstall']) ? $_POST['delete_on_uninstall'] === '1' : $existing['lifecycle']['delete_on_uninstall'],
+                'delete_on_uninstall' => AdminRequest::postOptionalText('delete_on_uninstall') !== null ? AdminRequest::postCheckbox('delete_on_uninstall') : $existing['lifecycle']['delete_on_uninstall'],
             ],
             'presentation' => [
                 'title' => $this->stringPost('presentation_title', $existing['presentation']['title']),
@@ -440,7 +439,7 @@ final class SettingsPage
 
     private function currentTab(): string
     {
-        return $this->safeTab($_GET['tab'] ?? 'setup');
+        return $this->safeTab(AdminRequest::queryText('tab'));
     }
 
     private function safeTab($value): string
@@ -465,7 +464,7 @@ final class SettingsPage
     private function deny(): void
     {
         if (function_exists('wp_die')) {
-            wp_die($this->t('You are not permitted to change NCI Core settings.'));
+            wp_die(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive'));
         }
     }
 
@@ -485,12 +484,16 @@ final class SettingsPage
 
     private function stringPost(string $key, string $default = ''): string
     {
-        return isset($_POST[$key]) && is_string($_POST[$key]) ? $this->unslash($_POST[$key]) : $default;
+        $value = in_array($key, ['instructions', 'presentation_introduction'], true)
+            ? AdminRequest::postOptionalTextarea($key)
+            : AdminRequest::postOptionalText($key);
+
+        return $value ?? $default;
     }
 
     private function accentPost(string $default): string
     {
-        if (isset($_POST['accent_color_default']) && $_POST['accent_color_default'] === '1') {
+        if (AdminRequest::postCheckbox('accent_color_default')) {
             return '';
         }
 
@@ -499,7 +502,7 @@ final class SettingsPage
 
     private function intPost(string $key, int $default): int
     {
-        return isset($_POST[$key]) && is_string($_POST[$key]) && ctype_digit($_POST[$key]) ? (int) $_POST[$key] : $default;
+        return AdminRequest::postPositiveInt($key) ?? $default;
     }
 
     private function unslash(string $value): string
@@ -519,6 +522,6 @@ final class SettingsPage
 
     private function t(string $text): string
     {
-        return Translator::text($text);
+        return $text;
     }
 }

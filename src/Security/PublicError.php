@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Security;
 
 use InvalidArgumentException;
-use NicheCleverInteractive\Core\Support\Translator;
 
 final class PublicError
 {
@@ -58,6 +57,16 @@ final class PublicError
      */
     public function payload(): array
     {
-        return ['code' => $this->code, 'message' => $this->message ?? Translator::text(self::MESSAGES[$this->code])];
+        $message = match ($this->code) {
+            'profile_unavailable' => __('This interactive service is unavailable.', 'niche-clever-interactive'),
+            'invalid_request' => __('Please enter a valid question.', 'niche-clever-interactive'),
+            'policy_refusal' => __('I cannot help with that request.', 'niche-clever-interactive'),
+            'allowance_exceeded' => __('The question allowance has been reached. Please try again later.', 'niche-clever-interactive'),
+            'provider_failure' => __('The interactive service is temporarily unavailable.', 'niche-clever-interactive'),
+            'evidence_failure' => __('A verified answer is not available for that question.', 'niche-clever-interactive'),
+            'access_required' => __('Access to this service has not been granted.', 'niche-clever-interactive'),
+        };
+
+        return ['code' => $this->code, 'message' => $this->message ?? $message];
     }
 }

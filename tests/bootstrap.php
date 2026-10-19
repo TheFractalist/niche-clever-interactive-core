@@ -25,3 +25,24 @@ if (!function_exists('wp_parse_url')) {
         return parse_url($url, $component);
     }
 }
+
+if (!function_exists('__')) {
+    function __(string $text, string $domain = 'default'): string
+    {
+        return $text;
+    }
+}
+
+if (!function_exists('wp_kses')) {
+    function wp_kses(string $content, array $allowed_html = []): string
+    {
+        return $content;
+    }
+}
+
+if (!function_exists('esc_sql')) {
+    function esc_sql(string $value): string
+    {
+        return $value;
+    }
+}

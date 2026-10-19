@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace NicheCleverInteractive\Core\AI\Transport;
 
+// phpcs:disable PluginCheck.CodeAnalysis.AIProvider.DirectIntegration -- Core deliberately owns its configured OpenAI Responses/File Search transport; the suggested WordPress AI Client requires WordPress 7.0, while this plugin supports WordPress 6.5.
+
 use JsonException;
 use NicheCleverInteractive\Core\Api\V1\Value\EvidenceCitationV1;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;

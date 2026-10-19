@@ -8,6 +8,7 @@ use RuntimeException;
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- The conversation log is an administrator-managed NCI table; reads and deletes must reflect current rows and cannot use the object cache.
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Every value is passed through $wpdb->prepare(); the table identifier is derived solely from $wpdb->prefix and a constant suffix.
+// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter -- Values are bound with $wpdb->prepare(); this plugin-owned table identifier is a fixed suffix joined to and SQL-escaped from WordPress's site prefix.
 final class WordPressConversationStore implements ConversationStore, ConversationCriteriaStore
 {
     public function record(ConversationTurn $turn): void
@@ -276,6 +277,6 @@ final class WordPressConversationStore implements ConversationStore, Conversatio
             throw new RuntimeException('Conversation storage is unavailable.');
         }
 
-        return [$wpdb, $table];
+        return [$wpdb, esc_sql($table)];
     }
 }

@@ -1,10 +1,10 @@
 === Niche Clever Interactive ===
-Contributors: nicheclever
+Contributors: jacobfractalist, nicheclever
 Tags: question and answer, openai, file search, knowledge base, interactive
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,10 @@ NCI Premium is a separately supplied edition from Niche Clever. Details, purchas
 4. Appearance & Limits tab: panel style and width, accent colour, optional credit line and daily request limits.
 
 == Changelog ==
+
+= 1.0.1 =
+
+* Corrects WordPress.org review findings for translation extraction, administrator request sanitisation, extension-markup handling and direct block-render access.
 
 = 1.0.0 =
 

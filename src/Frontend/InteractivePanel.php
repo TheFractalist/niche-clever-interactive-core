@@ -11,7 +11,6 @@ use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Profile\ProfileRuntime;
 use NicheCleverInteractive\Core\Security\PublicError;
-use NicheCleverInteractive\Core\Support\Translator;
 
 final class InteractivePanel
 {
@@ -54,15 +53,15 @@ final class InteractivePanel
                 // Lets the route recognise a logged-in viewer; the client sends it only for named profiles.
                 'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('wp_rest') : '',
                 'strings' => [
-                    'conversationReset' => Translator::text('Conversation reset for this browser session.'),
+                    'conversationReset' => __('Conversation reset for this browser session.', 'niche-clever-interactive'),
                     'unavailable' => $this->load()->unavailableMessage(),
-                    'invalidQuestion' => Translator::text('Please enter a valid question.'),
-                    'findingAnswer' => Translator::text('Finding a verified answer…'),
-                    'temporaryFailure' => Translator::text('This interactive service is temporarily unavailable.'),
-                    'answerAdded' => Translator::text('Verified answer added to this session.'),
-                    'questionLabel' => Translator::text('Question:'),
-                    'answerLabel' => Translator::text('Answer:'),
-                    'sourcesLabel' => Translator::text('Sources'),
+                    'invalidQuestion' => __('Please enter a valid question.', 'niche-clever-interactive'),
+                    'findingAnswer' => __('Finding a verified answer…', 'niche-clever-interactive'),
+                    'temporaryFailure' => __('This interactive service is temporarily unavailable.', 'niche-clever-interactive'),
+                    'answerAdded' => __('Verified answer added to this session.', 'niche-clever-interactive'),
+                    'questionLabel' => __('Question:', 'niche-clever-interactive'),
+                    'answerLabel' => __('Answer:', 'niche-clever-interactive'),
+                    'sourcesLabel' => __('Sources', 'niche-clever-interactive'),
                 ],
             ];
             // An installed extension may add to the public script's configuration, for example a
@@ -128,7 +127,7 @@ final class InteractivePanel
                 if (!$access->isAllowed()) {
                     // The form stays disabled and carries no profile marker; the owner's message replaces the status.
                     $ready = false;
-                    $unavailable = PublicError::plainText($access->message()) ?? Translator::text('Access to this service has not been granted.');
+                    $unavailable = PublicError::plainText($access->message()) ?? __('Access to this service has not been granted.', 'niche-clever-interactive');
                 } else {
                     $profileId = $profile->id();
                     $colourProfile = $profile;
@@ -140,7 +139,7 @@ final class InteractivePanel
         $title = isset($attributes['title']) && is_string($attributes['title']) && trim($attributes['title']) !== ''
             ? $attributes['title']
             : $presentation['title'];
-        $status = $ready ? Translator::text('Ready for a verified answer.') : $unavailable;
+        $status = $ready ? __('Ready for a verified answer.', 'niche-clever-interactive') : $unavailable;
         $inlineStyle = PanelAppearance::inlineStyle($style, $width, $accentColour);
         $colours = $colourProfile !== null ? $this->profiles->colours($colourProfile) : null;
         if ($colours !== null) {
@@ -148,7 +147,7 @@ final class InteractivePanel
             $inlineStyle = $inlineStyle === '' ? $colourStyle : ($colourStyle === '' ? $inlineStyle : $inlineStyle . ';' . $colourStyle);
         }
         $credit = $showCredit
-            ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(Translator::text('Powered by NC Interactive')) . '</a></p>'
+            ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(__('Powered by NC Interactive', 'niche-clever-interactive')) . '</a></p>'
             : '';
         $disabled = $ready ? '' : ' disabled';
 
@@ -161,10 +160,10 @@ final class InteractivePanel
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
             . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
             . '<form class="ncli-panel__form" data-ncli-interactive="1"' . ($profileId !== '' ? ' data-ncli-profile="' . $this->attr($profileId) . '"' : '') . '>'
-            . '<label class="screen-reader-text" for="ncli-question">' . $this->html(Translator::text('Ask a question')) . '</label>'
+            . '<label class="screen-reader-text" for="ncli-question">' . $this->html(__('Ask a question', 'niche-clever-interactive')) . '</label>'
             . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="' . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
-            . '<button type="submit" aria-label="' . $this->attr(Translator::text('Submit question')) . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">' . $this->html(Translator::text('Ask')) . '</span></button></div>'
-            . '<button class="ncli-panel__reset" type="button" hidden>' . $this->html(Translator::text('Reset conversation')) . '</button>'
+            . '<button type="submit" aria-label="' . $this->attr(__('Submit question', 'niche-clever-interactive')) . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">' . $this->html(__('Ask', 'niche-clever-interactive')) . '</span></button></div>'
+            . '<button class="ncli-panel__reset" type="button" hidden>' . $this->html(__('Reset conversation', 'niche-clever-interactive')) . '</button>'
             . '</form>'
             . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>' . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
             . '</div>'
@@ -179,7 +178,7 @@ final class InteractivePanel
     {
         $message = isset($attributes['message']) && is_string($attributes['message'])
             ? $attributes['message']
-            : Translator::text('Question limits help keep this service available.');
+            : __('Question limits help keep this service available.', 'niche-clever-interactive');
 
         return '<p class="ncli-limit-notice" role="status">' . $this->html($message) . '</p>';
     }
