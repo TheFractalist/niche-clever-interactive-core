@@ -327,8 +327,99 @@
     return element;
   }
 
+  // Reads the route's server-sent events. `delta` events carry display text; the single final `done`
+  // or `error` event carries the complete validated answer or the public error and is the only thing
+  // that is ever kept. Resolves with that final event, or null if the stream ended without one.
+  function readEventStream(response, onDelta) {
+    var reader = response.body.getReader();
+    var decoder = new window.TextDecoder('utf-8');
+    var buffer = '';
+    var finalEvent = null;
+
+    function handleBlock(block) {
+      var data = '';
+      block.split('\n').forEach(function (line) {
+        if (line.indexOf('data:') === 0) {
+          data += line.slice(5).replace(/^ /, '');
+        }
+      });
+      if (!data) {
+        return;
+      }
+      var event;
+      try {
+        event = JSON.parse(data);
+      } catch (error) {
+        return;
+      }
+      if (event && event.type === 'delta' && typeof event.text === 'string') {
+        onDelta(event.text, reader);
+      } else if (event && (event.type === 'done' || event.type === 'error')) {
+        finalEvent = event;
+      }
+    }
+
+    function pump() {
+      return reader.read().then(function (result) {
+        if (result.done) {
+          buffer += decoder.decode();
+          if (buffer.trim()) {
+            handleBlock(buffer);
+          }
+          return finalEvent;
+        }
+        buffer += decoder.decode(result.value, { stream: true }).replace(/\r\n/g, '\n');
+        var end;
+        while ((end = buffer.indexOf('\n\n')) !== -1) {
+          handleBlock(buffer.slice(0, end));
+          buffer = buffer.slice(end + 2);
+        }
+        return pump();
+      });
+    }
+
+    return pump();
+  }
+
+  // Shows the text received so far. It is re-rendered through the same safe formatter as the final
+  // answer, on a short timer (not animation frames, which a background tab can suspend). Nothing is
+  // announced to assistive technology until the answer is complete.
+  function showStreamedText(pending, received) {
+    var answerElement = pending.answer;
+    if (pending.streaming !== true) {
+      pending.streaming = true;
+      answerElement.className = 'ncli-panel__answer ncli-panel__answer--streaming';
+      answerElement.removeAttribute('role');
+      scrollIntoViewGently(pending.turn);
+    }
+    answerElement.textContent = '';
+    answerElement.appendChild(hiddenLabel(text('answerLabel', 'Answer:')));
+    answerElement.appendChild(renderAnswerMarkdown(received.trim()));
+    var caret = document.createElement('span');
+    caret.className = 'ncli-panel__caret';
+    caret.setAttribute('aria-hidden', 'true');
+    answerElement.appendChild(caret);
+  }
+
+  function queueStreamedText(pending, received) {
+    pending.received = received;
+    if (pending.renderTimer) {
+      return;
+    }
+    pending.renderTimer = window.setTimeout(function () {
+      pending.renderTimer = 0;
+      if (pending.turn.isConnected) {
+        showStreamedText(pending, pending.received);
+      }
+    }, 70);
+  }
+
   function completeTurn(pending, answer, links, cached) {
     var answerElement = pending.answer;
+    if (pending.renderTimer) {
+      window.clearTimeout(pending.renderTimer);
+      pending.renderTimer = 0;
+    }
     answerElement.className = 'ncli-panel__answer';
     answerElement.removeAttribute('role');
     answerElement.textContent = '';
@@ -502,7 +593,10 @@
     var pending = addPendingTurn(panel, question);
     textarea.value = '';
     var profile = form.getAttribute('data-ncli-profile') || '';
-    var headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    // A browser that can read a response as it arrives asks for a stream; the route falls back to a
+    // single JSON answer whenever it cannot or need not stream (an error, or a reused answer).
+    var canStream = typeof window.TextDecoder === 'function' && typeof window.ReadableStream === 'function';
+    var headers = { 'Content-Type': 'application/json', 'Accept': canStream ? 'text/event-stream, application/json' : 'application/json' };
     if (profile && window.NCLI_CORE_CHAT.nonce) {
       // Only named profiles can depend on who is signed in; the default panel never sends it.
       headers['X-WP-Nonce'] = window.NCLI_CORE_CHAT.nonce;
@@ -513,6 +607,19 @@
       headers: headers,
       body: JSON.stringify(conversationPayload(question, conversationId(panel), profile))
     }).then(function (response) {
+      var type = response.headers && response.headers.get ? response.headers.get('Content-Type') || '' : '';
+      if (canStream && response.body && type.indexOf('text/event-stream') !== -1) {
+        var received = '';
+        return readEventStream(response, function (piece, reader) {
+          if (!pending || !pending.turn.isConnected) {
+            // The conversation was reset while the answer was being written.
+            reader.cancel();
+            return;
+          }
+          received += piece;
+          queueStreamedText(pending, received);
+        });
+      }
       return response.json();
     }).then(function (payload) {
       var detached = pending && !pending.turn.isConnected;

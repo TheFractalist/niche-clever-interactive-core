@@ -12,6 +12,7 @@ use NicheCleverInteractive\Core\Budget\BudgetGate;
 use NicheCleverInteractive\Core\Budget\ClientScopeResolver;
 use NicheCleverInteractive\Core\AI\Transport\RequestOptions;
 use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
+use NicheCleverInteractive\Core\AI\Transport\StreamingResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\Readiness;
@@ -58,8 +59,10 @@ final class ChatService
     /**
      * @param mixed $request
      * @param array<string, mixed> $server Request environment; used only to give an installed extension in-memory request details.
+     * @param (callable(string): void)|null $onText When given and the transport can stream, receives display text as the provider
+     *        writes it. It never changes the outcome: the answer is still validated, cached and recorded only once complete.
      */
-    public function handle($request, CoreSettings $settings, array $server = []): ChatOutcome
+    public function handle($request, CoreSettings $settings, array $server = [], ?callable $onText = null): ChatOutcome
     {
         if (is_array($request) && is_string($request['question'] ?? null) && $this->policy->isRefused($request['question'])) {
             return ChatOutcome::failure('policy_refusal');
@@ -133,7 +136,7 @@ final class ChatService
 
         $started = microtime(true);
         try {
-            $result = $this->transport->respond(new TransportRequest(
+            $transportRequest = new TransportRequest(
                 $validated['question'],
                 $this->policy->effectiveInstructions($profile->instructions(), $profile->responsePreset(), $facts, $withContext),
                 $profile->responsePreset(),
@@ -142,7 +145,10 @@ final class ChatService
                 $profile->vectorStoreReference(),
                 $profile->options(),
                 $earlier
-            ));
+            );
+            $result = $onText !== null && $this->transport instanceof StreamingResponseTransport
+                ? $this->transport->respondStreaming($transportRequest, $onText)
+                : $this->transport->respond($transportRequest);
         } catch (\Throwable $exception) {
             // A request may already have reached a provider; retain the reservation
             // and do not retry automatically when that outcome cannot be proved.

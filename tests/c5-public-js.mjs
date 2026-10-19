@@ -86,6 +86,35 @@ assert(source.includes('isConnected'), 'A reset during a request must not resurr
 }
 
 
+// Behavioural check of the event-stream reader: events split across chunks, CRLF, and a missing final event.
+{
+  const start = source.indexOf('function readEventStream');
+  const end = source.indexOf('function showStreamedText');
+  const read = new Function('window', source.slice(start, end) + '; return readEventStream;')({ TextDecoder });
+  const respond = (text, size) => {
+    const bytes = new TextEncoder().encode(text);
+    let at = 0;
+    return { body: { getReader: () => ({ cancel() {}, read: async () => (at >= bytes.length ? { done: true } : { done: false, value: bytes.slice(at, (at += size)) }) }) } };
+  };
+  const events = 'data: {"type":"delta","text":"Hel"}\n\ndata: {"type":"delta","text":"lo \u00e9"}\n\ndata: {"type":"done","ok":true,"answer":"Hello \u00e9."}\n\n';
+  for (const size of [1, 3, 11, 1000]) {
+    const seen = [];
+    const done = await read(respond(events, size), (t) => seen.push(t));
+    assert(seen.join('') === 'Hello \u00e9' && done && done.type === 'done' && done.answer === 'Hello \u00e9.', 'Stream events split at ' + size + ' bytes (including multi-byte text) are reassembled exactly.');
+  }
+  const crlf = await read(respond(events.replace(/\n/g, '\r\n'), 4), () => {});
+  assert(crlf && crlf.type === 'done', 'CRLF-framed events are read.');
+  const errored = await read(respond('data: {"type":"delta","text":"a"}\n\ndata: {"type":"error","ok":false,"error":{"code":"provider_failure"}}\n\n', 5), () => {});
+  assert(errored && errored.type === 'error' && errored.ok === false, 'A final error event is returned.');
+  const none = await read(respond('data: {"type":"delta","text":"cut off"}\n\n', 7), () => {});
+  assert(none === null, 'A stream that ends without a final event returns null, which the panel treats as a failure.');
+  const unfinished = await read(respond('data: {"type":"done","ok":true,"answer":"No blank line"}', 6), () => {});
+  assert(unfinished && unfinished.answer === 'No blank line', 'A final event without a trailing blank line is still read.');
+  assert(source.includes("'Accept': canStream ? 'text/event-stream, application/json' : 'application/json'") && source.includes("indexOf('text/event-stream')"), 'The panel asks for a stream only where it can read one and falls back to JSON.');
+  assert(source.includes('setTimeout(function () {') && !/requestAnimationFrame/.test(source), 'Progressive rendering uses timers, not animation frames that a background tab can suspend.');
+}
+
+
 // Behavioural check of the documented page events, run against a minimal DOM.
 {
   const handlers = {};

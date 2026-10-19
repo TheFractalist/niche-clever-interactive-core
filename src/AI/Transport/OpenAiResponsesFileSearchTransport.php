@@ -11,7 +11,7 @@ use NicheCleverInteractive\Core\Api\V1\Value\EvidenceCitationV1;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use RuntimeException;
 
-final class OpenAiResponsesFileSearchTransport implements ResponseTransport
+final class OpenAiResponsesFileSearchTransport implements StreamingResponseTransport
 {
     private const RESPONSES_URL = 'https://api.openai.com/v1/responses';
 
@@ -58,6 +58,74 @@ final class OpenAiResponsesFileSearchTransport implements ResponseTransport
         }
 
         return $this->toTransportResult($payload, $request);
+    }
+
+    /**
+     * Same request and the same final validation as `respond()`, but the provider's event stream is
+     * read as it arrives so the caller can show text early. Only the provider's completed response
+     * becomes the result; the streamed text is display-only. Without a streaming-capable HTTP
+     * client this simply behaves like `respond()` and reports no early text.
+     *
+     * @param callable(string): void $onText
+     */
+    public function respondStreaming(TransportRequest $request, callable $onText): TransportResult
+    {
+        if (!$this->http instanceof StreamingResponsesHttpClient) {
+            return $this->respond($request);
+        }
+
+        $key = $this->secrets->forProvider();
+        $vectorStore = $request->vectorStoreReference();
+        if ($key === null || preg_match('/^vs_[A-Za-z0-9_-]{6,}$/', $vectorStore) !== 1) {
+            throw new ProviderFailure(ProviderFailure::NOT_CONFIGURED); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
+        }
+
+        try {
+            $body = json_encode(self::requestPayloadFor($request) + ['stream' => true], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        } catch (JsonException $exception) {
+            throw new ProviderFailure(ProviderFailure::NOT_CONFIGURED); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
+        }
+
+        $reader = new ResponsesStreamReader($onText);
+        $response = $this->http->postStream(self::RESPONSES_URL, [
+            'Authorization' => 'Bearer ' . $key,
+            'Content-Type' => 'application/json',
+            'Accept' => 'text/event-stream',
+        ], $body, $request->options()->timeoutSeconds(), static function (string $chunk) use ($reader): void {
+            $reader->feed($chunk);
+        });
+
+        if ($response->statusCode() < 200 || $response->statusCode() >= 300) {
+            throw ProviderFailure::fromHttpStatus($response->statusCode()); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
+        }
+
+        $reader->finish();
+        $payload = $reader->completedResponse();
+        if ($payload === null) {
+            // Either the stream carried no completed response, or the provider reported a failure in it.
+            // A client that could not stream returns the whole body instead, which is a normal response.
+            $payload = self::decodeWholeResponse($response->body());
+        }
+        if ($payload === null || $reader->failed() && $reader->completedResponse() === null) {
+            throw new ProviderFailure(ProviderFailure::INCOMPLETE_RESPONSE); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is a closed internal reason code; it is caught and never printed.
+        }
+
+        return $this->toTransportResult($payload, $request);
+    }
+
+    /** @return array<string, mixed>|null */
+    private static function decodeWholeResponse(string $body): ?array
+    {
+        if ($body === '') {
+            return null;
+        }
+        try {
+            $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            return null;
+        }
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     /** @return array<string, mixed> */

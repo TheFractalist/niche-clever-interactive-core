@@ -10,10 +10,14 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 final class ChatRoute
 {
     private ChatService $chat;
+    /** @var (callable(): EventStream)|null */
+    private $streams;
 
-    public function __construct(ChatService $chat)
+    /** @param (callable(): EventStream)|null $streams Supplies the event stream; tests replace it. */
+    public function __construct(ChatService $chat, ?callable $streams = null)
     {
         $this->chat = $chat;
+        $this->streams = $streams;
     }
 
     public function register(): void
@@ -36,14 +40,49 @@ final class ChatRoute
     {
         $body = is_object($request) && method_exists($request, 'get_json_params') ? $request->get_json_params() : null;
         $settings = $this->loadSettings();
-        $outcome = $this->chat->handle($body, $settings, is_array($_SERVER ?? null) ? $_SERVER : []);
-        $status = $this->statusFor($outcome->errorCode());
+        $server = is_array($_SERVER ?? null) ? $_SERVER : [];
 
+        // A browser that can read a stream asks for one. Anything else gets the ordinary JSON answer.
+        $stream = $this->wantsStream($request, $server) ? ($this->streams !== null ? ($this->streams)() : new EventStream()) : null;
+        $onText = $stream === null ? null : static function (string $text) use ($stream): void {
+            $stream->send(['type' => 'delta', 'text' => $text]);
+        };
+
+        $outcome = $this->chat->handle($body, $settings, $server, $onText);
+
+        if ($stream !== null && $stream->hasBegun()) {
+            // Text has already been sent, so the final event carries the complete validated answer (or the
+            // public error) and the browser replaces what it showed. WordPress must not add a second body.
+            $stream->send(['type' => $outcome->isSuccess() ? 'done' : 'error'] + $outcome->payload());
+            $stream->end();
+
+            return null;
+        }
+
+        $status = $this->statusFor($outcome->errorCode());
         if (class_exists('WP_REST_Response')) {
             return new \WP_REST_Response($outcome->payload(), $status);
         }
 
         return $outcome->payload();
+    }
+
+    /**
+     * @param mixed $request
+     * @param array<string, mixed> $server
+     */
+    private function wantsStream($request, array $server): bool
+    {
+        $accept = '';
+        if (is_object($request) && method_exists($request, 'get_header')) {
+            $header = $request->get_header('accept');
+            $accept = is_string($header) ? $header : '';
+        }
+        if ($accept === '' && is_string($server['HTTP_ACCEPT'] ?? null)) {
+            $accept = $server['HTTP_ACCEPT'];
+        }
+
+        return stripos($accept, 'text/event-stream') !== false;
     }
 
     private function loadSettings(): CoreSettings

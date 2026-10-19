@@ -65,3 +65,6 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__working-dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes ncli-working { 0%, 80%, 100% { opacity: .3; transform: scale(.85); } 40% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .ncli-panel__working-dots span { animation: none; opacity: .65; } }
+.ncli-panel__caret { display: inline-block; width: .5ch; height: 1em; margin-left: 2px; vertical-align: text-bottom; background: currentColor; opacity: .55; animation: ncli-caret 1s steps(2, start) infinite; }
+@keyframes ncli-caret { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .ncli-panel__caret { animation: none; } }
