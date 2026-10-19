@@ -268,7 +268,7 @@ final class ExtensionScreens
 
         return wp_kses($markup, [
             'a' => ['class' => true, 'href' => true, 'target' => true, 'rel' => true],
-            'button' => ['class' => true, 'type' => true, 'name' => true, 'value' => true],
+            'button' => ['aria-controls' => true, 'aria-expanded' => true, 'aria-label' => true, 'class' => true, 'type' => true, 'name' => true, 'value' => true],
             'code' => ['class' => true],
             'div' => ['class' => true, 'id' => true, 'role' => true],
             'em' => [],
@@ -282,7 +282,7 @@ final class ExtensionScreens
             'option' => ['selected' => true, 'value' => true],
             'p' => ['class' => true],
             'select' => ['class' => true, 'id' => true, 'name' => true],
-            'span' => ['aria-hidden' => true, 'class' => true, 'id' => true],
+            'span' => ['aria-hidden' => true, 'class' => true, 'hidden' => true, 'id' => true, 'role' => true],
             'strong' => ['class' => true],
             'table' => ['class' => true],
             'tbody' => [],
