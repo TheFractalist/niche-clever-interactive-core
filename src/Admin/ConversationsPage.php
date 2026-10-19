@@ -69,6 +69,10 @@ final class ConversationsPage
         }
 
         wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
+        // The help "?" notes on this page, including the governance tab an extension hosts, need the same script as Settings.
+        if (function_exists('wp_enqueue_script')) {
+            wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
+        }
     }
 
     public function render(): void

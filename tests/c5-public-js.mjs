@@ -13,7 +13,7 @@ assert(!source.includes('innerHTML'), 'The transcript must not insert public val
 assert(source.includes('function renderAnswerMarkdown'), 'The public panel must provide its bounded answer formatter.');
 assert(source.includes('answerElement.appendChild(renderAnswerMarkdown(answer))'), 'Answers must be rendered through the bounded formatter.');
 assert(source.includes("document.createElement('strong')") && source.includes("document.createElement('em')"), 'The formatter must support basic emphasis without parsing HTML.');
-assert(source.includes("document.createElement(unordered ? 'ul' : 'ol')"), 'The formatter must support ordered and unordered Markdown lists.');
+assert(source.includes("document.createElement(ordered ? 'ol' : 'ul')") && source.includes('function parseList'), 'The formatter must support ordered, unordered and nested Markdown lists.');
 assert((source.match(/document\.createElement\('a'\)/g) || []).length === 1 && source.includes('function renderApprovedLinks'), 'The only anchor the panel creates is an owner-approved link, built in one function.');
 assert(source.includes('renderApprovedLinks(links)') && source.includes('payload.links') && !source.includes('payload.citations'), 'Only the links array of the response is rendered, never citations.');
 assert(source.includes("/^https:\\/\\/[^\\s\"<>]+$/i") && source.includes("anchor.rel = 'noopener noreferrer'") && source.includes('anchor.textContent = link.title'), 'Links must be https only, open with noopener, and carry their title as text.');
@@ -54,6 +54,35 @@ assert(source.includes('isConnected'), 'A reset during a request must not resurr
   assert(anchors(many).length === 5, 'At most five links are shown.');
   const mixed = render([{ title: '<img src=x onerror=1>', url: 'https://example.com/ok' }, { title: 'bad', url: 'ftp://example.com' }]);
   assert(anchors(mixed).length === 1 && anchors(mixed)[0].textContent === '<img src=x onerror=1>', 'A markup-looking title is kept as inert text and the unsafe sibling is dropped.');
+}
+
+
+// Behavioural check of the answer formatter against a minimal DOM that serialises to HTML.
+{
+  const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const make = (tag) => ({ tag, children: [], attrs: {}, className: '', appendChild(c) { this.children.push(c); return c; }, setAttribute(k, v) { this.attrs[k] = v; },
+    set textContent(v) { this.children = [{ text: String(v) }]; },
+    html() { const a = (this.className ? ' class="' + this.className + '"' : '') + Object.entries(this.attrs).map(([k, v]) => ' ' + k + '="' + v + '"').join(''); return '<' + this.tag + a + '>' + this.children.map((c) => (c.text !== undefined ? esc(c.text) : c.html())).join('') + '</' + this.tag + '>'; } });
+  const doc = { createElement: make, createTextNode: (t) => ({ text: t }), createDocumentFragment: () => make('#') };
+  const start = source.indexOf('function appendInlineText');
+  const end = source.indexOf('function hiddenLabel');
+  const render = new Function('document', source.slice(start, end) + '; return renderAnswerMarkdown;')(doc);
+  const html = (md) => render(md).children.map((c) => c.html()).join('');
+
+  assert(html('1. One\n2. Two\n3. Three') === '<ol><li>One</li><li>Two</li><li>Three</li></ol>', 'A plain numbered list stays one ordered list.');
+  assert(html('1. One\n\n2. Two\n\n3. Three') === '<ol><li>One</li><li>Two</li><li>Three</li></ol>', 'Blank lines between numbered items must not restart the numbering.');
+  assert(html('1. One\n   - a\n   - b\n2. Two\n   - c\n3. Three') === '<ol><li>One<ul><li>a</li><li>b</li></ul></li><li>Two<ul><li>c</li></ul></li><li>Three</li></ol>', 'Bullets nested under numbered items stay inside one ordered list.');
+  assert(html('- a\n  1. x\n  2. y\n- b') === '<ul><li>a<ol><li>x</li><li>y</li></ol></li><li>b</li></ul>', 'Numbered items nested under a bullet render as a nested ordered list.');
+  assert(html('3. Three\n4. Four') === '<ol start="3"><li>Three</li><li>Four</li></ol>', 'A list that starts above 1 keeps its first number.');
+  assert(html('- a\n- b\n\n1. x') === '<ul><li>a</li><li>b</li></ul><ol><li>x</li></ol>', 'A bulleted list followed by a numbered list stays two lists.');
+  assert(html('1) One\n2) Two') === '<ol><li>One</li><li>Two</li></ol>', 'Parenthesis-numbered lists are ordered lists.');
+  assert(html('- a\n  continued text\n- b') === '<ul><li>a continued text</li><li>b</li></ul>', 'An indented continuation line joins its item.');
+  assert(html('Intro\n\n- a\n\nOutro') === '<p>Intro</p><ul><li>a</li></ul><p>Outro</p>', 'A list ends at the next paragraph.');
+  assert(html('**Early life**') === '<p class="ncli-panel__answer-label"><strong>Early life</strong></p>', 'A line that is only a bold phrase is marked as a section label.');
+  assert(html('**Bold** then text') === '<p><strong>Bold</strong> then text</p>', 'Inline bold in a sentence is not a label.');
+  assert(html('<script>alert(1)</script>') === '<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>', 'Markup in an answer stays inert text.');
+  const deep = html('- 1\n  - 2\n    - 3\n      - 4\n        - 5\n          - 6');
+  assert((deep.match(/<ul>/g) || []).length <= 5 && deep.includes('<li>6</li>'), 'Very deep nesting is capped and loses no text.');
 }
 
 

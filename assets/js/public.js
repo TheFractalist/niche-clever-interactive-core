@@ -51,11 +51,90 @@
     }
   }
 
+  // One list item: indentation, a bullet or a number with "." or ")", then the item text.
+  var LIST_ITEM = /^(\s*)([-*+]|\d{1,9}[.)])\s+(.*)$/;
+  var MAX_LIST_DEPTH = 4;
+
+  function indentWidth(value) {
+    return value.replace(/\t/g, '    ').length;
+  }
+
+  // Builds one list, with any more deeply indented items nested inside the item they follow.
+  // Items of one list share a kind; blank lines between items do not start a new list, so a
+  // numbered list keeps counting. Anything not an item (or a different kind at the same level)
+  // ends the list. Nesting stops at MAX_LIST_DEPTH, where deeper items stay in the current list.
+  function parseList(lines, start, depth) {
+    var first = LIST_ITEM.exec(lines[start]);
+    var base = indentWidth(first[1]);
+    var ordered = /\d/.test(first[2].charAt(0));
+    var list = document.createElement(ordered ? 'ol' : 'ul');
+    if (ordered) {
+      var startNumber = parseInt(first[2], 10);
+      if (startNumber > 1 && startNumber < 1000000) {
+        list.setAttribute('start', String(startNumber));
+      }
+    }
+    var index = start;
+    var item = null;
+
+    while (index < lines.length) {
+      var line = lines[index];
+      if (/^\s*$/.test(line)) {
+        var ahead = index;
+        while (ahead < lines.length && /^\s*$/.test(lines[ahead])) {
+          ahead += 1;
+        }
+        var upcoming = ahead < lines.length ? LIST_ITEM.exec(lines[ahead]) : null;
+        if (!upcoming || indentWidth(upcoming[1]) < base) {
+          break;
+        }
+        index = ahead;
+        continue;
+      }
+
+      var match = LIST_ITEM.exec(line);
+      if (!match) {
+        // An indented continuation line belongs to the current item; anything else ends the list.
+        if (item && indentWidth(/^\s*/.exec(line)[0]) > base && !isBlockStart(line)) {
+          item.appendChild(document.createTextNode(' '));
+          appendInlineText(item, line.trim());
+          index += 1;
+          continue;
+        }
+        break;
+      }
+
+      var width = indentWidth(match[1]);
+      if (width < base) {
+        break;
+      }
+      if (width >= base + 2 && item && depth < MAX_LIST_DEPTH) {
+        var nested = parseList(lines, index, depth + 1);
+        item.appendChild(nested.list);
+        index = nested.next;
+        continue;
+      }
+      if (/\d/.test(match[2].charAt(0)) !== ordered) {
+        break;
+      }
+      item = document.createElement('li');
+      appendInlineText(item, match[3]);
+      list.appendChild(item);
+      index += 1;
+    }
+
+    return { list: list, next: index };
+  }
+
+  // A line that is only a bold phrase is a section label the author meant as a heading.
+  function isLabelLine(value) {
+    return /^\s*(\*\*|__)[^*_\n]{1,120}\1\s*:?\s*$/.test(value);
+  }
+
   function isBlockStart(line) {
     return /^#{1,6}\s+/.test(line)
       || /^```/.test(line)
-      || /^\s*[-*+]\s+/.test(line)
-      || /^\s*\d+\.\s+/.test(line)
+      || LIST_ITEM.test(line)
       || /^>\s?/.test(line)
       || /^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line);
   }
@@ -106,22 +185,10 @@
         continue;
       }
 
-      var unordered = /^\s*[-*+]\s+(.+)$/.exec(line);
-      var ordered = /^\s*\d+\.\s+(.+)$/.exec(line);
-      if (unordered || ordered) {
-        var list = document.createElement(unordered ? 'ul' : 'ol');
-        var expression = unordered ? /^\s*[-*+]\s+(.+)$/ : /^\s*\d+\.\s+(.+)$/;
-        while (index < lines.length) {
-          var item = expression.exec(lines[index]);
-          if (!item) {
-            break;
-          }
-          var listItem = document.createElement('li');
-          appendInlineText(listItem, item[1]);
-          list.appendChild(listItem);
-          index += 1;
-        }
-        fragment.appendChild(list);
+      if (LIST_ITEM.test(line)) {
+        var parsed = parseList(lines, index, 0);
+        fragment.appendChild(parsed.list);
+        index = parsed.next;
         continue;
       }
 
@@ -146,6 +213,9 @@
         index += 1;
       }
       var paragraph = document.createElement('p');
+      if (paragraphLines.length === 1 && isLabelLine(paragraphLines[0])) {
+        paragraph.className = 'ncli-panel__answer-label';
+      }
       appendInlineText(paragraph, paragraphLines.join(' '));
       fragment.appendChild(paragraph);
     }
@@ -183,7 +253,20 @@
     questionElement.appendChild(document.createTextNode(question));
     var answerElement = document.createElement('div');
     answerElement.className = 'ncli-panel__answer ncli-panel__answer--pending';
-    answerElement.textContent = text('findingAnswer', 'Finding a verified answer…');
+    answerElement.setAttribute('role', 'status');
+    var working = document.createElement('span');
+    working.className = 'ncli-panel__working';
+    var dots = document.createElement('span');
+    dots.className = 'ncli-panel__working-dots';
+    dots.setAttribute('aria-hidden', 'true');
+    for (var dot = 0; dot < 3; dot += 1) {
+      dots.appendChild(document.createElement('span'));
+    }
+    var workingLabel = document.createElement('span');
+    workingLabel.textContent = text('findingAnswer', 'Working…');
+    working.appendChild(dots);
+    working.appendChild(workingLabel);
+    answerElement.appendChild(working);
     turn.appendChild(questionElement);
     turn.appendChild(answerElement);
     transcript.appendChild(turn);
@@ -247,6 +330,7 @@
   function completeTurn(pending, answer, links, cached) {
     var answerElement = pending.answer;
     answerElement.className = 'ncli-panel__answer';
+    answerElement.removeAttribute('role');
     answerElement.textContent = '';
     answerElement.appendChild(hiddenLabel(text('answerLabel', 'Answer:')));
     answerElement.appendChild(renderAnswerMarkdown(answer));

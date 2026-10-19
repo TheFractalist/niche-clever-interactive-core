@@ -1,26 +1,42 @@
 (function () {
   'use strict';
 
+  // At most one help note is open at a time. Hover and keyboard focus show a note briefly; a click
+  // "pins" it so it stays until the same button is clicked again, another note opens, the viewer
+  // clicks elsewhere or presses Escape.
   function setOpen(button, open) {
     var id = button.getAttribute('aria-controls');
     var help = id ? document.getElementById(id) : null;
     if (!help) {
       return;
     }
+    if (open) {
+      closeAll(button);
+    } else {
+      button.removeAttribute('data-ncli-pinned');
+    }
     button.setAttribute('aria-expanded', open ? 'true' : 'false');
     help.hidden = !open;
   }
 
+  function closeAll(except) {
+    Array.prototype.forEach.call(document.querySelectorAll('.ncli-admin__help-toggle[aria-expanded="true"]'), function (other) {
+      if (other !== except) {
+        setOpen(other, false);
+      }
+    });
+  }
+
   document.addEventListener('focusin', function (event) {
     var button = event.target;
-    if (button && button.matches('.ncli-admin__help-toggle')) {
+    if (button && button.matches && button.matches('.ncli-admin__help-toggle')) {
       setOpen(button, true);
     }
   });
 
   document.addEventListener('focusout', function (event) {
     var button = event.target;
-    if (!button || !button.matches('.ncli-admin__help-toggle')) {
+    if (!button || !button.matches || !button.matches('.ncli-admin__help-toggle')) {
       return;
     }
     window.setTimeout(function () {
@@ -32,12 +48,22 @@
   });
 
   document.addEventListener('click', function (event) {
-    var button = event.target;
-    if (!button || !button.matches('.ncli-admin__help-toggle')) {
+    var target = event.target;
+    var button = target && target.closest ? target.closest('.ncli-admin__help-toggle') : null;
+    if (!button) {
+      // A click anywhere outside a help control closes every open note.
+      if (!(target && target.closest && target.closest('.ncli-admin__field-help'))) {
+        closeAll(null);
+      }
       return;
     }
     event.preventDefault();
+    if (button.getAttribute('data-ncli-pinned') === 'true') {
+      setOpen(button, false);
+      return;
+    }
     setOpen(button, true);
+    button.setAttribute('data-ncli-pinned', 'true');
   });
 
   // Choosing a colour means the owner no longer wants the panel style's own accent.
@@ -75,7 +101,7 @@
     }
     closeTimers.set(button, window.setTimeout(function () {
       var wrapper = button.closest('.ncli-admin__field-label');
-      if (wrapper && !wrapper.contains(document.activeElement)) {
+      if (wrapper && !wrapper.contains(document.activeElement) && button.getAttribute('data-ncli-pinned') !== 'true') {
         setOpen(button, false);
       }
     }, 200));
@@ -119,9 +145,6 @@
     if (event.key !== 'Escape') {
       return;
     }
-    var button = document.activeElement;
-    if (button && button.matches('.ncli-admin__help-toggle')) {
-      setOpen(button, false);
-    }
+    closeAll(null);
   });
 }());

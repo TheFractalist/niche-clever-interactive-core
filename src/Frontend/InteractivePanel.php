@@ -56,7 +56,7 @@ final class InteractivePanel
                     'conversationReset' => __('Conversation reset for this browser session.', 'niche-clever-interactive'),
                     'unavailable' => $this->load()->unavailableMessage(),
                     'invalidQuestion' => __('Please enter a valid question.', 'niche-clever-interactive'),
-                    'findingAnswer' => __('Finding a verified answer…', 'niche-clever-interactive'),
+                    'findingAnswer' => __('Working…', 'niche-clever-interactive'),
                     'temporaryFailure' => __('This interactive service is temporarily unavailable.', 'niche-clever-interactive'),
                     'answerAdded' => __('Verified answer added to this session.', 'niche-clever-interactive'),
                     'questionLabel' => __('Question:', 'niche-clever-interactive'),
