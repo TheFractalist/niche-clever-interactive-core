@@ -4,7 +4,7 @@ Tags: question and answer, openai, file search, knowledge base, interactive
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: trunk
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,10 @@ NCI Premium is a separately supplied edition from Niche Clever. Details, purchas
 4. Appearance & Limits tab: panel style and width, accent colour, optional credit line and daily request limits.
 
 == Changelog ==
+
+= 1.0.0 =
+
+* First public release of Niche Clever Interactive. Adds a link to the NCI Premium page in the Help Centre and the settings footer, an External services section in the readme and a Plugin URI.
 
 = 1.0.0-rc.10 =
 

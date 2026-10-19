@@ -1,7 +1,7 @@
 <?php
 /**
  * Verifies an installed Niche Clever Interactive plugin folder against the exact
- * rc.10 file set (111 files, from the working tree when this manifest was generated; regenerate it after any source change). Read-only: it changes nothing.
+ * 1.0.0 file set (111 files, from the working tree when this manifest was generated; regenerate it after any source change). Read-only: it changes nothing.
  *
  * Usage:  C:\xampp\php\php.exe verify-install.php "C:\xampp\htdocs\Test-Site\wp-content\plugins\niche-clever-interactive"
  *
@@ -13,7 +13,7 @@ ea4c9bc39487f449f8c7c02fc9102ffc71a72ca7a6246e61ed229bdddb73c792  CHANGELOG.md
 edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6  COPYING
 d4c4bbd2b2f0c85952f4b1618e3a114465f4b566afc1ebdef465030c56696f94  LICENSE
 bd44566b0f64ac5d7bb0fee23cc14434e88a1f26bdac157809393fa6413c5533  README.md
-e26e5f4a1f1272e85ca1c447626d5d1b528d144d64ae1e9d88d06e721491cfea  assets/css/admin.css
+1f34b50685b4848f8fb5cec4559fe180988f48ab9e2ed059e009ca28cf9c33bd  assets/css/admin.css
 59ae9562daa8c748ecd58e6ef615b5fa4beb30cf3458030b6c6e9961c386e91d  assets/css/public.css
 8cce4f63d628a7da81b6fa617788b9e552a1021db06a27c75cf4e67252ef2a89  assets/images/ncli-admin-banner.png
 e83a3f4933240d02f3d8eb88faecc9da92665cf1a6243e461b74f66c36beef8c  assets/images/ncli-logo.png
@@ -21,8 +21,8 @@ f500efa37593f000c5613c1bfb0e026ce235bc8bb8373cf5a083d3436cb46c73  assets/js/admi
 36381347996a415a5560b9307ea2b1a599cd04a805b667bbe93db531fa29c01f  assets/js/public.js
 4ebc0b930e42138140cb67d796f0990511035bdb39c33f56abc9ba4fe6936630  blocks/interactive/block.json
 131a2e302ffff963df29725865875d481240eb7e111bda63a4f729163587c36a  blocks/interactive/render.php
-d6ab6603bbe6381a518944b5f0223cb52b28f70661633f688a65f3c2d83b80fd  niche-clever-interactive-core.php
-8955e49803da756373b1380ccad8a80a2bd12b6c149fb654ca57fa9098c60b2f  readme.txt
+993cb7c1ab4bc11c4174522f33d3ecdbfece10fe64f754a1080584d478619e89  niche-clever-interactive-core.php
+3e2ab82bc227f9eee900a7d36711028fb04259e05f811999569c43a2cf64484e  readme.txt
 c0937aa1136071699672bc2a08a5edbbeab1c3fdbc8698a52c37cb84370b427a  src/AI/ChatOutcome.php
 667d10597f2648dc838b36e98e25645329e17ec3c10b27ebeef14631caac1614  src/AI/ChatService.php
 ec2e504746d3cad5e193d2475e7f3f24f140a2f3340bd2782d89f3cc55cd2260  src/AI/ConnectionTestResult.php
@@ -40,11 +40,11 @@ a3c89ffd15e1a0b0afe65061b75a9399565f231725ef2ca0c340b8a0336f5699  src/AI/Transpo
 0a651d6abdfeac9c3e0de0c51e3637484301896c7085702521d50a23b4e9b1fc  src/AI/Transport/WordPressResponsesHttpClient.php
 0c9ed90ebf4ab13fff6ecfd8b28cad760de8d6d26f844d2884178e1eb394cc00  src/Admin/ConversationsPage.php
 65ffbbdb74a14aa29ff442a09c165642c3cb891accf6c02262659a34a74e9728  src/Admin/ExtensionScreens.php
-c1b3c4f1af090e68ffa277f6f92ba2926e667ef2e63b53bbdd9ca232ebd8947b  src/Admin/HelpRenderer.php
+b8fa9f3b51db752df98da061c1a9eb506654c621542b85dd6c4104b119c560a2  src/Admin/HelpRenderer.php
 8371ac0a17b5ca01904aad135b0c042c5400b2021d0989f447cea4a2ca9ee64a  src/Admin/ProfileConnectionTest.php
 351ce70474ec7d91d70531d896c439f530b1a9fe7f507d142a735f3f8a57ce88  src/Admin/ProfileFieldRenderer.php
 dfd08a32d794f37744a1fba63784e83d10f25ea769f7b67a2a9215cd5e8ab25d  src/Admin/ProfileHub.php
-9e49841711c56f98b6a076123f08dcb898595281f305fd50126da804c8a57b11  src/Admin/SettingsPage.php
+a31de0ad39651bbdbdf23a852579f79e23ef03058f6931afe38a32b64e64bcc9  src/Admin/SettingsPage.php
 b6e1c0d878c9da4b38f5942986ebb0b01a2f983c05de05969c40300fee66d2a1  src/Admin/SiteSettingsPage.php
 147abb51fd541fd7f964d61dbe5f5c4ca469043796e165bebab77b70e38c223c  src/Api/V1/Contracts/AnswerCacheV1.php
 1bc562a68ef248f9644e1e5b7f06e61a760beb03ec4d2accbe8064fc84ee20aa  src/Api/V1/Contracts/ChronologyProviderV1.php
@@ -168,8 +168,8 @@ foreach (['MISSING' => array_keys($missing), 'DIFFERENT CONTENT' => $different, 
     }
 }
 if ($missing === [] && $different === [] && $extra === []) {
-    echo "\nRESULT: MATCH. This folder is exactly the rc.10 file set (111 files).\n";
+    echo "\nRESULT: MATCH. This folder is exactly the 1.0.0 file set (111 files).\n";
     exit(0);
 }
-echo "\nRESULT: DOES NOT MATCH rc.10.\n";
+echo "\nRESULT: DOES NOT MATCH 1.0.0.\n";
 exit(1);
