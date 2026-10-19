@@ -1,5 +1,25 @@
 # Progress
 
+## 20 October 2026 — Stage 1 (branch `feat/ask-261020-stage1`, local only)
+
+Jacob approved Stage 1 on a post-1.0.1 branch (from `main` at `2650821`; the 1.0.1 submission source is untouched). The plugin version string is deliberately left at 1.0.1 so the connection fingerprint and the local panel are unaffected; a version bump is a separate decision.
+
+**Implemented in source:** (WP-C) `assets/js/public.js` list parser rewritten: nested lists, numbered lists that keep counting across blank lines, start numbers, `)` markers, indented continuation lines, depth cap 4, and bold-only lines marked `ncli-panel__answer-label`; scoped list/label CSS. (WP-S1) waiting text is now "Working…" with three animated dots (reduced-motion safe, `role="status"`), changed in `public.js` and `InteractivePanel.php`; a theme `ask-handoff.js` comment updated. (WP-D) `assets/js/admin.js` help notes: at most one open, a click toggles (pins), outside click and Escape close; `ConversationsPage` and `ExtensionScreens` now enqueue `admin.js` (they loaded the help CSS but not the script).
+
+**Tested:** `tests/c5-public-js.mjs` gains renderer fixtures that FAIL on the previous renderer (blank-line, nested, start-number, continuation and label cases) and pass now, confirming the numbering cause. New `tests/c7-admin-help.mjs` fails on the previous script (notes accumulate, a click never closes) and passes now. Contract, provenance and source-audit suites, PHP lint and `git diff --check` pass.
+
+**Installed locally (nicheclever.test only):** `NCI Core Candidate Artifacts\2026-10-20-stage1\niche-clever-interactive-1.0.1.zip`, SHA-256 `61f5cfcea54c1ce0db67ad3e34f94df9c19aa5777d495d86b71002212086ace0`, 112 files; every installed file matched the ZIP; previous runtime saved at `C:\xampp\backups\Niche-Clever-Test-Site\niche-clever-interactive-pre-stage1-20261020`. Browser check on `/ask/` with a stubbed chat response: "Working…" and dots displayed, then a numbered list with nested bullets rendered 1, 2, 3 with the bold label. No real provider answer was checked because the local daily question allowance was used up by timing tests.
+
+**Not verified:** the Governance help-note behaviour in a real admin browser (the pane was not logged in); why notes looked stuck open in Jacob's screenshot when the script was not loaded on that tab is unexplained. Not deployed, not on live.
+
+**Streaming spike (local, throwaway script, since deleted):** local Apache/PHP passes server-sent events through unbuffered (events arrived 0.5s apart). A streamed OpenAI Responses call through WordPress's HTTP API with an `http_api_curl` write callback works: short answer first text 4.5s vs 8.6s complete; long answer first text 10.0s vs 33.4s complete. File-search completion arrives before any text, so the retrieval gate can hold text back until it. Live-host buffering is untested.
+
+## 19 October 2026 — Production state and website integration notes
+
+Jacob confirmed that Core `1.0.1` is installed and working on the live Niche Clever site (owner-confirmed; not inspected by an agent) alongside website theme `0.7.12` and NCI Premium `1.0.0`. Core was installed unchanged from the 1.0.1 package (SHA-256 `e2848fd04af05c38b610d72a3a0321ccc372995a02af3fc8194fa2b0e9afe91b`); no Core code was changed for the website fixes. This does not alter the WordPress.org review status.
+
+Facts learned that affect Core: (1) the plugin version is part of the connection fingerprint, so installing 1.0.1 over an earlier build leaves the panel disabled (`stale_connection_test`, "not available at the moment") until an administrator runs Test connection; the website runbook must include that step. (2) Core reads only `?ncli_q=<key>` from Premium and no typed-question parameter; the Niche Clever theme hands a typed homepage question to the panel through the documented `ncli:ask` page event. (3) `assets/js/public.js` sends the chat request with `fetch` and no timeout; the website theme wraps that one route with a 60 s abort. A native timeout in Core is a possible later improvement and would be a new version, not part of 1.0.1.
+
 ## 19 October 2026 — WordPress.org 1.0.1 review remediation
 
 `origin/main` was verified unchanged at `9179bc0`, fast-forwarded through the six existing feature commits and the explicit release-metadata/packaging/allowlist/website-handoff commit `bd46e83`, pushed, and checked both through `origin/main` and `git ls-remote`. The review repair `a4c87a68d75c7e378df73d618befe129b38b8ce2` was then fast-forwarded to `main`, pushed, and verified through both `origin/main` and `git ls-remote`. The retained branches are `feat/askfolio-cutover-261018-limits-corpus` and `Totterdown-codex/wporg-review-1-0-1`.
