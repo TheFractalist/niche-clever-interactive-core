@@ -40,12 +40,6 @@ final class EventStream
             // The answer is still validated, recorded and counted if the visitor closes the page.
             ignore_user_abort(true);
         }
-        if (function_exists('set_time_limit')) {
-            @set_time_limit(180); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Hosts may disable the function.
-        }
-        if (function_exists('ini_set')) {
-            @ini_set('zlib.output_compression', '0'); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.PHP.IniSet.Risky -- A compressed stream would be held back until it ended.
-        }
         while (function_exists('ob_get_level') && ob_get_level() > 0) {
             @ob_end_clean(); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Nothing has been sent yet.
         }

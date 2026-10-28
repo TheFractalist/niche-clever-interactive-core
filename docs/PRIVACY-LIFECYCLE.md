@@ -28,7 +28,7 @@ Because visitors can type personal information into a question and no identifier
 
 Activation creates only fresh NCI settings, the NCI schema marker, the prefixed rate-bucket table and the prefixed conversation table, and schedules a daily retention purge. Deactivation preserves all data for recoverability and stops only the scheduled purge. `uninstall.php` deletes nothing by default; if the owner has enabled "Delete data on uninstall" it removes exactly the NCI options, the two NCI tables and the purge event. This Core release has no visitor-record export. Existing AskFolio/WPIP options, transients, constants and tables are neither read nor changed.
 
-These controls do not replace a site's own privacy notice. A later Pro extension, if separately authorised, adds governance (export, retention schedules, scoped erasure) over Core's conversation table; it does not create a second archive.
+These controls do not replace a site's own privacy notice. The separately maintained private NCI Premium companion, if installed and compatible, may add governance (export, retention schedules, scoped erasure) over Core's conversation table; it does not create a second archive. “Pro” in historical records is earlier terminology for that companion.
 
 ## Provider diagnostics
 
@@ -42,4 +42,4 @@ The suggested text is not a legal determination or a replacement for the site ow
 
 ## Request details for an installed extension (CC-12)
 
-When an extension has registered the completed-turn recorder, Core hands it, in memory only, the visitor's network address (under the same trusted-proxy rule as the daily allowance), the browser's user-agent string and an optional browser-held identifier that the extension's own script supplied. Core stores none of this, sets no cookie and reads no browser storage. An extension that keeps any of it must disclose what, why and for how long in its own privacy notice and retention settings. A reused (cached) answer is flagged `cached: true` in the public response; Core displays a note only if an extension supplies its wording.
+When an extension has registered the completed-turn recorder, Core hands it, in memory only, the visitor's network address (under the same trusted-proxy rule as the daily allowance), an optional browser-held identifier that the extension's own script supplied, and a User-Agent only after Core has accepted a scalar string, rejected invalid UTF-8, removed control characters and applied its 512-byte bound. No other server field crosses that seam. Core stores none of this, sets no cookie and reads no browser storage. An extension that keeps any of it must disclose what, why and for how long in its own privacy notice and retention settings. A reused (cached) answer is flagged `cached: true` in the public response; Core displays a note only if an extension supplies its wording.

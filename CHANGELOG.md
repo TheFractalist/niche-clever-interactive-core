@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3 — 28 October 2026
+
+Local WordPress.org recovery candidate; not published, listed, deployed or submitted. Adds a default-on progressive-answer preference, an editable “Receiving response…” processing message and per-profile inherited processing wording. Core retains the public route, provider, allowance and final-validation boundary: it uses WordPress’s documented temporary `http_api_curl` hook only to receive the fixed provider response progressively, and parses the retained completed response once where that hook is unavailable. No retry or duplicate provider request is introduced. The disposable WordPress 6.5/PHP 8.1 fixture now accepts an explicitly hashed separately built NCI Premium archive; its current Premium assertion requests the explicit Exports view rather than assuming the historical default view.
+
+## 1.0.2 — 25 October 2026
+
+Local WordPress.org recovery candidate; not published, listed, deployed or submitted. Core now reduces server state to a bounded request environment before it reaches the chat service or compatible extension recorder seam. Hosted extension markup has one restrictive Core-owned policy at every buffer/output boundary, and broad security-sniff suppressions have been replaced with direct contextual escaping. Deterministic hostile-markup and occurrence-inventory tests cover these boundaries.
+
 ## 1.0.1 — 19 October 2026
 
 Corrects the WordPress.org review findings before resubmission. Fixed strings now use literal NCI gettext calls, administrator request primitives are unslashed and sanitised at a single boundary before capability and nonce validation, and Core sanitises the small administrator markup contract it hosts for an installed extension. The block renderer now uses the conventional direct-access guard. The package metadata names the submitting WordPress.org account as a contributor. This remains a pending review candidate, not an approved directory release.

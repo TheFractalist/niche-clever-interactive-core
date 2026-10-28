@@ -90,7 +90,7 @@ $resolver = new class implements ProfileResolverV1 {
     public function resolve(ProfileIdV1 $profileId): ?ResolvedProfileV1
     {
         return $profileId->value() === 'docs'
-            ? ResolvedProfileV1::configured($profileId, true, 'vs_docs', 'docs-1', '', 'balanced', ['title' => 'Docs'], 'classic', 50)
+            ? ResolvedProfileV1::configured($profileId, true, 'vs_docs', 'docs-1', '', 'balanced', ['title' => 'Docs', 'processing_message' => 'Preparing & checking <Docs>'], 'classic', 50)
             : null;
     }
 };
@@ -116,6 +116,9 @@ $settings = CoreSettings::fromArray([
     'enabled' => true,
     'profile' => ['id' => 'default', 'corpus_version' => 'default-1', 'vector_store_reference' => 'vs_default'],
 ]);
+$assert($settings->progressiveStreaming() && $settings->processingMessage() === CoreSettings::DEFAULT_PROCESSING_MESSAGE, 'Progressive delivery defaults on and the default profile supplies its processing message.');
+$disabledStreaming = CoreSettings::fromArray(['streaming' => ['progressive' => false], 'presentation' => ['processing_message' => '']]);
+$assert(!$disabledStreaming->progressiveStreaming() && $disabledStreaming->processingMessage() === CoreSettings::DEFAULT_PROCESSING_MESSAGE, 'Progressive delivery can be disabled while an empty saved message falls back safely.');
 $settings = $settings->withConnectionTest('passed', (string) ConnectionFingerprint::forSettings($settings, $secrets, $policy, TransportMode::MOCK), '2026-10-16T12:00:00Z');
 $GLOBALS['ncliOptions'] = [CoreSettings::OPTION_NAME => $settings->toArray()];
 function get_option(string $name, $default = false)
@@ -129,9 +132,9 @@ $panel = new InteractivePanel($directory);
 $bare = new InteractivePanel(new ProfileDirectory(new ExtensionRegistryV1(), $records));
 
 $defaultHtml = $panel->renderInteractive([]);
-$assert(str_contains($defaultHtml, 'data-ncli-panel="default"') && str_contains($defaultHtml, '--ncli-q-bg:#fff8dc;--ncli-q-ink:#222222;--ncli-q-rule:#cc9900'), 'The default panel marks itself and gets the colours supplied for it.');
+$assert(str_contains($defaultHtml, 'data-ncli-panel="default"') && str_contains($defaultHtml, 'data-ncli-processing-message="Receiving response…"') && str_contains($defaultHtml, '--ncli-q-bg:#fff8dc;--ncli-q-ink:#222222;--ncli-q-rule:#cc9900'), 'The default panel marks itself, safely exposes its processing message and gets the colours supplied for it.');
 $docsHtml = $panel->renderInteractive(['profile' => 'docs']);
-$assert(str_contains($docsHtml, 'data-ncli-panel="docs"') && str_contains($docsHtml, '--ncli-q-bg:#e8f0ff') && str_contains($docsHtml, '--ncli-a-bg:#fffbe6') && !str_contains($docsHtml, '#cc9900'), 'A named profile gets its own colours, not the default\'s.');
+$assert(str_contains($docsHtml, 'data-ncli-panel="docs"') && str_contains($docsHtml, 'data-ncli-processing-message="Preparing &amp; checking &lt;Docs&gt;"') && str_contains($docsHtml, '--ncli-q-bg:#e8f0ff') && str_contains($docsHtml, '--ncli-a-bg:#fffbe6') && !str_contains($docsHtml, '#cc9900'), 'A named profile gets its own escaped processing message and colours, not the default\'s.');
 $ghost = $panel->renderInteractive(['profile' => 'ghost']);
 $assert(str_contains($ghost, 'data-ncli-panel="unavailable"') && !str_contains($ghost, 'ghost') && !str_contains($ghost, '--ncli-q-'), 'An unresolved profile is marked unavailable, echoes nothing and gets no colours.');
 $plain = $bare->renderInteractive([]);
@@ -156,7 +159,7 @@ foreach (['--ncli-q-bg', '--ncli-q-ink', '--ncli-q-rule', '--ncli-a-bg', '--ncli
     $assert(str_contains($css, 'var(' . $var . ','), "The stylesheet reads $var with a fallback.");
 }
 $js = (string) file_get_contents(dirname(__DIR__) . '/assets/js/public.js');
-$assert(str_contains($js, "'ncli:ask'") && str_contains($js, "'ncli:prefill'"), 'The client listens for the two documented events.');
+$assert(str_contains($js, "'ncli:ask'") && str_contains($js, "'ncli:prefill'") && str_contains($js, 'function processingMessage') && str_contains($js, 'progressiveStreaming !== false'), 'The client listens for documented panel events and respects the owner\'s progressive-delivery preference.');
 $caps = (new ExtensionRegistryV1())->capabilities();
 $assert(in_array('panel_colours', $caps, true) && in_array('panel_events', $caps, true) && in_array('panel_colours', (new ExtensionRegistryV1())->knownSeams(), true), 'The seam and both capabilities are advertised.');
 

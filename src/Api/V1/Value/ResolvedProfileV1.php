@@ -14,6 +14,7 @@ final class ResolvedProfileV1
         'footer_left' => 120,
         'footer_right' => 120,
         'unavailable_message' => 240,
+        'processing_message' => 160,
     ];
 
     private ProfileIdV1 $id;
@@ -43,7 +44,7 @@ final class ResolvedProfileV1
      * the policy and corpus fingerprints itself, so the two stored below are placeholders that
      * Core never reads for a configured profile. Every field is bounded here and again by Core.
      *
-     * @param array<string, string> $presentation Any subset of title, headline, introduction, placeholder, footer_left, footer_right, unavailable_message.
+     * @param array<string, string> $presentation Any subset of title, headline, introduction, placeholder, footer_left, footer_right, unavailable_message, processing_message.
      * @param array<string, mixed>|null $model All of id, reasoning_effort, retrieval_depth, max_output_tokens, timeout_seconds, or null to use the default profile's model settings. Core checks the values against its model catalogue when it builds the profile and treats any other value as unavailable.
      * @param array<string, mixed>|null $appearance Any subset of panel_width, accent_color (six-digit hex or empty), show_credit, or null to use the default profile's.
      */

@@ -1,0 +1,55 @@
+# This topology is intentionally separate from the historical fixture compose file. The runner
+# supplies a unique project name, so these services and volumes cannot overlap Test-Site or the
+# historical evidence containers. Images are pulled before startup; the running network is
+# internal-only and has no route to a provider or the public internet.
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: ncli_fixture
+      MARIADB_USER: ncli_fixture
+      MARIADB_PASSWORD: ncli_fixture_only
+      MARIADB_ROOT_PASSWORD: ncli_fixture_root_only
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    networks: [fixture]
+    volumes: [database:/var/lib/mysql]
+
+  wp:
+    image: wordpress:6.5-php8.1-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${NCLI_FIXTURE_PORT:-8097}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ncli_fixture
+      WORDPRESS_DB_USER: ncli_fixture
+      WORDPRESS_DB_PASSWORD: ncli_fixture_only
+      WORDPRESS_DEBUG: "1"
+      NCLI_FIXTURE_STREAM_DELAY_MS: ${NCLI_FIXTURE_STREAM_DELAY_MS:-250}
+    networks: [fixture]
+    volumes: [wordpress:/var/www/html]
+
+  cli:
+    image: wordpress:cli-php8.1
+    user: "0:0"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ncli_fixture
+      WORDPRESS_DB_USER: ncli_fixture
+      WORDPRESS_DB_PASSWORD: ncli_fixture_only
+    networks: [fixture]
+    volumes: [wordpress:/var/www/html]
+
+networks:
+  fixture:
+    internal: true
+
+volumes:
+  database:
+  wordpress:

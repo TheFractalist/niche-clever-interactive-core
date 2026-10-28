@@ -40,15 +40,15 @@ final class ChatRoute
     {
         $body = is_object($request) && method_exists($request, 'get_json_params') ? $request->get_json_params() : null;
         $settings = $this->loadSettings();
-        $server = is_array($_SERVER ?? null) ? $_SERVER : [];
+        $environment = RequestEnvironment::fromServer(is_array($_SERVER ?? null) ? $_SERVER : []);
 
         // A browser that can read a stream asks for one. Anything else gets the ordinary JSON answer.
-        $stream = $this->wantsStream($request, $server) ? ($this->streams !== null ? ($this->streams)() : new EventStream()) : null;
+        $stream = $this->wantsStream($request, $environment) ? ($this->streams !== null ? ($this->streams)() : new EventStream()) : null;
         $onText = $stream === null ? null : static function (string $text) use ($stream): void {
             $stream->send(['type' => 'delta', 'text' => $text]);
         };
 
-        $outcome = $this->chat->handle($body, $settings, $server, $onText);
+        $outcome = $this->chat->handle($body, $settings, $environment, $onText);
 
         if ($stream !== null && $stream->hasBegun()) {
             // Text has already been sent, so the final event carries the complete validated answer (or the
@@ -69,17 +69,16 @@ final class ChatRoute
 
     /**
      * @param mixed $request
-     * @param array<string, mixed> $server
      */
-    private function wantsStream($request, array $server): bool
+    private function wantsStream($request, RequestEnvironment $environment): bool
     {
         $accept = '';
         if (is_object($request) && method_exists($request, 'get_header')) {
             $header = $request->get_header('accept');
             $accept = is_string($header) ? $header : '';
         }
-        if ($accept === '' && is_string($server['HTTP_ACCEPT'] ?? null)) {
-            $accept = $server['HTTP_ACCEPT'];
+        if ($accept === '') {
+            return $environment->acceptsEventStream();
         }
 
         return stripos($accept, 'text/event-stream') !== false;

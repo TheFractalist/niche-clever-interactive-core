@@ -26,6 +26,7 @@ use NicheCleverInteractive\Core\Conversation\ConversationTurn;
 use NicheCleverInteractive\Core\Frontend\InteractivePanel;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Profile\ProfileTestRecords;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
 use NicheCleverInteractive\Core\Security\PolicyFingerprint;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
@@ -166,7 +167,7 @@ $loggingStore = new class implements ConversationStore {
     public function purgeOlderThan(string $cutoffUtc, int $limit): int { return 0; }
 };
 $service = static fn (?ProfileDirectory $d, ?BudgetGate $b = null, ?ConversationRecorder $r = null): ChatService => new ChatService($capture, $secrets, null, null, $b, $r, null, $d);
-$ask = static fn (ChatService $s, array $body): array => $s->handle($body, $settings)->payload();
+$ask = static fn (ChatService $s, array $body): array => $s->handle($body, $settings, RequestEnvironment::fromServer(is_array($_SERVER ?? null) ? $_SERVER : []))->payload();
 $code = static fn (array $p): string => (string) ($p['error']['code'] ?? 'ok');
 
 // Without a resolver a named profile is invalid; the default still works. No fallback ever.
@@ -306,7 +307,7 @@ $assert(str_contains($block, '"profile"'), 'The block declares a profile attribu
 $assert(str_contains((string) file_get_contents(dirname(__DIR__) . '/src/Plugin.php'), 'new ChatService(') && str_contains((string) file_get_contents(dirname(__DIR__) . '/src/Plugin.php'), '$failureLog, $profiles)'), 'Plugin binds the profile directory into ChatService.');
 
 // Capability list.
-$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events', 'conversation_governance', 'profile_hub', 'site_pages', 'cached_answer_flag', 'request_context'], 'profile_resolution is advertised.');
+$assert((new ExtensionRegistryV1())->capabilities() === ['handshake', 'workspace_hosting', 'profile_resolution', 'viewer_access', 'supplementary_chronology', 'eligible_answer_cache', 'completed_public_turn', 'conversation_context', 'evidence_citations', 'evidence_screen', 'panel_colours', 'panel_events', 'conversation_governance', 'profile_hub', 'profile_workspace_subtabs', 'site_pages', 'cached_answer_flag', 'request_context'], 'profile_resolution is advertised.');
 
 if ($failures !== []) {
     fwrite(STDERR, "FAIL\n- " . implode("\n- ", $failures) . "\n");

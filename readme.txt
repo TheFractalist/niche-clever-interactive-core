@@ -4,7 +4,7 @@ Tags: question and answer, openai, file search, knowledge base, interactive
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,7 @@ Add a configurable question-and-answer panel grounded in material you prepare in
 
 Niche Clever Interactive adds one configurable public question-and-answer panel to a WordPress site. Visitors can ask questions in ordinary language and receive answers generated through the site administrator's own OpenAI Responses API and File Search configuration.
 
-The plugin is designed for organisations and practitioners who have prepared material that is suitable for visitors to explore. It provides one knowledge profile, three panel styles with a choice of panel width and accent colour, configurable visitor-facing copy and unavailable message, bounded owner response guidance, a connection test, daily request safeguards and an optional, off-by-default conversation history that you can review and delete.
+The plugin is designed for organisations and practitioners who have prepared material that is suitable for visitors to explore. It provides one knowledge profile, three panel styles with a choice of panel width and accent colour, configurable visitor-facing copy, processing and unavailable messages, bounded owner response guidance, a connection test, daily request safeguards and an optional, off-by-default conversation history that you can review and delete.
 
 Niche Clever Interactive does not create or manage a vector store, upload documents, store an API key in WordPress options, or publish provider citations or source links. It keeps no record of visitor questions or answers unless you switch on the optional conversation history.
 
@@ -98,6 +98,10 @@ Not on its own: the plugin never publishes provider citations or raw source link
 
 Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. NCI Premium can send a limited number of earlier turns as context.
 
+= Can answers appear progressively? =
+
+Yes. Progressive delivery is enabled by default. Visitors first see the editable processing message, then answer text can appear as WordPress receives it. If the browser or hosting transport cannot stream, the same message remains until the complete validated answer is ready. You can turn progressive delivery off in Conversation.
+
 = Are answers cached? =
 
 Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved.
@@ -138,6 +142,16 @@ NCI Premium is a separately supplied edition from Niche Clever. Details, purchas
 4. Appearance & Limits tab: panel style and width, accent colour, optional credit line and daily request limits.
 
 == Changelog ==
+
+= 1.0.3 =
+
+Local recovery candidate. Adds a default-on progressive-answer preference and editable processing wording. Core uses the documented WordPress HTTP cURL hook only while its fixed provider request is active, with the retained completed-response path as a no-retry fallback. Named profiles may inherit or override the processing wording; Core remains the sole owner of provider access and final answer validation.
+
+= 1.0.2 =
+
+* Hardens the public request boundary so only validated, bounded request-environment values reach Core services and extension seams.
+* Applies one restrictive Core-owned markup policy at every hosted extension output boundary, with regression coverage for hostile extension markup.
+* Removes broad security-sniff suppressions in favour of direct contextual escaping and adds deterministic occurrence-inventory checks.
 
 = 1.0.1 =
 

@@ -26,7 +26,7 @@ final class ProfileRuntime
     private string $responsePreset;
     private RequestOptions $options;
     private int $visitorRequestsPerDay;
-    /** @var array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string} */
+    /** @var array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string, processing_message: string} */
     private array $presentation;
     private string $panelStyle;
     private string $panelWidth;
@@ -34,7 +34,7 @@ final class ProfileRuntime
     private bool $showCredit;
 
     /**
-     * @param array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string} $presentation
+     * @param array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string, processing_message: string} $presentation
      */
     private function __construct(
         string $id,
@@ -174,7 +174,7 @@ final class ProfileRuntime
         return $this->visitorRequestsPerDay;
     }
 
-    /** @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string} */
+    /** @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string, processing_message: string} */
     public function presentation(): array
     {
         return $this->presentation;
@@ -206,6 +206,14 @@ final class ProfileRuntime
         $message = $this->presentation['unavailable_message'];
 
         return $message !== '' ? $message : CoreSettings::DEFAULT_UNAVAILABLE_MESSAGE;
+    }
+
+    /** The profile's wording, or the Core default profile's fallback. */
+    public function processingMessage(): string
+    {
+        $message = $this->presentation['processing_message'];
+
+        return $message !== '' ? $message : CoreSettings::DEFAULT_PROCESSING_MESSAGE;
     }
 
     /** @param list<\NicheCleverInteractive\Core\Api\V1\Value\ChronologyFactV1> $chronology */

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace NicheCleverInteractive\Core\Admin;
 
 
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All dynamic markup uses the tested escapeHtml()/escapeAttribute() wrappers, which keep this PHP 8.1-compatible class usable in pure tests.
-// phpcs:disable WordPress.Security.NonceVerification.Recommended -- The help section in the address only chooses a fixed section.
 /**
  * The Help Centre panel (overview, frequently asked questions and the Core and Premium comparison).
  * It draws the same content wherever it is shown; the page that hosts it supplies the address of
@@ -38,12 +36,12 @@ final class HelpRenderer
             'premium' => __('NCI Premium', 'niche-clever-interactive'),
         ];
 
-        echo '<section class="ncli-admin__tab-panel ncli-admin__help"><h2>' . $this->escapeHtml(__('Help Centre', 'niche-clever-interactive')) . '</h2>';
-        echo '<nav class="ncli-admin__subtabs" aria-label="' . $this->escapeAttribute(__('Help sections', 'niche-clever-interactive')) . '">';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__help"><h2>' . esc_html(__('Help Centre', 'niche-clever-interactive')) . '</h2>';
+        echo '<nav class="ncli-admin__subtabs" aria-label="' . esc_attr(__('Help sections', 'niche-clever-interactive')) . '">';
         foreach ($sections as $id => $label) {
             $active = $id === $section;
             $url = call_user_func($this->helpUrl, $id);
-            echo '<a class="ncli-admin__subtab' . ($active ? ' is-active' : '') . '"' . ($active ? ' aria-current="page"' : '') . ' href="' . $this->escapeAttribute($url) . '">' . $this->escapeHtml($label) . '</a>';
+            echo '<a class="ncli-admin__subtab' . ($active ? ' is-active' : '') . '"' . ($active ? ' aria-current="page"' : '') . ' href="' . esc_attr($url) . '">' . esc_html($label) . '</a>';
         }
         echo '</nav>';
 
@@ -71,29 +69,29 @@ final class HelpRenderer
     {
         $fileSearchUrl = 'https://platform.openai.com/docs/guides/tools-file-search';
         $vectorStoreUrl = 'https://platform.openai.com/docs/api-reference/vector-stores';
-        echo '<h3>' . $this->escapeHtml(__('What Niche Clever Interactive is for', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('Niche Clever Interactive adds one configurable question-and-answer panel to a WordPress site. It uses the OpenAI Responses API and File Search against an existing vector store selected by the site administrator. It is designed for material you have prepared for visitors to explore.', 'niche-clever-interactive')) . '</p>';
-        echo '<h3>' . $this->escapeHtml(__('Before you connect', 'niche-clever-interactive')) . '</h3>';
-        echo '<ol><li>' . $this->escapeHtml(__('You need a WordPress site where you can install and configure plugins.', 'niche-clever-interactive')) . '</li><li>' . $this->escapeHtml(__('You need your own OpenAI API account, billing controls and API key.', 'niche-clever-interactive')) . '</li><li>' . $this->escapeHtml(__('Keep the API key in server configuration, using NCLI_OPENAI_API_KEY_DEFAULT. Niche Clever Interactive does not provide a field for entering or storing it in WordPress.', 'niche-clever-interactive')) . '</li><li>' . $this->escapeHtml(__('Prepare an existing File Search vector store containing material suitable for public answers.', 'niche-clever-interactive')) . '</li></ol>';
-        echo '<h3>' . $this->escapeHtml(__('Prepare a useful corpus', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('Use material that is accurate, current enough for the questions you expect, and appropriate to share through a public question interface. The plugin does not decide whether a document is suitable, current or complete. Review your source material before you connect it.', 'niche-clever-interactive')) . '</p>';
-        echo '<h3>' . $this->escapeHtml(__('Create and connect a vector store', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('Create or select a vector store in your own OpenAI Platform project, add approved files there and wait for indexing to complete. Then enter the existing store reference and a corpus version in AI & Corpus, save the settings and run the connection test.', 'niche-clever-interactive')) . '</p>';
-        echo '<p><a href="' . $this->escapeAttribute($fileSearchUrl) . '" target="_blank" rel="noopener">' . $this->escapeHtml(__('OpenAI File Search documentation', 'niche-clever-interactive')) . '</a> · <a href="' . $this->escapeAttribute($vectorStoreUrl) . '" target="_blank" rel="noopener">' . $this->escapeHtml(__('OpenAI vector store documentation', 'niche-clever-interactive')) . '</a></p>';
-        echo '<h3>' . $this->escapeHtml(__('Choosing a model and managing cost', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('Each public question is billed by OpenAI to your own account. The settings in AI & Corpus change how much each answer costs and how long it takes. Core does not estimate or display prices, because they change; check OpenAI pricing for current figures.', 'niche-clever-interactive')) . '</p>';
-        echo $this->fields->renderModelTable();
-        echo '<ul><li><strong>' . $this->escapeHtml(__('Model:', 'niche-clever-interactive')) . '</strong> ' . $this->escapeHtml(__('The largest cost lever. Economy models cost far less per answer than Flagship models, and Flagship models suit nuanced questions.', 'niche-clever-interactive')) . '</li>'
-            . '<li><strong>' . $this->escapeHtml(__('Retrieval depth:', 'niche-clever-interactive')) . '</strong> ' . $this->escapeHtml(__('More retrieved passages give the model more to read, which raises cost and response time and can help broad questions.', 'niche-clever-interactive')) . '</li>'
-            . '<li><strong>' . $this->escapeHtml(__('Maximum answer length:', 'niche-clever-interactive')) . '</strong> ' . $this->escapeHtml(__('Caps output, including reasoning. Pair it with the Concise, Balanced or Detailed response preset. A very low cap can truncate answers.', 'niche-clever-interactive')) . '</li>'
-            . '<li><strong>' . $this->escapeHtml(__('Reasoning effort:', 'niche-clever-interactive')) . '</strong> ' . $this->escapeHtml(__('Higher effort can improve hard answers but uses more tokens and takes longer. Leave it at the provider default unless you have a reason to change it.', 'niche-clever-interactive')) . '</li>'
-            . '<li><strong>' . $this->escapeHtml(__('Request timeout:', 'niche-clever-interactive')) . '</strong> ' . $this->escapeHtml(__('Longer limits suit slower, higher-effort requests. Your hosting limits may stop a request sooner. Core makes one attempt and does not retry.', 'niche-clever-interactive')) . '</li></ul>';
-        echo '<p>' . $this->escapeHtml(__('Example profiles: for lowest cost, choose an Economy model with a small retrieval depth and a Concise preset. For best quality, choose a Flagship model with a larger retrieval depth and a Detailed preset.', 'niche-clever-interactive')) . '</p>';
-        echo '<p>' . $this->escapeHtml(__('Also set a usage limit in your OpenAI dashboard. Core\'s request limits help, but they are not a billing control.', 'niche-clever-interactive')) . ' <a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">' . $this->escapeHtml(__('OpenAI API pricing', 'niche-clever-interactive')) . '</a></p>';
-        echo '<h3>' . $this->escapeHtml(__('Safe public use', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it by Core itself, although an installed extension such as NCI Premium can add a limited number of earlier turns. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.', 'niche-clever-interactive')) . '</p>';
-        echo '<h3>' . $this->escapeHtml(__('What it does not do', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, or publish provider citations or source links. It keeps no record of visitor conversations unless you switch on the optional conversation history in the Conversation tab.', 'niche-clever-interactive')) . '</p>';
+        echo '<h3>' . esc_html(__('What Niche Clever Interactive is for', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('Niche Clever Interactive adds one configurable question-and-answer panel to a WordPress site. It uses the OpenAI Responses API and File Search against an existing vector store selected by the site administrator. It is designed for material you have prepared for visitors to explore.', 'niche-clever-interactive')) . '</p>';
+        echo '<h3>' . esc_html(__('Before you connect', 'niche-clever-interactive')) . '</h3>';
+        echo '<ol><li>' . esc_html(__('You need a WordPress site where you can install and configure plugins.', 'niche-clever-interactive')) . '</li><li>' . esc_html(__('You need your own OpenAI API account, billing controls and API key.', 'niche-clever-interactive')) . '</li><li>' . esc_html(__('Keep the API key in server configuration, using NCLI_OPENAI_API_KEY_DEFAULT. Niche Clever Interactive does not provide a field for entering or storing it in WordPress.', 'niche-clever-interactive')) . '</li><li>' . esc_html(__('Prepare an existing File Search vector store containing material suitable for public answers.', 'niche-clever-interactive')) . '</li></ol>';
+        echo '<h3>' . esc_html(__('Prepare a useful corpus', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('Use material that is accurate, current enough for the questions you expect, and appropriate to share through a public question interface. The plugin does not decide whether a document is suitable, current or complete. Review your source material before you connect it.', 'niche-clever-interactive')) . '</p>';
+        echo '<h3>' . esc_html(__('Create and connect a vector store', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('Create or select a vector store in your own OpenAI Platform project, add approved files there and wait for indexing to complete. Then enter the existing store reference and a corpus version in AI & Corpus, save the settings and run the connection test.', 'niche-clever-interactive')) . '</p>';
+        echo '<p><a href="' . esc_attr($fileSearchUrl) . '" target="_blank" rel="noopener">' . esc_html(__('OpenAI File Search documentation', 'niche-clever-interactive')) . '</a> · <a href="' . esc_attr($vectorStoreUrl) . '" target="_blank" rel="noopener">' . esc_html(__('OpenAI vector store documentation', 'niche-clever-interactive')) . '</a></p>';
+        echo '<h3>' . esc_html(__('Choosing a model and managing cost', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('Each public question is billed by OpenAI to your own account. The settings in AI & Corpus change how much each answer costs and how long it takes. Core does not estimate or display prices, because they change; check OpenAI pricing for current figures.', 'niche-clever-interactive')) . '</p>';
+        echo wp_kses($this->fields->renderModelTable(), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
+        echo '<ul><li><strong>' . esc_html(__('Model:', 'niche-clever-interactive')) . '</strong> ' . esc_html(__('The largest cost lever. Economy models cost far less per answer than Flagship models, and Flagship models suit nuanced questions.', 'niche-clever-interactive')) . '</li>'
+            . '<li><strong>' . esc_html(__('Retrieval depth:', 'niche-clever-interactive')) . '</strong> ' . esc_html(__('More retrieved passages give the model more to read, which raises cost and response time and can help broad questions.', 'niche-clever-interactive')) . '</li>'
+            . '<li><strong>' . esc_html(__('Maximum answer length:', 'niche-clever-interactive')) . '</strong> ' . esc_html(__('Caps output, including reasoning. Pair it with the Concise, Balanced or Detailed response preset. A very low cap can truncate answers.', 'niche-clever-interactive')) . '</li>'
+            . '<li><strong>' . esc_html(__('Reasoning effort:', 'niche-clever-interactive')) . '</strong> ' . esc_html(__('Higher effort can improve hard answers but uses more tokens and takes longer. Leave it at the provider default unless you have a reason to change it.', 'niche-clever-interactive')) . '</li>'
+            . '<li><strong>' . esc_html(__('Request timeout:', 'niche-clever-interactive')) . '</strong> ' . esc_html(__('Longer limits suit slower, higher-effort requests. Your hosting limits may stop a request sooner. Core makes one attempt and does not retry.', 'niche-clever-interactive')) . '</li></ul>';
+        echo '<p>' . esc_html(__('Example profiles: for lowest cost, choose an Economy model with a small retrieval depth and a Concise preset. For best quality, choose a Flagship model with a larger retrieval depth and a Detailed preset.', 'niche-clever-interactive')) . '</p>';
+        echo '<p>' . esc_html(__('Also set a usage limit in your OpenAI dashboard. Core\'s request limits help, but they are not a billing control.', 'niche-clever-interactive')) . ' <a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">' . esc_html(__('OpenAI API pricing', 'niche-clever-interactive')) . '</a></p>';
+        echo '<h3>' . esc_html(__('Safe public use', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it by Core itself, although an installed extension such as NCI Premium can add a limited number of earlier turns. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.', 'niche-clever-interactive')) . '</p>';
+        echo '<h3>' . esc_html(__('What it does not do', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, or publish provider citations or source links. It keeps no record of visitor conversations unless you switch on the optional conversation history in the Conversation tab.', 'niche-clever-interactive')) . '</p>';
     }
 
     private function renderHelpFaq(): void
@@ -113,6 +111,7 @@ final class HelpRenderer
                 ['Who pays for the answers?', 'Each public question is billed by OpenAI to your own account. Core shows no prices, so check OpenAI pricing and set a usage limit in your OpenAI dashboard as well as Core\'s request limits.'],
                 ['Which model and settings should I choose?', 'The Overview tab explains each setting. For the lowest cost use an Economy model, a small retrieval depth and the Concise preset. For the best quality use a Flagship model, a larger retrieval depth and the Detailed preset.'],
                 ['What do the response guidance and presets do?', 'They shape tone, format and level of detail only. Retrieval, safety, privacy and disclosure rules always take priority, and changing them requires a fresh connection test.'],
+                ['Can answers appear progressively?', 'Yes. Progressive delivery is enabled by default. Visitors first see the processing message you set in Conversation, then answer text can appear as WordPress receives it. If the browser or hosting transport cannot stream, that message remains until the complete validated answer is ready. Turn off Progressively reveal answers in Conversation to use the final-answer view everywhere.'],
                 ['Does it show sources or citations?', 'No. Core never publishes provider citations or source links. Approved evidence links that you choose yourself are available in NCI Premium.'],
                 ['Why did the panel refuse my question?', 'Core applies fixed safety rules. A question that tries to override its instructions or reveal them is declined with a short refusal.'],
                 ['Why does it say a verified answer is not available?', 'The answer did not come from a completed search of your corpus. Check the vector store reference and corpus version, then run the connection test again.'],
@@ -133,7 +132,7 @@ final class HelpRenderer
             'Appearance and placement' => [
                 ['How do I put the panel on a page?', 'Add the NC Interactive block to a page, or use the [ncli_interactive] shortcode. The Placement tab shows where Core has detected a published panel.'],
                 ['Can I use more than one panel?', 'You can place the panel on as many pages as you like, but every placement uses the same single profile. Several knowledge profiles are available in NCI Premium.'],
-                ['How do I change how it looks?', 'Choose the style, width and accent colour in Appearance & Limits. Edit the title, headline, introduction and unavailable message in Profile, and the placeholder and footer labels in Conversation. Finer colour control for questions and answers is available in NCI Premium.'],
+                ['How do I change how it looks?', 'Choose the style, width and accent colour in Appearance & Limits. Edit the title, headline, introduction and unavailable message in Profile, and the placeholder, processing message and footer labels in Conversation. Finer colour control for questions and answers is available in NCI Premium.'],
                 ['Do I have to show a credit link?', 'No. The optional Powered by NC Interactive link is off by default and appears only if you turn it on in Appearance & Limits.'],
                 ['Is the panel accessible?', 'The panel and the settings screens are built to work with a keyboard and a screen reader, with labelled controls, visible focus and announcements when an answer arrives, and they respect reduced-motion settings.'],
             ],
@@ -148,22 +147,22 @@ final class HelpRenderer
             ],
         ];
 
-        echo '<h3>' . $this->escapeHtml(__('Frequently asked questions', 'niche-clever-interactive')) . '</h3>';
+        echo '<h3>' . esc_html(__('Frequently asked questions', 'niche-clever-interactive')) . '</h3>';
         foreach ($groups as $group => $questions) {
-            echo '<h4 class="ncli-admin__faq-group">' . $this->escapeHtml($this->t($group)) . '</h4>';
+            echo '<h4 class="ncli-admin__faq-group">' . esc_html($this->t($group)) . '</h4>';
             foreach ($questions as $question) {
-                echo '<details><summary>' . $this->escapeHtml($this->t($question[0])) . '</summary><p>' . $this->escapeHtml($this->t($question[1])) . '</p></details>';
+                echo '<details><summary>' . esc_html($this->t($question[0])) . '</summary><p>' . esc_html($this->t($question[1])) . '</p></details>';
             }
         }
     }
 
     private function renderHelpPremium(): void
     {
-        echo '<h3>' . $this->escapeHtml(__('NCI Core and NCI Premium', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . $this->escapeHtml(__('NCI Core is complete for one focused question-and-answer panel. NCI Premium, supplied separately by Niche Clever, is for sites that need several knowledge profiles, curated evidence, authored questions, deeper conversation governance and cost-saving answer reuse. The table shows what each edition includes.', 'niche-clever-interactive')) . '</p>';
-        echo '<p><a class="button button-primary" href="' . $this->escapeAttribute(self::PREMIUM_URL) . '" target="_blank" rel="noopener">' . $this->escapeHtml(__('See NCI Premium: details, purchase and download', 'niche-clever-interactive')) . '</a></p>';
+        echo '<h3>' . esc_html(__('NCI Core and NCI Premium', 'niche-clever-interactive')) . '</h3>';
+        echo '<p>' . esc_html(__('NCI Core is complete for one focused question-and-answer panel. NCI Premium, supplied separately by Niche Clever, is for sites that need several knowledge profiles, curated evidence, authored questions, deeper conversation governance and cost-saving answer reuse. The table shows what each edition includes.', 'niche-clever-interactive')) . '</p>';
+        echo '<p><a class="button button-primary" href="' . esc_attr(self::PREMIUM_URL) . '" target="_blank" rel="noopener">' . esc_html(__('See NCI Premium: details, purchase and download', 'niche-clever-interactive')) . '</a></p>';
         $this->renderComparisonTable();
-        echo '<p class="ncli-admin__comparison-note">' . $this->escapeHtml(__('NCI Premium is a separately supplied edition. NCI Core contains no Premium code, and nothing in Core is locked, limited or time-restricted. Core never publishes provider citations or source links; Premium\'s evidence links would be titles and addresses that you approve yourself.', 'niche-clever-interactive')) . '</p>';
+        echo '<p class="ncli-admin__comparison-note">' . esc_html(__('NCI Premium is a separately supplied edition. NCI Core contains no Premium code, and nothing in Core is locked, limited or time-restricted. Core never publishes provider citations or source links; Premium\'s evidence links would be titles and addresses that you approve yourself.', 'niche-clever-interactive')) . '</p>';
     }
 
     private function renderComparisonTable(): void
@@ -209,29 +208,19 @@ final class HelpRenderer
             ],
         ];
 
-        echo '<table class="widefat ncli-admin__comparison-table"><caption class="screen-reader-text">' . $this->escapeHtml(__('NCI Core compared with NCI Premium', 'niche-clever-interactive')) . '</caption>';
-        echo '<thead><tr><th scope="col">' . $this->escapeHtml(__('Feature', 'niche-clever-interactive')) . '</th><th scope="col">' . $this->escapeHtml(__('What it does', 'niche-clever-interactive')) . '</th><th scope="col">' . $this->escapeHtml(__('NCI Core', 'niche-clever-interactive')) . '</th><th scope="col">' . $this->escapeHtml(__('NCI Premium', 'niche-clever-interactive')) . '</th></tr></thead><tbody>';
+        echo '<table class="widefat ncli-admin__comparison-table"><caption class="screen-reader-text">' . esc_html(__('NCI Core compared with NCI Premium', 'niche-clever-interactive')) . '</caption>';
+        echo '<thead><tr><th scope="col">' . esc_html(__('Feature', 'niche-clever-interactive')) . '</th><th scope="col">' . esc_html(__('What it does', 'niche-clever-interactive')) . '</th><th scope="col">' . esc_html(__('NCI Core', 'niche-clever-interactive')) . '</th><th scope="col">' . esc_html(__('NCI Premium', 'niche-clever-interactive')) . '</th></tr></thead><tbody>';
         foreach ($groups as $group => $rows) {
-            echo '<tr class="ncli-admin__comparison-group"><th scope="rowgroup" colspan="4">' . $this->escapeHtml($this->t($group)) . '</th></tr>';
+            echo '<tr class="ncli-admin__comparison-group"><th scope="rowgroup" colspan="4">' . esc_html($this->t($group)) . '</th></tr>';
             foreach ($rows as $row) {
-                echo '<tr><th scope="row">' . $this->escapeHtml($this->t($row[0])) . '</th><td class="ncli-admin__comparison-what">' . $this->escapeHtml($this->t($row[1])) . '</td>';
+                echo '<tr><th scope="row">' . esc_html($this->t($row[0])) . '</th><td class="ncli-admin__comparison-what">' . esc_html($this->t($row[1])) . '</td>';
                 foreach ([$row[2], $row[3]] as $included) {
-                    echo '<td class="' . ($included ? 'ncli-admin__comparison-yes' : 'ncli-admin__comparison-no') . '"><span aria-hidden="true">' . ($included ? '&#10003;' : '&#10005;') . '</span><span class="screen-reader-text">' . $this->escapeHtml($included ? __('Included', 'niche-clever-interactive') : __('Not included', 'niche-clever-interactive')) . '</span></td>';
+                    echo '<td class="' . ($included ? 'ncli-admin__comparison-yes' : 'ncli-admin__comparison-no') . '"><span aria-hidden="true">' . ($included ? '&#10003;' : '&#10005;') . '</span><span class="screen-reader-text">' . esc_html($included ? __('Included', 'niche-clever-interactive') : __('Not included', 'niche-clever-interactive')) . '</span></td>';
                 }
                 echo '</tr>';
             }
         }
         echo '</tbody></table>';
-    }
-
-    private function escapeHtml(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function escapeAttribute(string $value): string
-    {
-        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
     private function t(string $text): string

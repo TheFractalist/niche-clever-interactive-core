@@ -31,6 +31,14 @@ foreach ($iterator as $file) {
             $failures[] = $relative . ' contains forbidden token ' . $needle;
         }
     }
+
+    if (
+        in_array(strtolower($file->getExtension()), ['js', 'mjs'], true)
+        && !str_starts_with($relative, 'tests' . DIRECTORY_SEPARATOR)
+        && preg_match('/\.innerHTML\s*=|\.outerHTML\s*=|insertAdjacentHTML\(|document\.write\(|srcdoc\s*=|createContextualFragment\(/', $contents) === 1
+    ) {
+        $failures[] = $relative . ' contains a prohibited production JavaScript HTML sink';
+    }
 }
 
 if ($failures !== []) {

@@ -28,17 +28,44 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__answer--pending { color: var(--ncli-muted); }
 .ncli-panel__answer > :first-child { margin-top: 0; }
 .ncli-panel__answer > :last-child { margin-bottom: 0; }
-.ncli-panel__answer p { margin: .55rem 0; }
-.ncli-panel__answer h3, .ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { margin: .95rem 0 .35rem; color: var(--ncli-a-ink, var(--ncli-ink)); font-family: var(--ncli-heading-font); line-height: 1.2; }
-.ncli-panel__answer h3 { font-size: 1.12rem; }
-.ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { font-size: 1rem; }
-.ncli-panel__answer ul, .ncli-panel__answer ol { margin: .55rem 0; padding-left: 1.35rem; }
-.ncli-panel__answer li + li { margin-top: .2rem; }
-.ncli-panel__answer blockquote { margin: .75rem 0; padding: .1rem 0 .1rem .85rem; border-left: 3px solid var(--ncli-accent); color: var(--ncli-muted); }
-.ncli-panel__answer blockquote p { margin: .35rem 0; }
-.ncli-panel__answer pre { overflow-x: auto; margin: .75rem 0; padding: .7rem; border: 1px solid var(--ncli-rule); border-radius: calc(var(--ncli-radius) / 2); background: rgba(17, 24, 39, .06); font: .85em/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
-.ncli-panel__answer code { padding: .08em .25em; border-radius: 3px; background: rgba(17, 24, 39, .08); font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
+.ncli-panel__answer { line-height: 1.6; }
+.ncli-panel__answer p { max-width: 68ch; margin: .6rem 0; }
+.ncli-panel__answer h3, .ncli-panel__answer h4, .ncli-panel__answer h5, .ncli-panel__answer h6 { margin: 1.15rem 0 .4rem; color: var(--ncli-a-ink, var(--ncli-ink)); font-family: var(--ncli-head-font); font-weight: var(--ncli-head-weight); line-height: 1.25; }
+.ncli-panel__answer h3 { font-size: 1.2rem; }
+.ncli-panel__answer h4 { font-size: 1.08rem; }
+.ncli-panel__answer h5 { margin-top: 1rem; font-family: var(--ncli-body-font); font-size: 1rem; font-weight: 700; }
+.ncli-panel__answer h6 { margin-top: 1rem; font-family: var(--ncli-body-font); font-size: .82rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.ncli-panel__answer h3 + p, .ncli-panel__answer h4 + p, .ncli-panel__answer h5 + p, .ncli-panel__answer h6 + p, .ncli-panel__answer h3 + ul, .ncli-panel__answer h4 + ul, .ncli-panel__answer h3 + ol, .ncli-panel__answer h4 + ol { margin-top: 0; }
+.ncli-panel__answer ul, .ncli-panel__answer ol { max-width: 68ch; margin: .6rem 0; padding-left: 1.5rem; }
+.ncli-panel__answer li { padding-left: .15rem; }
+.ncli-panel__answer li + li { margin-top: .25rem; }
+.ncli-panel__answer li::marker { color: var(--ncli-muted); }
+.ncli-panel__answer li > p { margin: .25rem 0; }
+.ncli-panel__answer li > ul, .ncli-panel__answer li > ol { margin: .3rem 0 .1rem; padding-left: 1.25rem; }
+.ncli-panel__answer ul { list-style: disc; }
+.ncli-panel__answer ul ul { list-style: circle; }
+.ncli-panel__answer ul ul ul { list-style: square; }
+.ncli-panel__answer ol { list-style: decimal; }
+.ncli-panel__answer ol ol { list-style: lower-alpha; }
+.ncli-panel__answer ol ol ol { list-style: lower-roman; }
+.ncli-panel__answer strong, .ncli-panel__answer b { font-weight: 700; }
+.ncli-panel__answer em, .ncli-panel__answer i { font-style: italic; }
+.ncli-panel__answer blockquote { max-width: 68ch; margin: .85rem 0; padding: .15rem 0 .15rem 1rem; border-left: 3px solid var(--ncli-accent); color: var(--ncli-muted); }
+.ncli-panel__answer blockquote p { margin: .4rem 0; }
+.ncli-panel__answer pre { overflow-x: auto; margin: .85rem 0; padding: .75rem .85rem; border: 1px solid var(--ncli-rule); border-radius: calc(var(--ncli-radius) / 2); background: rgba(127, 127, 127, .12); font: .85em/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
+.ncli-panel__answer code { padding: .1em .3em; border-radius: 3px; background: rgba(127, 127, 127, .18); font: .88em ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
 .ncli-panel__answer pre code { padding: 0; background: transparent; }
+.ncli-panel__answer .ncli-panel__answer-label { margin: 1.1rem 0 .3rem; font-size: 1.02rem; line-height: 1.3; }
+.ncli-panel__answer > .ncli-panel__answer-label:first-child { margin-top: 0; }
+@media (max-width: 400px) {
+.ncli-panel__answer { padding: .85rem; line-height: 1.55; }
+.ncli-panel__answer h3 { font-size: 1.1rem; }
+.ncli-panel__answer h4 { font-size: 1.02rem; }
+.ncli-panel__answer ul, .ncli-panel__answer ol { padding-left: 1.25rem; }
+.ncli-panel__answer li > ul, .ncli-panel__answer li > ol { padding-left: 1rem; }
+.ncli-panel__answer blockquote { padding-left: .75rem; }
+.ncli-panel__answer pre { padding: .6rem; font-size: .8em; }
+}
 .ncli-panel__answer hr { margin: .9rem 0; border: 0; border-top: 1px solid var(--ncli-rule); }
 .ncli-panel__footer { display: flex; justify-content: space-between; gap: 1rem; margin: 1.25rem 0 0; padding: .75rem 0 0; border-top: 1px solid var(--ncli-rule); color: var(--ncli-muted); font: 700 .72rem/1.35 var(--ncli-body-font); letter-spacing: .08em; text-transform: uppercase; }
 .ncli-panel__credit { margin: .6rem 0 0; color: var(--ncli-muted); font: 400 .78rem/1.4 var(--ncli-body-font); text-align: right; }
@@ -52,12 +79,6 @@ section.ncli-panel--dark { --ncli-bg: #0f1115; --ncli-ink: #e8eaed; --ncli-muted
 .ncli-panel__sources-list { margin: 0; padding-left: 1.2rem; }
 .ncli-panel__sources-list li { margin: .2rem 0; }
 .ncli-panel__sources-list a { overflow-wrap: anywhere; }
-.ncli-panel__answer li > ul, .ncli-panel__answer li > ol { margin: .25rem 0 .1rem; }
-.ncli-panel__answer ul { list-style: disc; }
-.ncli-panel__answer ul ul { list-style: circle; }
-.ncli-panel__answer ol { list-style: decimal; }
-.ncli-panel__answer .ncli-panel__answer-label { margin: 1rem 0 .3rem; font-size: 1.02rem; line-height: 1.3; }
-.ncli-panel__answer > .ncli-panel__answer-label:first-child { margin-top: 0; }
 .ncli-panel__working { display: inline-flex; align-items: center; gap: .55rem; }
 .ncli-panel__working-dots { display: inline-flex; gap: .25rem; }
 .ncli-panel__working-dots span { width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; opacity: .3; animation: ncli-working 1.2s ease-in-out infinite; }

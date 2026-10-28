@@ -24,6 +24,7 @@ use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Profile\ProfileRuntime;
 use NicheCleverInteractive\Core\Profile\ProfileTestRecords;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 use NicheCleverInteractive\Core\Security\PublicError;
 
@@ -178,7 +179,7 @@ $transport = new class implements ResponseTransport {
     }
 };
 $chat = new ChatService($transport, $secrets, null, null, $gate, null, null, $directory);
-$ask = static fn (array $body): array => $chat->handle($body, $settings)->payload();
+$ask = static fn (array $body): array => $chat->handle($body, $settings, RequestEnvironment::fromServer(is_array($_SERVER ?? null) ? $_SERVER : []))->payload();
 $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
 
 // An untested profile that the viewer may not use reports access, not its setup state.

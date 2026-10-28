@@ -10,6 +10,7 @@ use NicheCleverInteractive\Core\Api\V1\Value\ProfileSectionV1;
 use NicheCleverInteractive\Core\Api\V1\Value\ProfileSummaryV1;
 use NicheCleverInteractive\Core\Api\V1\Value\WorkspaceContextV1;
 use NicheCleverInteractive\Core\Configuration\Readiness;
+use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\ModelCatalogue;
 use NicheCleverInteractive\Core\Configuration\ModelSettings;
@@ -17,9 +18,6 @@ use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
 
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Core's own markup uses the escape wrappers below; an extension section body is administrator-only output from a registered extension, which escapes its own content.
-// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- AdminActionGuard verifies capability and nonce before any POST value is read; GET values only choose a view and are matched against fixed patterns.
-// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Values are unslashed and validated by ProfileEditV1 before anything is stored.
 /**
  * The Profiles page and the workspace of each extension profile. It exists only while an extension
  * has registered a profile editor; otherwise Core's single-profile Settings page is unchanged. Core
@@ -124,7 +122,7 @@ final class ProfileHub
     /** A plain title strip: the page name on the left, a short label on the right. */
     public function titleBar(string $left, string $right): void
     {
-        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html($left) . '</span><span>' . $this->html($right) . '</span></div>';
+        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . esc_html($left) . '</span><span>' . esc_html($right) . '</span></div>';
     }
 
     /**
@@ -134,20 +132,20 @@ final class ProfileHub
     public function header(string $profileId, string $title): void
     {
         $tab = $this->query('tab');
-        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html($title) . '</span><div class="ncli-admin__titlebar-tools">';
-        echo '<form class="ncli-admin__titlebar-switch" method="get" action="' . $this->attr($this->adminUrl([])) . '"><input type="hidden" name="page" value="' . $this->attr(SettingsPage::PAGE_SLUG) . '">';
+        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . esc_html($title) . '</span><div class="ncli-admin__titlebar-tools">';
+        echo '<form class="ncli-admin__titlebar-switch" method="get" action="' . esc_attr($this->adminUrl([])) . '"><input type="hidden" name="page" value="' . esc_attr(SettingsPage::PAGE_SLUG) . '">';
         if ($tab !== '' && array_key_exists($tab, self::TABS)) {
-            echo '<input type="hidden" name="tab" value="' . $this->attr($tab) . '">';
+            echo '<input type="hidden" name="tab" value="' . esc_attr($tab) . '">';
         }
-        echo '<label class="screen-reader-text" for="ncli-profile-switch">' . $this->html(__('Profile', 'niche-clever-interactive')) . '</label><select id="ncli-profile-switch" name="profile">';
-        echo '<option value="default"' . ($profileId === CoreSettings::DEFAULT_PROFILE_ID ? ' selected' : '') . '>' . $this->html(__('Default profile', 'niche-clever-interactive')) . '</option>';
+        echo '<label class="screen-reader-text" for="ncli-profile-switch">' . esc_html(__('Profile', 'niche-clever-interactive')) . '</label><select id="ncli-profile-switch" name="profile">';
+        echo '<option value="default"' . ($profileId === CoreSettings::DEFAULT_PROFILE_ID ? ' selected' : '') . '>' . esc_html(__('Default profile', 'niche-clever-interactive')) . '</option>';
         foreach ($this->profiles->summaries() as $summary) {
             $id = $summary->id()->value();
-            echo '<option value="' . $this->attr($id) . '"' . ($id === $profileId ? ' selected' : '') . '>' . $this->html($summary->label()) . '</option>';
+            echo '<option value="' . esc_attr($id) . '"' . ($id === $profileId ? ' selected' : '') . '>' . esc_html($summary->label()) . '</option>';
         }
-        echo '</select> <button type="submit" class="button">' . $this->html(__('Switch profile', 'niche-clever-interactive')) . '</button></form>';
-        echo '<a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html(__('All profiles', 'niche-clever-interactive')) . '</a>';
-        echo '<span class="ncli-admin__titlebar-label">' . $this->html(__('Profile workspace', 'niche-clever-interactive')) . '</span></div></div>';
+        echo '</select> <button type="submit" class="button">' . esc_html(__('Switch profile', 'niche-clever-interactive')) . '</button></form>';
+        echo '<a class="button" href="' . esc_attr($this->adminUrl(['view' => 'profiles'])) . '">' . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a>';
+        echo '<span class="ncli-admin__titlebar-label">' . esc_html(__('Profile workspace', 'niche-clever-interactive')) . '</span></div></div>';
     }
 
     /**
@@ -181,7 +179,7 @@ final class ProfileHub
         return $tabs;
     }
 
-    /** Draws the extension's sections for one tab, each in its own panel beneath the tab's own content. */
+    /** Draws the extension's sections for one tab, either with General or in their own sub-tab. */
     public function sections(string $profileId, string $tab, ?string $only = null): void
     {
         if (!in_array($tab, ProfileSectionV1::TABS, true)) {
@@ -195,22 +193,24 @@ final class ProfileHub
 
         $id = new ProfileIdV1($profileId);
         foreach ($this->profiles->sections($profileId) as $section) {
-            if ($section->tab() !== $tab || ($only !== null && $only !== 'panel' && $only !== $section->key())) {
+            if ($section->tab() !== $tab
+                || ($only === 'panel' && !$section->inlineWithPanel())
+                || ($only !== null && $only !== 'panel' && $only !== $section->key())) {
                 continue;
             }
-            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html($section->title()) . '</h2>';
+            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . esc_html($section->title()) . '</h2>';
             $level = ob_get_level();
             ob_start();
             try {
                 $action = ExtensionScreens::NONCE_PREFIX . $section->key();
                 $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
                 $workspace->render($section->key(), $id, new WorkspaceContextV1(true, $nonce, '', $action));
-                echo (string) ob_get_clean();
+                echo wp_kses((string) ob_get_clean(), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
             } catch (\Throwable $exception) {
                 while (ob_get_level() > $level) {
                     ob_end_clean();
                 }
-                echo '<div class="notice notice-error"><p>' . $this->html(__('This section is temporarily unavailable.', 'niche-clever-interactive')) . '</p></div>';
+                echo '<div class="notice notice-error"><p>' . esc_html(__('This section is temporarily unavailable.', 'niche-clever-interactive')) . '</p></div>';
             }
             echo '</section>';
         }
@@ -242,24 +242,24 @@ final class ProfileHub
         $summaries = $this->profiles->summaries();
         $limit = $this->limit();
 
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->html(__('Niche Clever Interactive profiles', 'niche-clever-interactive')) . '</h1>';
-        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html(__('Profiles', 'niche-clever-interactive')) . '</span><span>' . $this->html(__('Dashboard', 'niche-clever-interactive')) . '</span></div>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . esc_html(__('Niche Clever Interactive profiles', 'niche-clever-interactive')) . '</h1>';
+        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . esc_html(__('Profiles', 'niche-clever-interactive')) . '</span><span>' . esc_html(__('Dashboard', 'niche-clever-interactive')) . '</span></div>';
         $this->masthead();
         $this->notice();
 
-        echo '<section class="ncli-admin__tab-panel ncli-admin__profiles"><h2>' . $this->html(__('Your profiles', 'niche-clever-interactive')) . '</h2>';
-        echo '<p>' . $this->html(__('Each profile answers from its own vector store and has its own connection test. Open a profile to change its settings, or add a new one.', 'niche-clever-interactive')) . '</p>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__profiles"><h2>' . esc_html(__('Your profiles', 'niche-clever-interactive')) . '</h2>';
+        echo '<p>' . esc_html(__('Each profile answers from its own vector store and has its own connection test. Open a profile to change its settings, or add a new one.', 'niche-clever-interactive')) . '</p>';
         echo '<p class="ncli-admin__profiles-actions">';
         if (count($summaries) < $limit) {
-            echo '<a class="button button-primary" href="' . $this->attr($this->adminUrl(['view' => 'new'])) . '">' . $this->html(__('Add profile', 'niche-clever-interactive')) . '</a>';
+            echo '<a class="button button-primary" href="' . esc_attr($this->adminUrl(['view' => 'new'])) . '">' . esc_html(__('Add profile', 'niche-clever-interactive')) . '</a>';
         } else {
-            echo '<span class="description">' . $this->html(__('The maximum number of profiles has been reached.', 'niche-clever-interactive')) . '</span>';
+            echo '<span class="description">' . esc_html(__('The maximum number of profiles has been reached.', 'niche-clever-interactive')) . '</span>';
         }
         echo '</p>';
 
         echo '<table class="widefat striped ncli-admin__profile-table"><thead><tr>';
         foreach (['Profile', 'Tag', 'Availability', 'Connection test', 'Last tested', 'Access', 'Actions'] as $heading) {
-            echo '<th scope="col">' . $this->html($this->t($heading)) . '</th>';
+            echo '<th scope="col">' . esc_html($this->t($heading)) . '</th>';
         }
         echo '</tr></thead><tbody>';
         $this->landingRow(CoreSettings::DEFAULT_PROFILE_ID, __('Default profile', 'niche-clever-interactive'), $settings->isEnabled(), false, $settings);
@@ -267,11 +267,11 @@ final class ProfileHub
             $this->landingRow($summary->id()->value(), $summary->label(), $summary->isEnabled(), $summary->isProtected(), $settings);
         }
         echo '</tbody></table>';
-        echo '<p class="description">' . $this->html(__('"Current" means the profile passed a connection test with its present settings. Changing its vector store, corpus version, guidance, preset or model requires a new test.', 'niche-clever-interactive')) . '</p></section>';
+        echo '<p class="description">' . esc_html(__('"Current" means the profile passed a connection test with its present settings. Changing its vector store, corpus version, guidance, preset or model requires a new test.', 'niche-clever-interactive')) . '</p></section>';
 
         echo '<section class="ncli-admin__cards">';
-        echo '<div class="ncli-admin__card"><h3>' . $this->html(__('Extension', 'niche-clever-interactive')) . '</h3><p class="description">' . $this->html(__('An installed extension supplies the list of profiles and the extra tabs shown here.', 'niche-clever-interactive')) . '</p></div>';
-        echo '<div class="ncli-admin__card"><h3>' . $this->html(__('Help and settings', 'niche-clever-interactive')) . '</h3><p><a href="' . $this->attr($this->adminUrl(['page' => SiteSettingsPage::PAGE_SLUG, 'tab' => 'help'])) . '">' . $this->html(__('Open the Help Centre', 'niche-clever-interactive')) . '</a></p></div>';
+        echo '<div class="ncli-admin__card"><h3>' . esc_html(__('Extension', 'niche-clever-interactive')) . '</h3><p class="description">' . esc_html(__('An installed extension supplies the list of profiles and the extra tabs shown here.', 'niche-clever-interactive')) . '</p></div>';
+        echo '<div class="ncli-admin__card"><h3>' . esc_html(__('Help and settings', 'niche-clever-interactive')) . '</h3><p><a href="' . esc_attr($this->adminUrl(['page' => SiteSettingsPage::PAGE_SLUG, 'tab' => 'help'])) . '">' . esc_html(__('Open the Help Centre', 'niche-clever-interactive')) . '</a></p></div>';
         echo '</section></div>';
     }
 
@@ -284,16 +284,16 @@ final class ProfileHub
         }
         $open = $this->adminUrl(['profile' => $id, 'tab' => 'setup']);
 
-        echo '<tr><th scope="row"><a href="' . $this->attr($open) . '">' . $this->html($label) . '</a></th><td><code>' . $this->html($id) . '</code></td>';
-        echo '<td>' . $this->html($enabled ? __('Enabled', 'niche-clever-interactive') : __('Disabled', 'niche-clever-interactive')) . '</td>';
-        echo '<td><span class="ncli-admin__status ncli-admin__status--' . $tone . '">' . $this->html($this->t($text)) . '</span></td>';
-        echo '<td>' . ($status['tested_at'] !== '' ? $this->html($this->testedAt($status['tested_at'])) : '&mdash;') . '</td>';
-        echo '<td>' . $this->html($protected ? __('Protected', 'niche-clever-interactive') : __('Public', 'niche-clever-interactive')) . '</td><td>';
-        echo '<a href="' . $this->attr($open) . '">' . $this->html(__('Open', 'niche-clever-interactive')) . '</a> ';
+        echo '<tr><th scope="row"><a href="' . esc_attr($open) . '">' . esc_html($label) . '</a></th><td><code>' . esc_html($id) . '</code></td>';
+        echo '<td>' . esc_html($enabled ? __('Enabled', 'niche-clever-interactive') : __('Disabled', 'niche-clever-interactive')) . '</td>';
+        echo '<td><span class="ncli-admin__status ncli-admin__status--' . esc_attr($tone) . '">' . esc_html($this->t($text)) . '</span></td>';
+        echo '<td>' . ($status['tested_at'] !== '' ? esc_html($this->testedAt($status['tested_at'])) : '&mdash;') . '</td>';
+        echo '<td>' . esc_html($protected ? __('Protected', 'niche-clever-interactive') : __('Public', 'niche-clever-interactive')) . '</td><td>';
+        echo '<a href="' . esc_attr($open) . '">' . esc_html(__('Open', 'niche-clever-interactive')) . '</a> ';
         if ($id === CoreSettings::DEFAULT_PROFILE_ID) {
-            echo $this->testForm('ncli_test_connection', '_ncli_connection_nonce', 'ncli_test_connection', []);
+        echo wp_kses($this->testForm('ncli_test_connection', '_ncli_connection_nonce', 'ncli_test_connection', []), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         } elseif ($enabled) {
-            echo $this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]);
+        echo wp_kses($this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         }
         echo '</td></tr>';
     }
@@ -310,12 +310,12 @@ final class ProfileHub
     private function testForm(string $action, string $nonceField, string $nonceAction, array $hidden): string
     {
         $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($nonceAction) : '';
-        $fields = '<input type="hidden" name="action" value="' . $this->attr($action) . '"><input type="hidden" name="' . $this->attr($nonceField) . '" value="' . $this->attr($nonce) . '">';
+        $fields = '<input type="hidden" name="action" value="' . esc_attr($action) . '"><input type="hidden" name="' . esc_attr($nonceField) . '" value="' . esc_attr($nonce) . '">';
         foreach ($hidden as $name => $value) {
-            $fields .= '<input type="hidden" name="' . $this->attr($name) . '" value="' . $this->attr($value) . '">';
+            $fields .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '">';
         }
 
-        return '<form class="ncli-admin__inline-form" method="post" action="' . $this->attr($this->postUrl()) . '">' . $fields . '<button type="submit" class="button-link">' . $this->html(__('Test connection', 'niche-clever-interactive')) . '</button></form>';
+        return '<form class="ncli-admin__inline-form" method="post" action="' . esc_attr($this->postUrl()) . '">' . $fields . '<button type="submit" class="button-link">' . esc_html(__('Test connection', 'niche-clever-interactive')) . '</button></form>';
     }
 
     // ---- add a profile ----------------------------------------------------------------------------------------------------
@@ -323,23 +323,23 @@ final class ProfileHub
     private function renderNew(): void
     {
         $fields = new ProfileFieldRenderer();
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->html(__('Add a profile', 'niche-clever-interactive')) . '</h1>';
-        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . $this->html(__('New profile', 'niche-clever-interactive')) . '</span><span>' . $this->html(__('Profile workspace', 'niche-clever-interactive')) . '</span></div>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . esc_html(__('Add a profile', 'niche-clever-interactive')) . '</h1>';
+        echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . esc_html(__('New profile', 'niche-clever-interactive')) . '</span><span>' . esc_html(__('Profile workspace', 'niche-clever-interactive')) . '</span></div>';
         $this->masthead();
         $this->notice();
         if (count($this->profiles->summaries()) >= $this->limit()) {
-            echo '<section class="ncli-admin__tab-panel"><p>' . $this->html(__('The maximum number of profiles has been reached.', 'niche-clever-interactive')) . '</p><p><a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html(__('All profiles', 'niche-clever-interactive')) . '</a></p></section></div>';
+            echo '<section class="ncli-admin__tab-panel"><p>' . esc_html(__('The maximum number of profiles has been reached.', 'niche-clever-interactive')) . '</p><p><a class="button" href="' . esc_attr($this->adminUrl(['view' => 'profiles'])) . '">' . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a></p></section></div>';
             return;
         }
 
-        echo '<form class="ncli-admin__workspace" method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::CREATE_ACTION . '">';
-        echo $this->nonceField(self::CREATE_ACTION);
+        echo '<form class="ncli-admin__workspace" method="post" action="' . esc_attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . esc_attr(self::CREATE_ACTION) . '">';
+        echo wp_kses($this->nonceField(self::CREATE_ACTION), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
-        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-new_id">' . $this->html(__('Profile id', 'niche-clever-interactive')) . '</label></th><td><input id="ncli-new_id" class="regular-text" type="text" name="profile_id" maxlength="64" required autocomplete="off"><p class="description">' . $this->html(__('Lower-case letters, numbers, hyphens and underscores. Used in the shortcode and the request; it cannot be changed later.', 'niche-clever-interactive')) . '</p></td></tr>';
-        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-label">' . $this->html(__('Profile name', 'niche-clever-interactive')) . '</label></th><td><input id="ncli-label" class="regular-text" type="text" name="label" maxlength="80" required></td></tr>';
+        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-new_id">' . esc_html(__('Profile id', 'niche-clever-interactive')) . '</label></th><td><input id="ncli-new_id" class="regular-text" type="text" name="profile_id" maxlength="64" required autocomplete="off"><p class="description">' . esc_html(__('Lower-case letters, numbers, hyphens and underscores. Used in the shortcode and the request; it cannot be changed later.', 'niche-clever-interactive')) . '</p></td></tr>';
+        echo '<tr class="ncli-admin__field"><th scope="row"><label for="ncli-label">' . esc_html(__('Profile name', 'niche-clever-interactive')) . '</label></th><td><input id="ncli-label" class="regular-text" type="text" name="label" maxlength="80" required></td></tr>';
         $fields->profileRows('setup', $this->effective($this->blank()), true);
         echo '</tbody></table>';
-        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->html(__('Add profile', 'niche-clever-interactive')) . '</button><a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html(__('All profiles', 'niche-clever-interactive')) . '</a></div></form></div>';
+        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . esc_html(__('Add profile', 'niche-clever-interactive')) . '</button><a class="button" href="' . esc_attr($this->adminUrl(['view' => 'profiles'])) . '">' . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a></div></form></div>';
     }
 
     // ---- a named profile's workspace -----------------------------------------------------------------------------------------
@@ -347,10 +347,10 @@ final class ProfileHub
     private function renderProfile(string $id, string $tab): void
     {
         $edit = $this->load($id);
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->html(__('Niche Clever Interactive profile', 'niche-clever-interactive')) . '</h1>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . esc_html(__('Niche Clever Interactive profile', 'niche-clever-interactive')) . '</h1>';
         if ($edit === null) {
             $this->masthead();
-            echo '<section class="ncli-admin__tab-panel"><p>' . $this->html(__('That profile does not exist or cannot be edited right now.', 'niche-clever-interactive')) . '</p><p><a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html(__('All profiles', 'niche-clever-interactive')) . '</a></p></section></div>';
+            echo '<section class="ncli-admin__tab-panel"><p>' . esc_html(__('That profile does not exist or cannot be edited right now.', 'niche-clever-interactive')) . '</p><p><a class="button" href="' . esc_attr($this->adminUrl(['view' => 'profiles'])) . '">' . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a></p></section></div>';
             return;
         }
 
@@ -361,15 +361,15 @@ final class ProfileHub
             $coreTabs[$coreTab] = $this->t(self::TABS[$coreTab]);
         }
         $tabs = $this->tabs($id, $coreTabs);
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attr(__('Profile settings', 'niche-clever-interactive')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Profile settings', 'niche-clever-interactive')) . '">';
         foreach ($tabs as $tabId => $label) {
-            echo '<a class="nav-tab' . ($tabId === $tab ? ' nav-tab-active' : '') . '"' . ($tabId === $tab ? ' aria-current="page"' : '') . ' href="' . $this->attr($this->adminUrl(['profile' => $id, 'tab' => $tabId])) . '">' . $this->html($label) . '</a>';
+            echo '<a class="nav-tab' . ($tabId === $tab ? ' nav-tab-active' : '') . '"' . ($tabId === $tab ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->adminUrl(['profile' => $id, 'tab' => $tabId])) . '">' . esc_html($label) . '</a>';
         }
         echo '</nav>';
         $this->notice();
 
-        // Where an extension adds sections to a form tab, the tab splits in two: Core's own fields and one
-        // sub-tab for each section. Only the chosen part is drawn, so each page stays short.
+        // A form tab with separately presented extension sections splits into General and one sub-tab
+        // per section. Inline sections remain with General, so closely related controls stay together.
         $sub = $this->subTab($id, $tab);
         if ($sub !== null) {
             $this->subTabStrip($id, $tab, $sub);
@@ -379,25 +379,28 @@ final class ProfileHub
                 $this->renderForm($id, $tab, $edit);
             }
         } elseif ($tab === 'placement') {
-            echo '<section class="ncli-admin__tab-panel"><h2>' . $this->html(__('Placement', 'niche-clever-interactive')) . '</h2><p>' . $this->html(__('Place this profile with the shortcode', 'niche-clever-interactive')) . ' <code>[ncli_interactive profile="' . $this->html($id) . '"]</code> ' . $this->html(__('or the NC Interactive block with its profile setting.', 'niche-clever-interactive')) . '</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><h2>' . esc_html(__('Placement', 'niche-clever-interactive')) . '</h2><p>' . esc_html(__('Place this profile with the shortcode', 'niche-clever-interactive')) . ' <code>[ncli_interactive profile="' . esc_html($id) . '"]</code> ' . esc_html(__('or the NC Interactive block with its profile setting.', 'niche-clever-interactive')) . '</p></section>';
         } elseif ($tab === 'diagnostics') {
             $this->renderDiagnostics($id, $edit);
         }
-        if ($sub === null || $sub !== 'panel') {
-            $this->sections($id, $tab, $sub);
-        }
+        $this->sections($id, $tab, $sub);
         echo '</div>';
     }
 
-    /** The sub-tabs offered on a form tab: those whose extension sections target it. Only Appearance & Limits splits. */
+    /** The sub-tabs offered on form tabs with separately presented extension sections. */
     private function subTabs(string $profileId, string $tab): array
     {
-        if ($tab !== 'appearance-limits') {
+        $generalLabels = [
+            'ai-corpus' => __('General', 'niche-clever-interactive'),
+            'conversation' => __('General', 'niche-clever-interactive'),
+            'appearance-limits' => __('Panel style', 'niche-clever-interactive'),
+        ];
+        if (!isset($generalLabels[$tab])) {
             return [];
         }
-        $tabs = ['panel' => __('Panel style', 'niche-clever-interactive')];
+        $tabs = ['panel' => $generalLabels[$tab]];
         foreach ($this->profiles->sections($profileId) as $section) {
-            if ($section->tab() === $tab) {
+            if ($section->tab() === $tab && !$section->inlineWithPanel()) {
                 $tabs[$section->key()] = $section->title();
             }
         }
@@ -419,9 +422,9 @@ final class ProfileHub
 
     public function subTabStrip(string $profileId, string $tab, string $current): void
     {
-        echo '<nav class="ncli-admin__substrip" aria-label="' . $this->attr(__('Sections of this tab', 'niche-clever-interactive')) . '">';
+        echo '<nav class="ncli-admin__substrip" aria-label="' . esc_attr(__('Sections of this tab', 'niche-clever-interactive')) . '">';
         foreach ($this->subTabs($profileId, $tab) as $key => $label) {
-            echo '<a class="ncli-admin__subtab' . ($key === $current ? ' ncli-admin__subtab--active' : '') . '"' . ($key === $current ? ' aria-current="page"' : '') . ' href="' . $this->attr($this->adminUrl(['profile' => $profileId, 'tab' => $tab, 'ncli_sub' => $key])) . '">' . $this->html($label) . '</a>';
+            echo '<a class="ncli-admin__subtab' . ($key === $current ? ' ncli-admin__subtab--active' : '') . '"' . ($key === $current ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->adminUrl(['profile' => $profileId, 'tab' => $tab, 'ncli_sub' => $key])) . '">' . esc_html($label) . '</a>';
         }
         echo '</nav>';
     }
@@ -432,18 +435,18 @@ final class ProfileHub
         if ($tab === 'setup') {
             $this->checklist($id, $values);
         }
-        echo '<form class="ncli-admin__workspace" method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::SAVE_ACTION . '"><input type="hidden" name="profile_id" value="' . $this->attr($id) . '"><input type="hidden" name="ncli_tab" value="' . $this->attr($tab) . '">';
-        echo $this->nonceField(self::SAVE_ACTION);
+        echo '<form class="ncli-admin__workspace" method="post" action="' . esc_attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . esc_attr(self::SAVE_ACTION) . '"><input type="hidden" name="profile_id" value="' . esc_attr($id) . '"><input type="hidden" name="ncli_tab" value="' . esc_attr($tab) . '">';
+        echo wp_kses($this->nonceField(self::SAVE_ACTION), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         (new ProfileFieldRenderer())->profileRows($tab, $values);
         echo '</tbody></table>';
-        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->html(__('Save this profile', 'niche-clever-interactive')) . '</button><a class="button" href="' . $this->attr($this->adminUrl(['view' => 'profiles'])) . '">' . $this->html(__('All profiles', 'niche-clever-interactive')) . '</a></div></form>';
+        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . esc_html(__('Save this profile', 'niche-clever-interactive')) . '</button><a class="button" href="' . esc_attr($this->adminUrl(['view' => 'profiles'])) . '">' . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a></div></form>';
 
         if ($tab === 'setup') {
-            echo '<section class="ncli-admin__tab-panel ncli-admin__extension"><h2>' . $this->html(__('Delete this profile', 'niche-clever-interactive')) . '</h2><form method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::DELETE_ACTION . '"><input type="hidden" name="profile_id" value="' . $this->attr($id) . '">';
-            echo $this->nonceField(self::DELETE_ACTION);
-            echo '<p>' . $this->html(__('Deleting a profile removes its settings and the data the extension keeps for it. Conversation history already recorded by Core is not removed.', 'niche-clever-interactive')) . '</p>';
-            echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . $this->html(__('I want to delete this profile', 'niche-clever-interactive')) . '</label> <button type="submit" class="button button-link-delete">' . $this->html(__('Delete profile', 'niche-clever-interactive')) . '</button></p></form></section>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__extension"><h2>' . esc_html(__('Delete this profile', 'niche-clever-interactive')) . '</h2><form method="post" action="' . esc_attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . esc_attr(self::DELETE_ACTION) . '"><input type="hidden" name="profile_id" value="' . esc_attr($id) . '">';
+        echo wp_kses($this->nonceField(self::DELETE_ACTION), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
+            echo '<p>' . esc_html(__('Deleting a profile removes its settings and the data the extension keeps for it. Conversation history already recorded by Core is not removed.', 'niche-clever-interactive')) . '</p>';
+            echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . esc_html(__('I want to delete this profile', 'niche-clever-interactive')) . '</label> <button type="submit" class="button button-link-delete">' . esc_html(__('Delete profile', 'niche-clever-interactive')) . '</button></p></form></section>';
         }
     }
 
@@ -452,20 +455,95 @@ final class ProfileHub
     {
         $settings = call_user_func($this->settings);
         $status = $this->profiles->status($id, $settings, (bool) $values['enabled']);
+        $keyReady = (new SecretResolver())->isAvailable();
+        $corpusReady = $values['reference_saved'] && $values['corpus_version'] !== '';
         $tested = $status['state'] === Readiness::READY;
+        $placementReady = $this->hasPublishedProfilePlacement($id);
         $test = $this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]);
+        $testState = !$values['enabled']
+            ? __('Enable this profile, then run a connection test.', 'niche-clever-interactive')
+            : ($tested ? __('The current configuration passed its File Search connection test.', 'niche-clever-interactive') : __('Run a new test after changing the vector store, corpus version, guidance, preset or any model setting.', 'niche-clever-interactive'));
         $items = [
-            [__('Enter your vector store', 'niche-clever-interactive'), $values['reference_saved'] ? __('A vector store reference is saved for this profile.', 'niche-clever-interactive') : __('Save the vector store reference in AI & Corpus.', 'niche-clever-interactive'), $values['reference_saved'], ''],
-            [__('Set a corpus version', 'niche-clever-interactive'), $values['corpus_version'] !== '' ? __('A corpus version is saved.', 'niche-clever-interactive') : __('Enter a corpus version in the Profile tab.', 'niche-clever-interactive'), $values['corpus_version'] !== '', ''],
-            [__('Test the connection', 'niche-clever-interactive'), $tested ? __('The current configuration passed its File Search connection test.', 'niche-clever-interactive') : __('Run a new test after changing the vector store, corpus version, guidance, preset or any model setting.', 'niche-clever-interactive'), $tested, $test],
+            [__('Add your API key', 'niche-clever-interactive'), $keyReady ? __('The server-side constant is available.', 'niche-clever-interactive') : __('Add the server-side constant before testing.', 'niche-clever-interactive'), $keyReady, ''],
+            [__('Choose your vector store', 'niche-clever-interactive'), $corpusReady ? __('A vector-store reference and corpus version are saved for this profile.', 'niche-clever-interactive') : __('Save the vector store in AI & Corpus and the corpus version in Profile.', 'niche-clever-interactive'), $corpusReady, ''],
+            [__('Test the connection', 'niche-clever-interactive'), $testState, $tested, $test],
+            [__('Place this profile', 'niche-clever-interactive'), $placementReady ? __('A matching placement was found on a published page.', 'niche-clever-interactive') : __('Add this profile’s block or shortcode to a published page.', 'niche-clever-interactive'), $placementReady, ''],
         ];
         $done = count(array_filter($items, static fn (array $item): bool => $item[2]));
         /* translators: 1: completed setup steps, 2: total setup steps. */
-        echo '<section class="ncli-admin__get-started"><h2><span>' . $this->html(__('Get started', 'niche-clever-interactive')) . '</span><span class="ncli-admin__get-started-count">' . $this->html(sprintf(__('%1$d of %2$d complete', 'niche-clever-interactive'), $done, count($items))) . '</span></h2><ol class="ncli-admin__checklist">';
-        foreach ($items as $n => $item) {
-            echo '<li><span class="ncli-admin__check">' . ($item[2] ? '&#10003;' : (string) ($n + 1)) . '</span><div><strong>' . $this->html($item[0]) . '</strong><p>' . $this->html($item[1]) . '</p>' . $item[3] . '</div></li>';
+        echo '<section class="ncli-admin__get-started"><h2><span>' . esc_html(__('Get started', 'niche-clever-interactive')) . '</span><span class="ncli-admin__get-started-count">' . esc_html(sprintf(__('%1$d of %2$d complete', 'niche-clever-interactive'), $done, count($items))) . '</span></h2><ol class="ncli-admin__checklist">';
+        foreach ($items as $item) {
+            $this->checklistItem($item[0], $item[1], $item[2], $item[3]);
         }
         echo '</ol></section>';
+    }
+
+    private function checklistItem(string $title, string $description, bool $complete, string $action): void
+    {
+        $state = $complete ? __('Complete', 'niche-clever-interactive') : __('Needs attention', 'niche-clever-interactive');
+        $symbol = $complete ? '✓' : '✕';
+        $class = $complete ? 'complete' : 'incomplete';
+        echo '<li class="ncli-admin__checklist-item ncli-admin__checklist-item--' . esc_attr($class) . '"><span class="ncli-admin__check ncli-admin__check--' . esc_attr($class) . '"><span aria-hidden="true">' . esc_html($symbol) . '</span><span class="screen-reader-text">' . esc_html($state) . '</span></span><div class="ncli-admin__checklist-copy"><div class="ncli-admin__checklist-heading"><strong>' . esc_html($title) . '</strong>' . ($action !== '' ? '<span class="ncli-admin__checklist-action">' . wp_kses($action, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</span>' : '') . '</div><p>' . esc_html($description) . '</p></div></li>';
+    }
+
+    /** Does a published shortcode or block select this exact non-default profile? */
+    private function hasPublishedProfilePlacement(string $profileId): bool
+    {
+        if (!function_exists('get_posts')) {
+            return false;
+        }
+        $posts = get_posts([
+            'post_type' => ['page', 'post'],
+            'post_status' => 'publish',
+            'posts_per_page' => 100,
+            'orderby' => 'ID',
+            'order' => 'ASC',
+        ]);
+        if (!is_array($posts)) {
+            return false;
+        }
+        $quoted = preg_quote($profileId, '/');
+        $shortcode = '/\\[ncli_interactive(?=[^\\]]*\\bprofile\\s*=)[^\\]]*\\bprofile\\s*=\\s*(?:["\']' . $quoted . '["\']|' . $quoted . ')(?=[\\s\\]])[^\\]]*\\]/i';
+        foreach ($posts as $post) {
+            if (!is_object($post) || !isset($post->post_content) || !is_string($post->post_content)) {
+                continue;
+            }
+            if (preg_match($shortcode, $post->post_content) === 1 || $this->blockUsesProfile($post->post_content, $profileId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function blockUsesProfile(string $content, string $profileId): bool
+    {
+        if (!function_exists('parse_blocks')) {
+            return false;
+        }
+        $blocks = parse_blocks($content);
+        if (!is_array($blocks)) {
+            return false;
+        }
+        $contains = function (array $blocks) use (&$contains, $profileId): bool {
+            foreach ($blocks as $block) {
+                if (!is_array($block)) {
+                    continue;
+                }
+                $attrs = $block['attrs'] ?? [];
+                if (($block['blockName'] ?? null) === 'ncli/interactive' && is_array($attrs) && ($attrs['profile'] ?? null) === $profileId) {
+                    return true;
+                }
+                $inner = $block['innerBlocks'] ?? [];
+                if (is_array($inner) && $contains($inner)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        return $contains($blocks);
     }
 
     private function renderDiagnostics(string $id, ProfileEditV1 $edit): void
@@ -473,13 +551,13 @@ final class ProfileHub
         $settings = call_user_func($this->settings);
         $status = $this->profiles->status($id, $settings, $edit->isEnabled());
         [, $text] = self::STATES[$status['state']] ?? ['warn', 'Unavailable: check its settings'];
-        echo '<section class="ncli-admin__tab-panel"><h2>' . $this->html(__('Diagnostics', 'niche-clever-interactive')) . '</h2>';
-        echo '<p>' . $this->html(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . $this->html($this->t($text)) . '</strong></p>';
-        echo '<p>' . $this->html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . $this->html($status['status']) . '</strong>' . ($status['tested_at'] !== '' ? ' (' . $this->html(__('UTC', 'niche-clever-interactive')) . ' ' . $this->html($status['tested_at']) . ')' : '') . '</p>';
+        echo '<section class="ncli-admin__tab-panel"><h2>' . esc_html(__('Diagnostics', 'niche-clever-interactive')) . '</h2>';
+        echo '<p>' . esc_html(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . esc_html($this->t($text)) . '</strong></p>';
+        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . esc_html($status['status']) . '</strong>' . ($status['tested_at'] !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($status['tested_at']) . ')' : '') . '</p>';
         if ($edit->isEnabled()) {
-            echo '<p>' . $this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]) . '</p>';
+        echo '<p>' . wp_kses($this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</p>';
         }
-        echo '<p>' . $this->html(__('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.', 'niche-clever-interactive')) . '</p></section>';
+        echo '<p>' . esc_html(__('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.', 'niche-clever-interactive')) . '</p></section>';
     }
 
     // ---- handlers ---------------------------------------------------------------------------------------------------------------
@@ -647,7 +725,7 @@ final class ProfileHub
             'corpus_version' => $edit->corpusVersion(),
             'instructions' => $edit->guidance(),
             'response_preset' => $edit->preset(),
-            'presentation' => array_merge(['title' => '', 'headline' => '', 'introduction' => '', 'placeholder' => '', 'footer_left' => '', 'footer_right' => '', 'unavailable_message' => ''], $edit->presentation()),
+            'presentation' => array_merge(['title' => '', 'headline' => '', 'introduction' => '', 'placeholder' => '', 'footer_left' => '', 'footer_right' => '', 'unavailable_message' => '', 'processing_message' => ''], $edit->presentation()),
             'panel_style' => $edit->panelStyle(),
             'visitor_requests_per_day' => $edit->visitorRequestsPerDay(),
             'model' => $edit->model() ?? $defaults['model'],
@@ -662,7 +740,7 @@ final class ProfileHub
      */
     private function merge(ProfileEditV1 $current): ProfileEditV1
     {
-        $presentation = array_merge(['title' => '', 'headline' => '', 'introduction' => '', 'placeholder' => '', 'footer_left' => '', 'footer_right' => '', 'unavailable_message' => ''], $current->presentation());
+        $presentation = array_merge(['title' => '', 'headline' => '', 'introduction' => '', 'placeholder' => '', 'footer_left' => '', 'footer_right' => '', 'unavailable_message' => '', 'processing_message' => ''], $current->presentation());
         foreach (array_keys($presentation) as $key) {
             $presentation[$key] = $this->stringPost('presentation_' . $key, $presentation[$key]);
         }
@@ -784,7 +862,7 @@ final class ProfileHub
     private function deny(): void
     {
         if (function_exists('wp_die')) {
-            wp_die(__('You are not permitted to change NCI profiles.', 'niche-clever-interactive'));
+            wp_die(esc_html(__('You are not permitted to change NCI profiles.', 'niche-clever-interactive')));
         }
     }
 
@@ -802,7 +880,7 @@ final class ProfileHub
         ];
         $notice = AdminRequest::queryText('ncli_notice');
         if (is_string($notice) && isset($messages[$notice])) {
-            echo '<div class="notice notice-' . $messages[$notice][0] . '"><p>' . $this->html($this->t($messages[$notice][1])) . '</p></div>';
+        echo '<div class="notice notice-' . esc_attr($messages[$notice][0]) . '"><p>' . esc_html($this->t($messages[$notice][1])) . '</p></div>';
         }
         $tests = [
             'passed' => ['success', 'The connection test passed.'],
@@ -811,7 +889,7 @@ final class ProfileHub
         ];
         $test = AdminRequest::queryText('ncli_profile_test');
         if (is_string($test) && isset($tests[$test])) {
-            echo '<div class="notice notice-' . $tests[$test][0] . '"><p>' . $this->html($this->t($tests[$test][1])) . '</p></div>';
+        echo '<div class="notice notice-' . esc_attr($tests[$test][0]) . '"><p>' . esc_html($this->t($tests[$test][1])) . '</p></div>';
         }
     }
 
@@ -825,7 +903,7 @@ final class ProfileHub
             $url .= (str_contains($url, '?') ? '&' : '?') . 'ver=' . $modified;
         }
 
-        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->attr($url) . '" alt="" width="1544" height="500"></header>';
+        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . esc_attr($url) . '" alt="" width="1544" height="500"></header>';
     }
 
     /** @param array<string, string> $query */
@@ -849,17 +927,7 @@ final class ProfileHub
     {
         $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
 
-        return '<input type="hidden" name="_ncli_nonce" value="' . $this->attr($nonce) . '">';
-    }
-
-    private function html(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function attr(string $value): string
-    {
-        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return '<input type="hidden" name="_ncli_nonce" value="' . esc_attr($nonce) . '">';
     }
 
     private function t(string $text): string

@@ -10,7 +10,6 @@ use NicheCleverInteractive\Core\Api\V1\Support\ExtensionRegistryV1;
 use NicheCleverInteractive\Core\Api\V1\Value\WorkspaceContextV1;
 use NicheCleverInteractive\Core\Api\V1\Value\WorkspaceScreenV1;
 
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Core escapes its own attributes and text at each sink. Buffered extension output passes through extensionMarkup(), which applies the documented restrictive wp_kses() allowlist before it is rendered.
 /**
  * Hosts the screens of a registered workspace extension as submenu pages of the
  * "NC Interactive" menu. Core owns the menu, capability check, screen identifiers,
@@ -161,25 +160,25 @@ final class ExtensionScreens
             $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
             $extension->render($screenId, new WorkspaceContextV1(true, $nonce, $screenId, $action));
 
-            return $this->extensionMarkup((string) ob_get_clean());
+            return ExtensionMarkupPolicy::sanitise((string) ob_get_clean());
         } catch (\Throwable $exception) {
             while (ob_get_level() > $level) {
                 ob_end_clean();
             }
 
-            return '<div class="notice notice-error"><p>' . $this->escape(__('This screen is temporarily unavailable.', 'niche-clever-interactive')) . '</p></div>';
+            return '<div class="notice notice-error"><p>' . esc_html(__('This screen is temporarily unavailable.', 'niche-clever-interactive')) . '</p></div>';
         }
     }
 
     public function render(string $screenId): void
     {
         if (!function_exists('current_user_can') || !current_user_can(self::CAPABILITY)) {
-            echo '<div class="wrap"><p>' . $this->escape(__('You do not have permission to view this page.', 'niche-clever-interactive')) . '</p></div>';
+            echo '<div class="wrap"><p>' . esc_html(__('You do not have permission to view this page.', 'niche-clever-interactive')) . '</p></div>';
             return;
         }
 
         $ids = $this->screenIds();
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->escape(self::label($screenId)) . '</h1>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . esc_html(self::label($screenId)) . '</h1>';
         $this->masthead();
         $this->tabs($ids, $screenId);
 
@@ -206,7 +205,7 @@ final class ExtensionScreens
             return;
         }
 
-        echo '<section class="ncli-admin__tab-panel ncli-admin__extension">' . $this->extensionMarkup($body) . '</section></div>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__extension">' . wp_kses($body, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</section></div>';
     }
 
     private function masthead(): void
@@ -219,7 +218,7 @@ final class ExtensionScreens
             $url .= (str_contains($url, '?') ? '&' : '?') . 'ver=' . $modified;
         }
 
-        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . $this->attribute($url) . '" alt="" width="1544" height="500"></header>';
+        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . esc_attr($url) . '" alt="" width="1544" height="500"></header>';
     }
 
     /**
@@ -232,66 +231,21 @@ final class ExtensionScreens
     {
         $admin = static fn (string $page): string => function_exists('admin_url') ? (string) admin_url('admin.php?page=' . $page) : 'admin.php?page=' . $page;
 
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attribute(__('Extension screens', 'niche-clever-interactive')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Extension screens', 'niche-clever-interactive')) . '">';
         // With the profile hub the way back is the Profiles page; without it, Core's Settings.
         $hub = $this->registry->implementation('profile_editor') instanceof ProfileEditorV1;
         $back = $hub ? $admin(SettingsPage::PAGE_SLUG) . '&view=profiles' : $admin(SettingsPage::PAGE_SLUG);
-        echo '<a class="nav-tab" href="' . $this->attribute($back) . '">' . $this->escape($hub ? __('Profiles', 'niche-clever-interactive') : __('Settings', 'niche-clever-interactive')) . '</a>';
+        echo '<a class="nav-tab" href="' . esc_attr($back) . '">' . esc_html($hub ? __('Profiles', 'niche-clever-interactive') : __('Settings', 'niche-clever-interactive')) . '</a>';
         foreach ($ids as $id) {
             $active = $id === $current;
-            echo '<a class="nav-tab' . ($active ? ' nav-tab-active' : '') . '" href="' . $this->attribute($admin(self::PAGE_PREFIX . $id)) . '"' . ($active ? ' aria-current="page"' : '') . '>' . $this->escape(self::label($id)) . '</a>';
+            echo '<a class="nav-tab' . ($active ? ' nav-tab-active' : '') . '" href="' . esc_attr($admin(self::PAGE_PREFIX . $id)) . '"' . ($active ? ' aria-current="page"' : '') . '>' . esc_html(self::label($id)) . '</a>';
         }
         echo '</nav>';
     }
 
-    private function attribute(string $value): string
-    {
-        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
     private function notice(): void
     {
-        echo '<div class="notice notice-error"><p>' . $this->escape(__('This screen is temporarily unavailable.', 'niche-clever-interactive')) . '</p></div>';
+        echo '<div class="notice notice-error"><p>' . esc_html(__('This screen is temporarily unavailable.', 'niche-clever-interactive')) . '</p></div>';
     }
 
-    private function escape(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    /** Limits extension output to the markup Core can safely host in its administrator workspace. */
-    private function extensionMarkup(string $markup): string
-    {
-        if (!function_exists('wp_kses')) {
-            return '';
-        }
-
-        return wp_kses($markup, [
-            'a' => ['class' => true, 'href' => true, 'target' => true, 'rel' => true],
-            'button' => ['aria-controls' => true, 'aria-expanded' => true, 'aria-label' => true, 'class' => true, 'type' => true, 'name' => true, 'value' => true],
-            'code' => ['class' => true],
-            'div' => ['class' => true, 'id' => true, 'role' => true],
-            'em' => [],
-            'form' => ['action' => true, 'class' => true, 'method' => true],
-            'h2' => ['class' => true],
-            'h3' => ['class' => true],
-            'input' => ['checked' => true, 'class' => true, 'id' => true, 'max' => true, 'maxlength' => true, 'min' => true, 'name' => true, 'required' => true, 'type' => true, 'value' => true],
-            'label' => ['class' => true, 'for' => true],
-            'li' => ['class' => true],
-            'ol' => ['class' => true],
-            'option' => ['selected' => true, 'value' => true],
-            'p' => ['class' => true],
-            'select' => ['class' => true, 'id' => true, 'name' => true],
-            'span' => ['aria-hidden' => true, 'class' => true, 'hidden' => true, 'id' => true, 'role' => true],
-            'strong' => ['class' => true],
-            'table' => ['class' => true],
-            'tbody' => [],
-            'td' => ['class' => true, 'colspan' => true],
-            'textarea' => ['class' => true, 'id' => true, 'name' => true, 'rows' => true],
-            'th' => ['class' => true, 'scope' => true],
-            'thead' => [],
-            'tr' => ['class' => true],
-            'ul' => ['class' => true],
-        ]);
-    }
 }

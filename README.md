@@ -1,6 +1,6 @@
 # Niche Clever Interactive
 
-This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.1` package is a corrected WordPress.org review candidate; it is not yet approved, listed or publicly released. The repository's internal architecture remains Core-first; no NCI Pro implementation is included.
+This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.3` package is a local WordPress.org recovery candidate; it is not yet approved, listed or publicly released. It adds a default-on progressive-answer presentation with a complete-response fallback, while the repository's internal architecture remains Core-first; no NCI Premium implementation is included. “Pro” is historical terminology for the now separately maintained private companion, NCI Premium.
 
 ## Current scope
 
@@ -14,7 +14,7 @@ This public repository holds the Niche Clever Interactive WordPress plugin. The 
 - RC9 adds an optional, off-by-default conversation history (new prefixed table, Conversations screen, delete one/selected/all, retention purge), panel width, accent colour, an opt-in credit line, an editable unavailable message, the "NC Interactive" menu and an owner-controlled `uninstall.php`. See `docs/ARCHITECTURE.md` and `docs/PRIVACY-LIFECYCLE.md`.
 - C4's Core-only daily visitor/provider reservations and server-secret scope hashing with a trusted-proxy boundary. See `docs/PRIVACY-LIFECYCLE.md`.
 
-Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, completed-File-Search validation and public answer construction. Pro integration is not implemented or tested here.
+Core's future functional responsibilities remain the sole public chat route, request validation/order, provider/credential access, cost and safety controls, completed-File-Search validation and public answer construction. NCI Premium integration is provisional and fail-closed; its private implementation is not included here.
 
 ## Start here
 
@@ -58,7 +58,7 @@ Run the pure local checks:
     node tests/c5-public-js.mjs
     Get-ChildItem -Recurse -Filter *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 
-The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. C5 remains technically accepted as historical local-only technical evidence following a segregated live File Search canary. RC5 needs its own deterministic/package/fixture validation before it can replace RC4 as the current local-only candidate. Public release, deployment and WordPress.org submission remain separate decisions.
+The C0 fixture topology has no database dump or provider configuration. C1–C5 implementation and acceptance evidence is recorded in `progress.md`. The 28 October consolidation fixture used exact separately built Core `1.0.3` and NCI Premium `1.0.0` archives, with hashes supplied to the runner; it is local deterministic-mock evidence only. Public release, deployment and WordPress.org submission remain separate decisions.
 
 ## Licence
 

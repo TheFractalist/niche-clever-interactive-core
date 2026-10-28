@@ -6,6 +6,11 @@
     return strings && typeof strings[key] === 'string' ? strings[key] : fallback;
   }
 
+  function processingMessage(panel) {
+    var message = panel && panel.getAttribute ? panel.getAttribute('data-ncli-processing-message') : '';
+    return typeof message === 'string' && message.trim() ? message : text('findingAnswer', 'Receiving response…');
+  }
+
   // A quiet message is still announced to assistive technology but is not shown on screen,
   // so a normal answer does not leave a line of status text under the thread.
   function setStatus(panel, message, quiet) {
@@ -263,7 +268,7 @@
       dots.appendChild(document.createElement('span'));
     }
     var workingLabel = document.createElement('span');
-    workingLabel.textContent = text('findingAnswer', 'Working…');
+    workingLabel.textContent = processingMessage(panel);
     working.appendChild(dots);
     working.appendChild(workingLabel);
     answerElement.appendChild(working);
@@ -593,9 +598,10 @@
     var pending = addPendingTurn(panel, question);
     textarea.value = '';
     var profile = form.getAttribute('data-ncli-profile') || '';
-    // A browser that can read a response as it arrives asks for a stream; the route falls back to a
-    // single JSON answer whenever it cannot or need not stream (an error, or a reused answer).
-    var canStream = typeof window.TextDecoder === 'function' && typeof window.ReadableStream === 'function';
+    // A browser requests a stream only when the site owner has kept progressive answers enabled.
+    // The route still falls back to JSON for errors, reused answers and non-streaming transports.
+    var progressiveStreaming = !window.NCLI_CORE_CHAT || window.NCLI_CORE_CHAT.progressiveStreaming !== false;
+    var canStream = progressiveStreaming && typeof window.TextDecoder === 'function' && typeof window.ReadableStream === 'function';
     var headers = { 'Content-Type': 'application/json', 'Accept': canStream ? 'text/event-stream, application/json' : 'application/json' };
     if (profile && window.NCLI_CORE_CHAT.nonce) {
       // Only named profiles can depend on who is signed in; the default panel never sends it.

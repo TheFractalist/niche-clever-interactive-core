@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use NicheCleverInteractive\Core\AI\ChatService;
+use NicheCleverInteractive\Core\AI\Transport\DeterministicMockTransport;
 use NicheCleverInteractive\Core\AI\Transport\OpenAiResponsesFileSearchTransport;
 use NicheCleverInteractive\Core\AI\Transport\ProviderFailure;
 use NicheCleverInteractive\Core\AI\Transport\ResponsesHttpResponse;
@@ -12,15 +13,26 @@ use NicheCleverInteractive\Core\AI\Transport\StreamingResponsesHttpClient;
 use NicheCleverInteractive\Core\AI\Transport\StreamingResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\TransportRequest;
 use NicheCleverInteractive\Core\AI\Transport\TransportResult;
+use NicheCleverInteractive\Core\AI\Transport\WordPressResponsesHttpClient;
 use NicheCleverInteractive\Core\Configuration\ConnectionFingerprint;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Configuration\SecretResolver;
 use NicheCleverInteractive\Core\Configuration\TransportMode;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
 use NicheCleverInteractive\Core\Rest\EventStream;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
 $ncliStreamOptions = [];
+$ncliStreamHttpResponse = ['status' => 200, 'body' => ''];
+$ncliStreamActions = [];
+$ncliStreamActionAdds = 0;
+$ncliStreamActionRemoves = 0;
+$ncliStreamInvokeHook = false;
+$ncliStreamHookUrl = '';
+$ncliStreamHookChunks = [];
+$ncliStreamThrow = false;
+$ncliStreamPostCalls = 0;
 if (!function_exists('get_option')) {
     function get_option($name, $default = false)
     {
@@ -29,9 +41,91 @@ if (!function_exists('get_option')) {
         return $ncliStreamOptions[$name] ?? $default;
     }
 }
+if (!function_exists('wp_remote_post')) {
+    /** @param array<string, mixed> $arguments */
+    function wp_remote_post(string $url, array $arguments)
+    {
+        global $ncliStreamHttpResponse, $ncliStreamActions, $ncliStreamInvokeHook, $ncliStreamHookUrl, $ncliStreamHookChunks, $ncliStreamThrow, $ncliStreamPostCalls;
+
+        $ncliStreamPostCalls++;
+        if ($ncliStreamThrow) {
+            throw new RuntimeException('Fixture transport failure.');
+        }
+        if ($ncliStreamInvokeHook && isset($ncliStreamActions['http_api_curl'])) {
+            $handle = (object) ['status' => (int) ($ncliStreamHttpResponse['status'] ?? 0), 'write' => null];
+            call_user_func($ncliStreamActions['http_api_curl'], $handle, $arguments, $ncliStreamHookUrl !== '' ? $ncliStreamHookUrl : $url);
+            foreach ($ncliStreamHookChunks as $chunk) {
+                if (is_callable($handle->write)) {
+                    call_user_func($handle->write, $handle, $chunk);
+                }
+            }
+        }
+
+        return $ncliStreamHttpResponse;
+    }
+}
+if (!function_exists('add_action')) {
+    function add_action(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void
+    {
+        global $ncliStreamActions, $ncliStreamActionAdds;
+
+        $ncliStreamActions[$hook] = $callback;
+        $ncliStreamActionAdds++;
+    }
+}
+if (!function_exists('remove_action')) {
+    function remove_action(string $hook, callable $callback, int $priority = 10): bool
+    {
+        global $ncliStreamActions, $ncliStreamActionRemoves;
+
+        unset($ncliStreamActions[$hook]);
+        $ncliStreamActionRemoves++;
+
+        return true;
+    }
+}
+if (!function_exists('curl_setopt')) {
+    function curl_setopt($handle, int $option, $value): bool
+    {
+        return true;
+    }
+}
+if (!function_exists('curl_getinfo')) {
+    function curl_getinfo($handle, int $option = 0)
+    {
+        return 0;
+    }
+}
+if (!defined('CURLOPT_WRITEFUNCTION')) {
+    define('CURLOPT_WRITEFUNCTION', 20011);
+}
+if (!defined('CURLINFO_RESPONSE_CODE')) {
+    define('CURLINFO_RESPONSE_CODE', 2097154);
+}
+if (!function_exists('wp_remote_retrieve_response_code')) {
+    /** @param array<string, mixed> $response */
+    function wp_remote_retrieve_response_code(array $response): int
+    {
+        return (int) ($response['status'] ?? 0);
+    }
+}
+if (!function_exists('wp_remote_retrieve_body')) {
+    /** @param array<string, mixed> $response */
+    function wp_remote_retrieve_body(array $response): string
+    {
+        return (string) ($response['body'] ?? '');
+    }
+}
 
 require_once __DIR__ . '/bootstrap.php';
 require_once dirname(__DIR__) . '/src/autoload.php';
+
+if (!function_exists('NicheCleverInteractive\\Core\\AI\\Transport\\curl_setopt')) {
+    eval('namespace NicheCleverInteractive\\Core\\AI\\Transport {
+        function curl_setopt($handle, int $option, $value): bool { $handle->write = $value; return true; }
+        function curl_getinfo($handle, int $option = 0) { return $handle->status; }
+    }');
+}
 
 if (!defined('NCLI_TEST_PROVIDER_KEY')) {
     define('NCLI_TEST_PROVIDER_KEY', 'fixture-provider-key');
@@ -208,6 +302,86 @@ $fallback = (new OpenAiResponsesFileSearchTransport(new SecretResolver('NCLI_TES
 });
 $assert($fallback->answer() === 'Whole answer.' && $shown === [], 'Without a streaming client the transport answers normally and reports no early text.');
 
+// ---- WordPress HTTP adapter: provider events remain inside the WordPress HTTP API -----------------
+$ncliStreamHttpResponse = ['status' => 200, 'body' => $sse($searchDone) . $sse($final('Whole streamed answer.'))];
+$wholeChunks = [];
+$ncliStreamInvokeHook = false;
+$ncliStreamPostCalls = 0;
+$adapterResponse = (new WordPressResponsesHttpClient())->postStream(
+    'https://example.invalid/responses',
+    ['Accept' => 'text/event-stream'],
+    '{"stream":true}',
+    10,
+    static function (string $chunk) use (&$wholeChunks): void {
+        $wholeChunks[] = $chunk;
+    }
+);
+$assert($adapterResponse->statusCode() === 200 && $wholeChunks === [$ncliStreamHttpResponse['body']] && $ncliStreamPostCalls === 1, 'A non-cURL WordPress transport forwards the retained event body once without a second provider request.');
+
+$ncliStreamHttpResponse = ['status' => 200, 'body' => 'retained body must not be delivered twice'];
+$ncliStreamInvokeHook = true;
+$ncliStreamHookUrl = 'https://example.invalid/responses';
+$ncliStreamHookChunks = ['first ', 'second'];
+$ncliStreamActionAdds = 0;
+$ncliStreamActionRemoves = 0;
+$hookChunks = [];
+$adapterResponse = (new WordPressResponsesHttpClient())->postStream(
+    'https://example.invalid/responses',
+    ['Accept' => 'text/event-stream'],
+    '{"stream":true}',
+    10,
+    static function (string $chunk) use (&$hookChunks): void {
+        $hookChunks[] = $chunk;
+    }
+);
+$assert($adapterResponse->statusCode() === 200 && $hookChunks === ['first ', 'second'] && $ncliStreamActionAdds === 1 && $ncliStreamActionRemoves === 1 && $ncliStreamActions === [], 'The documented hook forwards chunks in order, suppresses the retained duplicate and is removed after the request.');
+
+$ncliStreamHttpResponse = ['status' => 200, 'body' => 'whole fallback'];
+$ncliStreamHookUrl = 'https://example.invalid/unrelated';
+$ncliStreamHookChunks = ['must not be accepted'];
+$guardedChunks = [];
+$adapterResponse = (new WordPressResponsesHttpClient())->postStream(
+    'https://example.invalid/responses',
+    ['Accept' => 'text/event-stream'],
+    '{"stream":true}',
+    10,
+    static function (string $chunk) use (&$guardedChunks): void {
+        $guardedChunks[] = $chunk;
+    }
+);
+$assert($adapterResponse->statusCode() === 200 && $guardedChunks === ['whole fallback'], 'The temporary hook ignores any other WordPress HTTP request and falls back to the retained body.');
+
+$ncliStreamThrow = true;
+$ncliStreamActionRemoves = 0;
+try {
+    (new WordPressResponsesHttpClient())->postStream('https://example.invalid/responses', ['Accept' => 'text/event-stream'], '{"stream":true}', 10, static function (string $chunk): void {});
+} catch (RuntimeException $exception) {
+    // The error is expected; the assertion below checks cleanup rather than error wording.
+}
+$ncliStreamThrow = false;
+$ncliStreamInvokeHook = false;
+$assert($ncliStreamActionRemoves === 1 && $ncliStreamActions === [], 'The temporary WordPress HTTP hook is removed even when the transport throws.');
+
+$adapterSource = (string) file_get_contents(dirname(__DIR__) . '/src/AI/Transport/WordPressResponsesHttpClient.php');
+$assert(str_contains($adapterSource, "add_action('http_api_curl'") && str_contains($adapterSource, "remove_action('http_api_curl'") && str_contains($adapterSource, 'WordPress documents http_api_curl') && !str_contains($adapterSource, 'curl_' . 'init') && !str_contains($adapterSource, 'curl_' . 'exec'), 'The Core adapter uses only WordPress\'s documented temporary cURL hook, never a standalone cURL request.');
+
+// ---- Deterministic mock: a fixture can exercise the same SSE route without a provider ----------
+$mockRequest = new TransportRequest('What is NCI?', 'Instructions.', 'balanced', str_repeat('m', 64), str_repeat('n', 64), 'vs_fixture_mock');
+$mock = new DeterministicMockTransport();
+$mockChunks = [];
+$mockStreamed = $mock->respondStreaming($mockRequest, static function (string $text) use (&$mockChunks): void {
+    $mockChunks[] = $text;
+});
+$mockPlain = $mock->respond($mockRequest);
+$assert($mock instanceof StreamingResponseTransport, 'The deterministic fixture transport implements the existing streaming contract.');
+$assert($mockStreamed->answer() === $mockPlain->answer() && implode('', $mockChunks) === $mockPlain->answer(), 'The deterministic stream has fixed bounded chunks and returns exactly the ordinary completed result.');
+$assert(count($mockChunks) > 1 && max(array_map('strlen', $mockChunks)) <= 20, 'The deterministic fixture stream uses bounded chunks so the browser can observe replacement.');
+$incompleteChunks = [];
+$incomplete = $mock->respondStreaming(new TransportRequest('Return incomplete retrieval', 'Instructions.', 'balanced', str_repeat('m', 64), str_repeat('n', 64), 'vs_fixture_mock'), static function (string $text) use (&$incompleteChunks): void {
+    $incompleteChunks[] = $text;
+});
+$assert(!$incomplete->completedFileSearch() && $incompleteChunks === [], 'An incomplete deterministic retrieval never emits early display text.');
+
 // ---- ChatService: validation and outcome are unchanged by streaming ------------------------------
 $settings = CoreSettings::fromArray([
     'enabled' => true,
@@ -255,7 +429,7 @@ $scripted = new class implements StreamingResponseTransport {
 };
 $service = new ChatService($scripted, new SecretResolver('NCLI_NOT_A_SECRET'));
 $got = [];
-$outcome = $service->handle(['question' => 'Stream this?'], $settings, [], static function (string $t) use (&$got): void {
+$outcome = $service->handle(['question' => 'Stream this?'], $settings, RequestEnvironment::empty(), static function (string $t) use (&$got): void {
     $got[] = $t;
 });
 $assert($outcome->isSuccess() && $outcome->payload()['answer'] === 'Final answer.' && implode('', $got) === 'Final answer.' && $scripted->streamedCalls === 1, 'A streamed answer is delivered as text, then returned as the same validated outcome.');
@@ -264,7 +438,7 @@ $assert($plainOutcome->payload() === $outcome->payload() && $scripted->plainCall
 foreach (['fail' => 'provider_failure', 'unverified' => 'evidence_failure', 'mismatch' => 'evidence_failure'] as $mode => $code) {
     $scripted->mode = $mode;
     $got = [];
-    $bad = $service->handle(['question' => 'Stream ' . $mode . '?'], $settings, [], static function (string $t) use (&$got): void {
+    $bad = $service->handle(['question' => 'Stream ' . $mode . '?'], $settings, RequestEnvironment::empty(), static function (string $t) use (&$got): void {
         $got[] = $t;
     });
     $assert(!$bad->isSuccess() && $bad->errorCode() === $code, 'A streamed answer that fails validation (' . $mode . ') ends in the public error ' . $code . ', even after text was shown.');

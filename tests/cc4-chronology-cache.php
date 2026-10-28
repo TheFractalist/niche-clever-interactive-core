@@ -29,6 +29,7 @@ use NicheCleverInteractive\Core\Conversation\ConversationStore;
 use NicheCleverInteractive\Core\Conversation\ConversationTurn;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Profile\ProfileTestRecords;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 use NicheCleverInteractive\Core\Security\PolicyFingerprint;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
@@ -194,7 +195,7 @@ $history = new class implements ConversationStore {
 };
 $chat = new ChatService($transport, $secrets, null, null, $gate, new ConversationRecorder($history), null, $directory);
 $plainChat = new ChatService($transport, $secrets, null, null, $gate, null, null, new ProfileDirectory(new ExtensionRegistryV1(), $records));
-$ask = static fn (ChatService $s, string $question, ?CoreSettings $with = null, ?string $profile = null): array => $s->handle(array_filter(['question' => $question, 'profile_id' => $profile], static fn ($v) => $v !== null), $with ?? $GLOBALS['settings'])->payload();
+$ask = static fn (ChatService $s, string $question, ?CoreSettings $with = null, ?string $profile = null): array => $s->handle(array_filter(['question' => $question, 'profile_id' => $profile], static fn ($v) => $v !== null), $with ?? $GLOBALS['settings'], RequestEnvironment::fromServer(is_array($_SERVER ?? null) ? $_SERVER : []))->payload();
 $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
 
 // ---- Chronology ----------------------------------------------------------------------------
@@ -326,8 +327,8 @@ $transport->incomplete = false;
 
 // Without a cache seam nothing changes.
 $callsBefore = $transport->calls;
-$plainChat->handle(['question' => 'What is the Policy?'], $settings);
-$plainChat->handle(['question' => 'What is the Policy?'], $settings);
+$plainChat->handle(['question' => 'What is the Policy?'], $settings, RequestEnvironment::fromServer(is_array($_SERVER ?? null) ? $_SERVER : []));
+$plainChat->handle(['question' => 'What is the Policy?'], $settings, RequestEnvironment::fromServer(is_array($_SERVER ?? null) ? $_SERVER : []));
 $assert($transport->calls === $callsBefore + 2, 'With no cache seam every request reaches the provider, as before.');
 
 // Contract surface.

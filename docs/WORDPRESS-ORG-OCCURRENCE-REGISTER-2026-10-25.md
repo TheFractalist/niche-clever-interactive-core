@@ -1,0 +1,17 @@
+# WordPress.org occurrence register — 25 October 2026
+
+This is the deterministic T2 source inventory for the current remediation tree. `tests/wporg-occurrence-inventory.php` checks the listed source categories and exact per-file counts after excluding comments. A changed count is not automatically unsafe, but it must be classified here before it may be treated as reviewed.
+
+| Category | Registered locations | Classification boundary |
+| --- | --- | --- |
+| Direct request reads | `AdminRequest` (8); `ChatRoute` (2) | `AdminRequest` accepts scalar administrator input, unslashes and bounds it before callers use it. `ChatRoute` passes only a minimal `RequestEnvironment` derived from server state. |
+| PHP output statements | `ConversationsPage` (70), `ExtensionScreens` (11), `HelpRenderer` (38), `ProfileFieldRenderer` (15), `ProfileHub` (80), `SettingsPage` (34), `SiteSettingsPage` (14), `EventStream` (1) | Administrator HTML uses direct WordPress escaping at dynamic scalar sinks. Buffered extension markup passes the common `ExtensionMarkupPolicy`; `EventStream` emits JSON SSE rather than HTML and has a line-scoped exception. |
+| WordPress actions | Admin pages, profile/extension hosts, purge, frontend panel, plugin bootstrap, chat route and `WordPressResponsesHttpClient` (1 temporary `http_api_curl` callback) | Every registration is Core-owned; administrator post actions are guarded by capability and nonce checks in their handlers. The provider callback is attached only around the fixed Core provider request, guards its exact URL, checks the HTTP status before forwarding a chunk and is removed in `finally`; there is no standalone cURL request. |
+| REST registrations | `ChatRoute` (1) | Core’s only public REST route is `ncli/v1/chat`; its callback performs request validation and owns public errors. |
+| Redirects | Conversations, connection test, profile hub, settings and site settings (one each) | Administrator handlers validate capability/nonce before state change and redirect through Core-owned administrator URLs. |
+| Database access | Rate bucket store (31), conversation table (10), conversation store (58), plugin schema (7), uninstall (3) | Identifiers are Core-controlled plugin-table names; values are prepared or bounded. Existing database-specific suppressions remain explicitly scoped to the transaction/identifier cases and require WPCS/Plugin Check review. |
+| Output buffers | `ExtensionScreens` (4), `ProfileHub` (2) | Every extension buffer is sent through `ExtensionMarkupPolicy`; settings and governance apply that policy again at their final output sink. |
+| Extension seams | Extension screens (4), profile hub (6), settings (3), site settings (1), profile directory (1) | Core continues to own routes, credentials, provider access, public errors and the hosted-markup boundary. |
+| JavaScript HTML sinks | None in production JavaScript | The inventory rejects `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `srcdoc` and contextual-fragment sinks outside tests. Public answer rendering must continue to construct DOM nodes and use text content. |
+
+This register is a drift detector, not proof that each sink is safe. The Core ruleset scan is currently clean (PHPCS 3.13.6 / WPCS 3.4.1, 25 October 2026); the outstanding gates remain a repeat scan against the exact candidate archive, real WordPress fixture tests, Plugin Check against that archive, and independent review.

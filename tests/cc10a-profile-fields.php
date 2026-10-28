@@ -32,7 +32,7 @@ $assert(str_contains($profileTab, 'name="corpus_version"') && str_contains($prof
 $ai = $render('ai-corpus');
 $assert(str_contains($ai, 'name="vector_store_reference"') && str_contains($ai, 'name="model_id"') && str_contains($ai, 'name="model_timeout_seconds"'), 'AI & Corpus draws the store and every model field.');
 $conversation = $render('conversation');
-$assert(str_contains($conversation, 'href="https://example.test/history"') && str_contains($conversation, 'name="conversation_log_enabled"'), 'Conversation draws history settings and the history link it was given.');
+$assert(str_contains($conversation, 'href="https://example.test/history"') && str_contains($conversation, 'name="conversation_log_enabled"') && str_contains($conversation, 'name="presentation_processing_message"') && str_contains($conversation, 'name="streaming_progressive"') && str_contains($conversation, 'checked'), 'Conversation draws history, progressive-delivery and processing-message settings with progressive delivery enabled by default.');
 $appearance = $render('appearance-limits');
 $assert(str_contains($appearance, 'value="#123456"') && str_contains($appearance, 'name="provider_requests_per_day"') && str_contains($appearance, 'name="visitor_requests_per_day"'), 'Appearance & Limits draws the accent colour and both limits.');
 $assert($render('diagnostics') === '' && $render('help') === '' && $render('placement') === '', 'Tabs without fields draw nothing.');

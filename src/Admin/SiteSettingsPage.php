@@ -7,9 +7,6 @@ namespace NicheCleverInteractive\Core\Admin;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
 
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Core's own markup uses the escape wrappers below; the hosted extension panel is administrator-only output from a registered extension, which escapes its own content.
-// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.NonceVerification.Recommended -- AdminActionGuard verifies capability and nonce before any POST value is read; GET values only choose a tab and are matched against fixed values.
-// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Values are matched against strict patterns and validated by CoreSettings before anything is stored.
 /**
  * The site-wide Settings page, present while an extension supplies the profile hub: the daily provider
  * allowance and Delete data on uninstall (General), whatever the extension adds for the whole site,
@@ -20,7 +17,7 @@ final class SiteSettingsPage
 {
     public const PAGE_SLUG = 'ncli-settings';
     private const SAVE_ACTION = 'ncli_save_site_settings';
-    private const TABS = ['general' => 'General', 'help' => 'Help'];
+    private const BASE_TABS = ['general' => 'General', 'help' => 'Help'];
 
     private ?ProfileHub $hub;
     private ?ExtensionScreens $screens;
@@ -81,26 +78,28 @@ final class SiteSettingsPage
     {
         if (!function_exists('current_user_can') || !current_user_can('manage_options')) {
             if (function_exists('wp_die')) {
-                wp_die(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive'));
+                wp_die(esc_html(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive')));
             }
             return;
         }
 
         $tab = $this->tab();
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . $this->html(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '</h1>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . esc_html(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '</h1>';
         if ($this->hub !== null) {
             $this->hub->titleBar(__('Settings', 'niche-clever-interactive'), __('Site settings', 'niche-clever-interactive'));
             $this->hub->masthead();
         }
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . $this->attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
-        foreach (self::TABS as $id => $label) {
-            echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"' . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . $this->attr($this->url(['tab' => $id])) . '">' . $this->html($this->t($label)) . '</a>';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
+        foreach ($this->tabs() as $id => $label) {
+            echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"' . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->url(['tab' => $id])) . '">' . esc_html($this->t($label)) . '</a>';
         }
         echo '</nav>';
         $this->notice();
 
         if ($tab === 'help') {
             (new HelpRenderer(new ProfileFieldRenderer(), fn (string $section): string => $this->url(['tab' => 'help', 'help' => $section])))->render();
+        } elseif ($tab === 'extension-settings') {
+            $this->renderExtensionSettings();
         } else {
             $this->renderGeneral();
         }
@@ -110,24 +109,32 @@ final class SiteSettingsPage
     private function renderGeneral(): void
     {
         $values = $this->load()->toArray();
-        echo '<form class="ncli-admin__workspace" method="post" action="' . $this->attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . self::SAVE_ACTION . '">';
-        echo $this->nonceField(self::SAVE_ACTION);
+        echo '<form class="ncli-admin__workspace" method="post" action="' . esc_attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . esc_attr(self::SAVE_ACTION) . '">';
+        echo wp_kses($this->nonceField(self::SAVE_ACTION), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         (new ProfileFieldRenderer())->siteRows($values);
         echo '</tbody></table>';
-        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . $this->html(__('Save settings', 'niche-clever-interactive')) . '</button></div></form>';
+        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . esc_html(__('Save settings', 'niche-clever-interactive')) . '</button></div></form>';
 
+    }
+
+    /** The extension body has its own tab so it remains separately saved and owned. */
+    private function renderExtensionSettings(): void
+    {
         $body = $this->screens !== null ? $this->screens->bodyHtml('settings') : '';
-        if ($body !== '') {
-            echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . $this->html(__('Extension settings', 'niche-clever-interactive')) . '</h2>' . $body . '</section>';
+        if ($body === '') {
+            echo '<section class="ncli-admin__tab-panel"><p>' . esc_html(__('Extension settings are temporarily unavailable.', 'niche-clever-interactive')) . '</p></section>';
+            return;
         }
+
+        echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . esc_html(__('Extension settings', 'niche-clever-interactive')) . '</h2>' . wp_kses($body, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</section>';
     }
 
     public function save(): void
     {
         if (!$this->guard->allows(self::SAVE_ACTION, AdminRequest::postText('_ncli_nonce'))) {
             if (function_exists('wp_die')) {
-                wp_die(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive'));
+                wp_die(esc_html(__('You are not permitted to change NCI Core settings.', 'niche-clever-interactive')));
             }
             return;
         }
@@ -167,16 +174,28 @@ final class SiteSettingsPage
     {
         $tab = AdminRequest::queryText('tab');
 
-        return is_string($tab) && isset(self::TABS[$tab]) ? $tab : 'general';
+        return is_string($tab) && isset($this->tabs()[$tab]) ? $tab : 'general';
+    }
+
+    /** @return array<string, string> */
+    private function tabs(): array
+    {
+        $tabs = ['general' => self::BASE_TABS['general']];
+        if ($this->screens !== null && $this->screens->declares('settings')) {
+            $tabs['extension-settings'] = __('Extension settings', 'niche-clever-interactive');
+        }
+        $tabs['help'] = self::BASE_TABS['help'];
+
+        return $tabs;
     }
 
     private function notice(): void
     {
         $notice = AdminRequest::queryText('ncli_notice');
         if ($notice === 'saved') {
-            echo '<div class="notice notice-success"><p>' . $this->html(__('Settings saved.', 'niche-clever-interactive')) . '</p></div>';
+            echo '<div class="notice notice-success"><p>' . esc_html(__('Settings saved.', 'niche-clever-interactive')) . '</p></div>';
         } elseif ($notice === 'invalid') {
-            echo '<div class="notice notice-error"><p>' . $this->html(__('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive')) . '</p></div>';
+            echo '<div class="notice notice-error"><p>' . esc_html(__('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive')) . '</p></div>';
         }
     }
 
@@ -198,17 +217,7 @@ final class SiteSettingsPage
     {
         $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
 
-        return '<input type="hidden" name="_ncli_nonce" value="' . $this->attr($nonce) . '">';
-    }
-
-    private function html(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function attr(string $value): string
-    {
-        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return '<input type="hidden" name="_ncli_nonce" value="' . esc_attr($nonce) . '">';
     }
 
     private function t(string $text): string

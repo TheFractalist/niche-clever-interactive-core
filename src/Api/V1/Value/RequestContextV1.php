@@ -3,6 +3,7 @@
 namespace NicheCleverInteractive\Core\Api\V1\Value;
 
 use InvalidArgumentException;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 
 /**
  * Details of the public request that produced a completed turn, handed to the recorder seam in
@@ -22,8 +23,8 @@ final class RequestContextV1
         if ($clientAddress !== null && filter_var($clientAddress, FILTER_VALIDATE_IP) === false) {
             throw new InvalidArgumentException('A client address must be a valid IP address.');
         }
-        if ($userAgent !== null && strlen($userAgent) > 512) {
-            throw new InvalidArgumentException('A user agent is at most 512 bytes.');
+        if ($userAgent !== null && (strlen($userAgent) > RequestEnvironment::USER_AGENT_BYTES || preg_match('//u', $userAgent) !== 1 || preg_match('/[\x00-\x1F\x7F]/', $userAgent) === 1)) {
+            throw new InvalidArgumentException('A user agent must be valid UTF-8, control-free and at most 512 bytes.');
         }
 
         $this->visitorId = $visitorId;

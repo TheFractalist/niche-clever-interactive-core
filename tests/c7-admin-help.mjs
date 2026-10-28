@@ -67,7 +67,7 @@ fire('click', toggles[2]); fire('mouseout', toggles[2]); flush();
 assert(open() === 1, 'A pinned note stays open when the pointer leaves.');
 
 // The markup an extension uses for a help note must survive Core's allowlist, or every note shows at once.
-const hosted = readFileSync(new URL('../src/Admin/ExtensionScreens.php', import.meta.url), 'utf8');
+const hosted = readFileSync(new URL('../src/Admin/ExtensionMarkupPolicy.php', import.meta.url), 'utf8');
 const allowed = (tag) => {
   const from = hosted.indexOf("'" + tag + "' => [");
   return from === -1 ? '' : hosted.slice(from, hosted.indexOf(']', from));
@@ -78,6 +78,10 @@ for (const attribute of ['aria-controls', 'aria-expanded', 'aria-label']) {
 for (const attribute of ['hidden', 'role']) {
   assert(allowed('span').includes("'" + attribute + "'"), 'Hosted extension spans keep ' + attribute + ', which a help note needs.');
 }
+for (const attribute of ['src', 'alt', 'width', 'height']) {
+  assert(allowed('img').includes("'" + attribute + "'"), 'Hosted extension image previews keep only their bounded ' + attribute + ' attribute.');
+}
+assert(allowed('details').includes("'open'") && allowed('summary').includes("'class'"), 'Hosted extension native disclosures retain the bounded markup needed for an accessible collapsed accordion.');
 
 if (failures.length) { console.error('FAIL\n- ' + failures.join('\n- ')); process.exit(1); }
 console.log('PASS: admin help-note behaviour verified');

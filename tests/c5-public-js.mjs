@@ -27,6 +27,7 @@ assert(source.includes("panel.removeAttribute('aria-busy')"), 'The public panel 
 assert(source.includes('function addPendingTurn') && source.includes('function completeTurn') && source.includes('function discardTurn'), 'Each question must appear at once and its answer must fill a separate block.');
 assert(source.indexOf('addPendingTurn(panel, question)') < source.indexOf('window.fetch(route'), 'The question must be shown before the request is sent.');
 assert(source.includes("ncli-panel__answer ncli-panel__answer--pending"), 'A waiting answer must be marked as pending.');
+assert(source.includes('function processingMessage') && source.includes("data-ncli-processing-message") && source.includes("text('findingAnswer', 'Receiving response…')"), 'A panel-specific processing message must fall back to the safe Core wording.');
 assert(source.includes('textarea.value = question') && source.includes('failTurn'), 'A failed question must leave no empty entry and return its text to the input.');
 assert(source.includes('prefers-reduced-motion') && source.includes('scrollIntoView'), 'The newest turn must be brought into view, respecting reduced motion.');
 assert(source.includes("hiddenLabel(text('questionLabel'") && source.includes("hiddenLabel(text('answerLabel'"), 'Question and answer blocks must carry hidden labels for assistive technology.');
@@ -110,7 +111,7 @@ assert(source.includes('isConnected'), 'A reset during a request must not resurr
   assert(none === null, 'A stream that ends without a final event returns null, which the panel treats as a failure.');
   const unfinished = await read(respond('data: {"type":"done","ok":true,"answer":"No blank line"}', 6), () => {});
   assert(unfinished && unfinished.answer === 'No blank line', 'A final event without a trailing blank line is still read.');
-  assert(source.includes("'Accept': canStream ? 'text/event-stream, application/json' : 'application/json'") && source.includes("indexOf('text/event-stream')"), 'The panel asks for a stream only where it can read one and falls back to JSON.');
+  assert(source.includes("progressiveStreaming !== false") && source.includes("'Accept': canStream ? 'text/event-stream, application/json' : 'application/json'") && source.includes("indexOf('text/event-stream')"), 'The panel asks for a stream only when its owner keeps progressive delivery enabled and falls back to JSON.');
   assert(source.includes('setTimeout(function () {') && !/requestAnimationFrame/.test(source), 'Progressive rendering uses timers, not animation frames that a background tab can suspend.');
 }
 

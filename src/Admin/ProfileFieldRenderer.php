@@ -7,7 +7,6 @@ namespace NicheCleverInteractive\Core\Admin;
 use NicheCleverInteractive\Core\Configuration\ModelCatalogue;
 use NicheCleverInteractive\Core\Configuration\PanelAppearance;
 
-// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All dynamic markup uses the tested escapeHtml()/escapeAttribute() wrappers, which keep this PHP 8.1-compatible class usable in pure tests.
 /**
  * The field rows of a profile's settings tabs (Setup, Profile, AI & Corpus, Conversation,
  * Appearance & Limits). It draws only the table rows from a settings array in the shape of
@@ -56,6 +55,8 @@ final class ProfileFieldRenderer
             $this->descriptionRow('Applies to live answers after saving and passing a fresh connection test. It can shape response style and format only; retrieval, safety and disclosure rules always apply.');
             $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset'], 'Choose the default answer length. Owner response guidance can refine presentation but cannot remove Core safeguards. Changing this setting requires a new connection test.');
             $this->text('presentation_placeholder', 'Question placeholder', (string) $values['presentation']['placeholder'], 'Hint text displayed inside the visitor question field. It should invite suitable questions without exposing internal instructions.');
+            $this->text('presentation_processing_message', __('Processing message', 'niche-clever-interactive'), (string) $values['presentation']['processing_message'], __('Shown with the animated indicator while NCI prepares an answer. Plain text, up to 160 characters. Leave blank to use the default wording.', 'niche-clever-interactive'));
+            $this->checkbox('streaming_progressive', __('Progressively reveal answers', 'niche-clever-interactive'), (bool) $values['streaming']['progressive'], __('When the browser and WordPress HTTP transport support it, answer text appears as it arrives. Otherwise visitors see the processing message until the complete validated answer is ready.', 'niche-clever-interactive'), __('Reveal answer text progressively when supported.', 'niche-clever-interactive'), true);
             $this->text('presentation_footer_left', 'Panel footer left label', (string) $values['presentation']['footer_left'], 'Optional short label displayed in the left side of the panel footer.');
             $this->text('presentation_footer_right', 'Panel footer right label', (string) $values['presentation']['footer_right'], 'Optional short label displayed in the right side of the panel footer.');
             $this->sectionRow('Conversation history', 'Optionally keep a record of the questions visitors ask and the answers they receive, so you can review and delete them. Nothing is recorded unless you turn this on. No IP address, account or browser identifier is stored with a conversation.');
@@ -64,7 +65,7 @@ final class ProfileFieldRenderer
             if (!$hubMode) {
                 $this->checkbox('delete_on_uninstall', 'Delete data on uninstall', (bool) $values['lifecycle']['delete_on_uninstall'], 'By default, deleting the plugin leaves your settings, request counters and conversations in the database so a reinstall can pick them up. Turn this on to remove all of them when the plugin is deleted from the Plugins screen.', 'Delete all Niche Clever Interactive settings, counters and conversations when the plugin is deleted.', true);
             }
-            echo '<tr class="ncli-admin__field"><th scope="row"><span>' . $this->escapeHtml(__('Conversation history', 'niche-clever-interactive')) . '</span></th><td><a class="button button-secondary" href="' . $this->escapeAttribute($conversationsUrl) . '">' . $this->escapeHtml(__('View conversation history', 'niche-clever-interactive')) . '</a></td></tr>';
+            echo '<tr class="ncli-admin__field"><th scope="row"><span>' . esc_html(__('Conversation history', 'niche-clever-interactive')) . '</span></th><td><a class="button button-secondary" href="' . esc_attr($conversationsUrl) . '">' . esc_html(__('View conversation history', 'niche-clever-interactive')) . '</a></td></tr>';
         }
 
         if ($tab === 'appearance-limits') {
@@ -129,8 +130,8 @@ final class ProfileFieldRenderer
 
         if ($tab === 'ai-corpus') {
             $saved = (bool) $values['reference_saved'];
-            echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('vector_store_reference', 'Vector store reference', 'Enter the identifier for an existing OpenAI File Search vector store that you control. It is write-only: once saved it is never shown again, and leaving the field blank keeps the saved value. Changing it requires a new connection test.') . '</th><td>'
-                . '<input id="ncli-vector_store_reference" class="regular-text" type="text" name="vector_store_reference" value="" maxlength="256" autocomplete="off"' . ($saved ? ' placeholder="' . $this->escapeAttribute(__('Saved. Leave blank to keep it.', 'niche-clever-interactive')) . '"' : '') . '></td></tr>';
+            echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('vector_store_reference', 'Vector store reference', 'Enter the identifier for an existing OpenAI File Search vector store that you control. It is write-only: once saved it is never shown again, and leaving the field blank keeps the saved value. Changing it requires a new connection test.') . '</th><td>'
+                . '<input id="ncli-vector_store_reference" class="regular-text" type="text" name="vector_store_reference" value="" maxlength="256" autocomplete="off"' . ($saved ? ' placeholder="' . esc_attr(__('Saved. Leave blank to keep it.', 'niche-clever-interactive')) . '"' : '') . '></td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
             $this->renderModelFields($values['model']);
         }
 
@@ -139,6 +140,7 @@ final class ProfileFieldRenderer
             $this->textarea('instructions', 'Owner response guidance', (string) $values['instructions'], 'Use this for tone, format and level of detail. It cannot override NCI retrieval, safety, privacy or disclosure rules. Editing it requires a new successful connection test.');
             $this->select('response_preset', 'Response preset', ['concise' => 'Concise', 'balanced' => 'Balanced', 'detailed' => 'Detailed'], (string) $values['response_preset'], 'Choose the default answer length. Owner response guidance can refine presentation but cannot override safety, retrieval or disclosure rules.');
             $this->text('presentation_placeholder', 'Question placeholder', (string) $presentation['placeholder'], 'Hint text displayed inside the visitor question field. Leave it blank to use the default profile\'s.');
+            $this->text('presentation_processing_message', __('Processing message', 'niche-clever-interactive'), (string) $presentation['processing_message'], __('Shown with the animated indicator while NCI prepares an answer. Leave blank to use the default profile\'s wording.', 'niche-clever-interactive'));
             $this->text('presentation_footer_left', 'Panel footer left label', (string) $presentation['footer_left'], 'Optional short label displayed in the left side of the panel footer.');
             $this->text('presentation_footer_right', 'Panel footer right label', (string) $presentation['footer_right'], 'Optional short label displayed in the right side of the panel footer.');
         }
@@ -161,10 +163,10 @@ final class ProfileFieldRenderer
     {
         $modelOptions = '';
         foreach (ModelCatalogue::all() as $entry) {
-            $modelOptions .= '<option value="' . $this->escapeAttribute($entry['id']) . '" data-efforts="' . $this->escapeAttribute(implode(',', $entry['efforts'])) . '"' . ($model['id'] === $entry['id'] ? ' selected' : '') . '>' . $this->escapeHtml($this->t($entry['tier']) . ' – ' . $entry['label'] . ' (' . $entry['id'] . ')') . '</option>';
+            $modelOptions .= '<option value="' . esc_attr($entry['id']) . '" data-efforts="' . esc_attr(implode(',', $entry['efforts'])) . '"' . ($model['id'] === $entry['id'] ? ' selected' : '') . '>' . esc_html($this->t($entry['tier']) . ' – ' . $entry['label'] . ' (' . $entry['id'] . ')') . '</option>';
         }
-        $helpHtml = '<span class="ncli-admin__model-help-intro">' . $this->escapeHtml(__('Choose the OpenAI model that writes answers. Higher tiers usually cost more per answer. Changing this requires a new connection test.', 'niche-clever-interactive')) . '</span>' . $this->renderModelTable();
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('model_id', 'Model', '', true, $helpHtml) . '</th><td><select id="ncli-model_id" name="model_id">' . $modelOptions . '</select></td></tr>';
+        $helpHtml = '<span class="ncli-admin__model-help-intro">' . esc_html(__('Choose the OpenAI model that writes answers. Higher tiers usually cost more per answer. Changing this requires a new connection test.', 'niche-clever-interactive')) . '</span>' . $this->renderModelTable();
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('model_id', 'Model', '', true, $helpHtml) . '</th><td><select id="ncli-model_id" name="model_id">' . $modelOptions . '</select></td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
 
         $efforts = ['default' => 'Provider default (not sent)'];
         foreach (['none', 'low', 'medium', 'high', 'xhigh', 'max'] as $effort) {
@@ -192,19 +194,19 @@ final class ProfileFieldRenderer
     public function renderModelTable(): string
     {
         $html = '<span class="ncli-admin__model-table-wrap"><table class="widefat striped ncli-admin__model-table"><thead><tr>'
-            . '<th scope="col">' . $this->escapeHtml(__('Model', 'niche-clever-interactive')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml(__('Tier', 'niche-clever-interactive')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml(__('Best for', 'niche-clever-interactive')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml(__('Relative cost', 'niche-clever-interactive')) . '</th>'
-            . '<th scope="col">' . $this->escapeHtml(__('Reasoning effort', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . esc_html(__('Model', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . esc_html(__('Tier', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . esc_html(__('Best for', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . esc_html(__('Relative cost', 'niche-clever-interactive')) . '</th>'
+            . '<th scope="col">' . esc_html(__('Reasoning effort', 'niche-clever-interactive')) . '</th>'
             . '</tr></thead><tbody>';
         foreach (ModelCatalogue::all() as $entry) {
             $efforts = $entry['efforts'] === [] ? __('Not offered', 'niche-clever-interactive') : implode(', ', $entry['efforts']);
-            $html .= '<tr><th scope="row"><code>' . $this->escapeHtml($entry['id']) . '</code></th>'
-                . '<td>' . $this->escapeHtml($this->t($entry['tier'])) . '</td>'
-                . '<td>' . $this->escapeHtml($this->t($entry['best_for'])) . '</td>'
-                . '<td>' . $this->escapeHtml($this->t($entry['cost_note'])) . '</td>'
-                . '<td>' . $this->escapeHtml($efforts) . '</td></tr>';
+            $html .= '<tr><th scope="row"><code>' . esc_html($entry['id']) . '</code></th>'
+                . '<td>' . esc_html($this->t($entry['tier'])) . '</td>'
+                . '<td>' . esc_html($this->t($entry['best_for'])) . '</td>'
+                . '<td>' . esc_html($this->t($entry['cost_note'])) . '</td>'
+                . '<td>' . esc_html($efforts) . '</td></tr>';
         }
 
         return $html . '</tbody></table></span>';
@@ -214,33 +216,33 @@ final class ProfileFieldRenderer
     {
         $boxLabel = $boxLabel ?? 'Enable public answers for the default Core profile.';
         // An unchecked box posts nothing; the hidden zero lets an owner switch an option off.
-        $hidden = $postUnchecked ? '<input type="hidden" name="' . $this->escapeAttribute($name) . '" value="0">' : '';
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help, false) . '</th><td>' . $hidden . '<label><input type="checkbox" name="' . $this->escapeAttribute($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . $this->escapeHtml($this->t($boxLabel)) . '</label></td></tr>';
+        $hidden = $postUnchecked ? '<input type="hidden" name="' . esc_attr($name) . '" value="0">' : '';
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help, false) . '</th><td>' . $hidden . '<label><input type="checkbox" name="' . esc_attr($name) . '" value="1"' . ($checked ? ' checked' : '') . '> ' . esc_html($this->t($boxLabel)) . '</label></td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
     }
 
     private function sectionRow(string $title, string $description): void
     {
-        echo '<tr class="ncli-admin__section-row"><td colspan="2"><h3>' . $this->escapeHtml($this->t($title)) . '</h3><p class="description">' . $this->escapeHtml($this->t($description)) . '</p></td></tr>';
+        echo '<tr class="ncli-admin__section-row"><td colspan="2"><h3>' . esc_html($this->t($title)) . '</h3><p class="description">' . esc_html($this->t($description)) . '</p></td></tr>';
     }
 
     private function accentRow(string $style, string $accent): void
     {
         $picker = $accent !== '' ? $accent : PanelAppearance::defaultAccent($style);
         $help = 'Sets the colour of the question button and the keyboard focus outline, in every panel style and at every width. A very pale or very dark colour is still used: Core adds an edge to the button, and keeps the style\'s own colour for the focus outline, so both stay visible.';
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('accent_color', 'Accent colour', $help) . '</th><td>'
-            . '<input id="ncli-accent_color" class="ncli-admin__colour" type="color" name="accent_color" value="' . $this->escapeAttribute($picker) . '"> '
-            . '<label><input id="ncli-accent_color_default" type="checkbox" name="accent_color_default" value="1"' . ($accent === '' ? ' checked' : '') . '> ' . $this->escapeHtml(__('Use the panel style\'s own colour', 'niche-clever-interactive')) . '</label>'
-            . '</td></tr>';
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel('accent_color', 'Accent colour', $help) . '</th><td>'
+            . '<input id="ncli-accent_color" class="ncli-admin__colour" type="color" name="accent_color" value="' . esc_attr($picker) . '"> '
+            . '<label><input id="ncli-accent_color_default" type="checkbox" name="accent_color_default" value="1"' . ($accent === '' ? ' checked' : '') . '> ' . esc_html(__('Use the panel style\'s own colour', 'niche-clever-interactive')) . '</label>'
+            . '</td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
     }
 
     private function text(string $name, string $label, string $value, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><input id="ncli-' . $this->escapeAttribute($name) . '" class="regular-text" type="text" name="' . $this->escapeAttribute($name) . '" value="' . $this->escapeAttribute($value) . '"></td></tr>';
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><input id="ncli-' . esc_attr($name) . '" class="regular-text" type="text" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '"></td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
     }
 
     private function textarea(string $name, string $label, string $value, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><textarea id="ncli-' . $this->escapeAttribute($name) . '" class="large-text" rows="8" name="' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($value) . '</textarea></td></tr>';
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><textarea id="ncli-' . esc_attr($name) . '" class="large-text" rows="8" name="' . esc_attr($name) . '">' . esc_html($value) . '</textarea></td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
     }
 
     /**
@@ -248,22 +250,22 @@ final class ProfileFieldRenderer
      */
     private function select(string $name, string $label, array $options, string $selected, string $help): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><select id="ncli-' . $this->escapeAttribute($name) . '" name="' . $this->escapeAttribute($name) . '">';
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><select id="ncli-' . esc_attr($name) . '" name="' . esc_attr($name) . '">', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         foreach ($options as $value => $text) {
             $optionValue = (string) $value;
-            echo '<option value="' . $this->escapeAttribute($optionValue) . '"' . ($selected === $optionValue ? ' selected' : '') . '>' . $this->escapeHtml($this->t($text)) . '</option>';
+            echo '<option value="' . esc_attr($optionValue) . '"' . ($selected === $optionValue ? ' selected' : '') . '>' . esc_html($this->t($text)) . '</option>';
         }
         echo '</select></td></tr>';
     }
 
     private function number(string $name, string $label, int $value, string $help, int $min = 1, ?int $max = null): void
     {
-        echo '<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><input id="ncli-' . $this->escapeAttribute($name) . '" type="number" min="' . $min . '"' . ($max !== null ? ' max="' . $max . '"' : '') . ' name="' . $this->escapeAttribute($name) . '" value="' . $value . '"></td></tr>';
+        echo wp_kses('<tr class="ncli-admin__field"><th scope="row">' . $this->fieldLabel($name, $label, $help) . '</th><td><input id="ncli-' . esc_attr($name) . '" type="number" min="' . esc_attr((string) $min) . '"' . ($max !== null ? ' max="' . esc_attr((string) $max) . '"' : '') . ' name="' . esc_attr($name) . '" value="' . esc_attr((string) $value) . '"></td></tr>', ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
     }
 
     private function descriptionRow(string $message): void
     {
-        echo '<tr class="ncli-admin__field ncli-admin__field--description"><th scope="row"></th><td><p class="description">' . $this->escapeHtml($this->t($message)) . '</p></td></tr>';
+        echo '<tr class="ncli-admin__field ncli-admin__field--description"><th scope="row"></th><td><p class="description">' . esc_html($this->t($message)) . '</p></td></tr>';
     }
 
     /**
@@ -273,22 +275,12 @@ final class ProfileFieldRenderer
     {
         $id = 'ncli-help-' . $name;
         $labelMarkup = $forControl
-            ? '<label for="ncli-' . $this->escapeAttribute($name) . '">' . $this->escapeHtml($this->t($label)) . '</label>'
-            : '<span>' . $this->escapeHtml($this->t($label)) . '</span>';
+            ? '<label for="ncli-' . esc_attr($name) . '">' . esc_html($this->t($label)) . '</label>'
+            : '<span>' . esc_html($this->t($label)) . '</span>';
 
         return '<span class="ncli-admin__field-label">' . $labelMarkup
-            . '<button type="button" class="ncli-admin__help-toggle" aria-controls="' . $this->escapeAttribute($id) . '" aria-expanded="false" aria-label="' . $this->escapeAttribute(__('Help for ', 'niche-clever-interactive') . $this->t($label)) . '"><span aria-hidden="true">?</span><span class="screen-reader-text">' . $this->escapeHtml(__('Help for ', 'niche-clever-interactive') . $this->t($label)) . '</span></button>'
-            . '<span id="' . $this->escapeAttribute($id) . '" class="ncli-admin__field-help' . ($helpHtml !== null ? ' ncli-admin__field-help--wide' : '') . '" role="note" hidden>' . ($helpHtml ?? $this->escapeHtml($this->t($help))) . '</span></span>';
-    }
-
-    private function escapeHtml(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function escapeAttribute(string $value): string
-    {
-        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+            . '<button type="button" class="ncli-admin__help-toggle" aria-controls="' . esc_attr($id) . '" aria-expanded="false" aria-label="' . esc_attr(__('Help for ', 'niche-clever-interactive') . $this->t($label)) . '"><span aria-hidden="true">?</span><span class="screen-reader-text">' . esc_html(__('Help for ', 'niche-clever-interactive') . $this->t($label)) . '</span></button>'
+            . '<span id="' . esc_attr($id) . '" class="ncli-admin__field-help' . ($helpHtml !== null ? ' ncli-admin__field-help--wide' : '') . '" role="note" hidden>' . ($helpHtml ?? esc_html($this->t($help))) . '</span></span>';
     }
 
     private function t(string $text): string

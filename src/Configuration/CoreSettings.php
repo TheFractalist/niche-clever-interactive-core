@@ -12,6 +12,7 @@ final class CoreSettings
     public const SCHEMA_OPTION = 'ncli_core_schema_version';
     public const SCHEMA_VERSION = 2;
     public const DEFAULT_UNAVAILABLE_MESSAGE = 'This interactive service is not available yet.';
+    public const DEFAULT_PROCESSING_MESSAGE = 'Receiving response…';
     public const DEFAULT_RETENTION_DAYS = 90;
     public const DEFAULT_PROFILE_ID = 'default';
 
@@ -67,6 +68,9 @@ final class CoreSettings
                 'enabled' => false,
                 'retention_days' => self::DEFAULT_RETENTION_DAYS,
             ],
+            'streaming' => [
+                'progressive' => true,
+            ],
             'lifecycle' => [
                 'delete_on_uninstall' => false,
             ],
@@ -78,6 +82,7 @@ final class CoreSettings
                 'footer_left' => 'PREPARED KNOWLEDGE',
                 'footer_right' => 'GROUNDED ANSWERS',
                 'unavailable_message' => self::DEFAULT_UNAVAILABLE_MESSAGE,
+                'processing_message' => self::DEFAULT_PROCESSING_MESSAGE,
             ],
             'diagnostics' => [
                 'connection_test' => [
@@ -101,6 +106,7 @@ final class CoreSettings
         $appearance = is_array($input['appearance'] ?? null) ? $input['appearance'] : [];
         $presentation = is_array($input['presentation'] ?? null) ? $input['presentation'] : [];
         $conversationLog = is_array($input['conversation_log'] ?? null) ? $input['conversation_log'] : [];
+        $streaming = is_array($input['streaming'] ?? null) ? $input['streaming'] : [];
         $lifecycle = is_array($input['lifecycle'] ?? null) ? $input['lifecycle'] : [];
         $diagnostics = is_array($input['diagnostics'] ?? null) ? $input['diagnostics'] : [];
         $connectionTest = is_array($diagnostics['connection_test'] ?? null) ? $diagnostics['connection_test'] : [];
@@ -164,6 +170,9 @@ final class CoreSettings
                 'enabled' => self::boolValue($conversationLog['enabled'] ?? $defaults['conversation_log']['enabled']),
                 'retention_days' => $retention,
             ],
+            'streaming' => [
+                'progressive' => self::boolValue($streaming['progressive'] ?? $defaults['streaming']['progressive']),
+            ],
             'lifecycle' => [
                 'delete_on_uninstall' => self::boolValue($lifecycle['delete_on_uninstall'] ?? $defaults['lifecycle']['delete_on_uninstall']),
             ],
@@ -175,6 +184,7 @@ final class CoreSettings
                 'footer_left' => self::boundedString($presentation['footer_left'] ?? $defaults['presentation']['footer_left'], 120),
                 'footer_right' => self::boundedString($presentation['footer_right'] ?? $defaults['presentation']['footer_right'], 120),
                 'unavailable_message' => self::boundedString($presentation['unavailable_message'] ?? $defaults['presentation']['unavailable_message'], 240),
+                'processing_message' => self::boundedString($presentation['processing_message'] ?? $defaults['presentation']['processing_message'], 160),
             ],
             'diagnostics' => [
                 'connection_test' => self::connectionTest($connectionTest),
@@ -261,7 +271,7 @@ final class CoreSettings
     }
 
     /**
-     * @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string}
+     * @return array{title: string, headline: string, introduction: string, placeholder: string, footer_left: string, footer_right: string, unavailable_message: string, processing_message: string}
      */
     public function presentation(): array
     {
@@ -293,6 +303,12 @@ final class CoreSettings
         return $this->values['conversation_log']['enabled'];
     }
 
+    /** Whether compatible panels should request a progressive event stream. */
+    public function progressiveStreaming(): bool
+    {
+        return $this->values['streaming']['progressive'];
+    }
+
     /** Zero means keep indefinitely. */
     public function conversationRetentionDays(): int
     {
@@ -310,6 +326,14 @@ final class CoreSettings
         $message = $this->values['presentation']['unavailable_message'];
 
         return $message !== '' ? $message : self::DEFAULT_UNAVAILABLE_MESSAGE;
+    }
+
+    /** The configured processing message, or the default when it was saved blank. */
+    public function processingMessage(): string
+    {
+        $message = $this->values['presentation']['processing_message'];
+
+        return $message !== '' ? $message : self::DEFAULT_PROCESSING_MESSAGE;
     }
 
     /**

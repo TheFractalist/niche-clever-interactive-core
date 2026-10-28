@@ -22,6 +22,7 @@ use NicheCleverInteractive\Core\Conversation\ConversationRecorder;
 use NicheCleverInteractive\Core\Diagnostics\FailureLog;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Profile\ProfileRuntime;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 use NicheCleverInteractive\Core\Security\ChatRequestValidator;
 use NicheCleverInteractive\Core\Security\PromptPolicy;
 
@@ -58,12 +59,12 @@ final class ChatService
 
     /**
      * @param mixed $request
-     * @param array<string, mixed> $server Request environment; used only to give an installed extension in-memory request details.
      * @param (callable(string): void)|null $onText When given and the transport can stream, receives display text as the provider
      *        writes it. It never changes the outcome: the answer is still validated, cached and recorded only once complete.
      */
-    public function handle($request, CoreSettings $settings, array $server = [], ?callable $onText = null): ChatOutcome
+    public function handle($request, CoreSettings $settings, ?RequestEnvironment $environment = null, ?callable $onText = null): ChatOutcome
     {
+        $environment = $environment ?? RequestEnvironment::empty();
         if (is_array($request) && is_string($request['question'] ?? null) && $this->policy->isRefused($request['question'])) {
             return ChatOutcome::failure('policy_refusal');
         }
@@ -116,7 +117,7 @@ final class ChatService
                 if ($this->conversations !== null) {
                     $this->conversations->recordCachedAnswer($settings, $validated['conversation_id'], $profile->id(), $validated['question'], $cached, $policyFingerprint, $profile->corpusVersion());
                 }
-                $this->completeTurn('cache', $validated['conversation_id'], $profile, $validated['question'], $cached, $policyFingerprint, $corpusFingerprint, $this->requestContext($validated['visitor_id'], $server));
+                $this->completeTurn('cache', $validated['conversation_id'], $profile, $validated['question'], $cached, $policyFingerprint, $corpusFingerprint, $this->requestContext($validated['visitor_id'], $environment));
 
                 return ChatOutcome::success($cached, [], true);
             }
@@ -125,7 +126,7 @@ final class ChatService
         $reservation = null;
         if ($this->budgets !== null) {
             try {
-                $reservation = $this->budgets->reserve($settings, is_array($_SERVER ?? null) ? $_SERVER : [], $profile->visitorRequestsPerDay(), $profile->id());
+                $reservation = $this->budgets->reserve($settings, $environment->clientScopeServer(), $profile->visitorRequestsPerDay(), $profile->id());
             } catch (\Throwable $exception) {
                 return ChatOutcome::failure('provider_failure');
             }
@@ -199,7 +200,7 @@ final class ChatService
         if ($cacheKey !== null) {
             $this->profiles->offerAnswer($cacheKey, $answer, $validated['question']);
         }
-        $this->completeTurn('provider', $validated['conversation_id'], $profile, $validated['question'], $answer, $policyFingerprint, $corpusFingerprint, $this->requestContext($validated['visitor_id'], $server));
+        $this->completeTurn('provider', $validated['conversation_id'], $profile, $validated['question'], $answer, $policyFingerprint, $corpusFingerprint, $this->requestContext($validated['visitor_id'], $environment));
 
         // Links come only from the owner's approvals via the seam; raw provider citations never leave Core.
         return ChatOutcome::success($answer, $this->profiles->approvedLinks($profile, $result->citations()));
@@ -242,13 +243,12 @@ final class ChatService
      * extension that keeps them must disclose that in its own privacy notice.
      *
      * @param mixed $visitorId
-     * @param array<string, mixed> $server
      */
-    private function requestContext($visitorId, array $server): ?RequestContextV1
+    private function requestContext($visitorId, RequestEnvironment $environment): ?RequestContextV1
     {
         try {
-            $address = (new ClientScopeResolver())->clientAddress($server);
-            $agent = is_string($server['HTTP_USER_AGENT'] ?? null) ? substr(trim($server['HTTP_USER_AGENT']), 0, 512) : null;
+            $address = (new ClientScopeResolver())->clientAddress($environment->clientScopeServer());
+            $agent = $environment->userAgent();
 
             return new RequestContextV1(is_string($visitorId) ? $visitorId : null, $address, $agent === '' ? null : $agent);
         } catch (\Throwable $exception) {

@@ -9,8 +9,6 @@ use NicheCleverInteractive\Core\Configuration\CoreSettings;
 use NicheCleverInteractive\Core\Profile\ProfileDirectory;
 use NicheCleverInteractive\Core\Security\AdminActionGuard;
 
-// phpcs:disable WordPress.Security.NonceVerification.Missing -- AdminActionGuard verifies capability and the Core-issued screen nonce before any request value is used.
-// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Request values are unslashed and matched against strict patterns before use.
 /**
  * Lets an administrator run Core's File Search connection test for an extension profile.
  * The extension's profiles screen posts here with the nonce Core issued for that screen;

@@ -69,6 +69,7 @@ foreach ([
     $assert($throws(static fn () => new ProfileEditV1(...$args)), "A bad edit #$i is rejected.");
 }
 $assert((new ProfileSectionV1('setup', 'access', 'Visitor access'))->tab() === 'setup', 'A section names a permitted tab.');
+$assert((new ProfileSectionV1('conversation', 'context', 'Earlier turns', true))->inlineWithPanel(), 'A section may stay with a tab\'s General fields.');
 foreach ([['nope', 'access', 'T'], ['setup', 'Bad Key', 'T'], ['setup', 'ab', 'T'], ['setup', 'access', ''], ['setup', 'access', str_repeat('t', 81)]] as $i => $args) {
     $assert($throws(static fn () => new ProfileSectionV1(...$args)), "A bad section #$i is rejected.");
 }
@@ -251,6 +252,7 @@ $assert($render(static fn () => $assert($hub->render() === false, 'A bare tab ad
 $_GET = ['profile' => 'docs', 'tab' => 'setup'];
 $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'Profile workspace') && str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'Get started') && str_contains($html, 'name="vector_store_reference"') === false, 'A profile opens in the same workspace; the setup tab has its checklist.');
+$assert(str_contains($html, 'of 4 complete') && str_contains($html, 'ncli-admin__check--') && str_contains($html, 'ncli-admin__checklist-action') && str_contains($html, 'name="action" value="ncli_test_profile"'), 'A saved profile uses accessible readiness ticks and crosses, with its test action aligned in the third checklist row.');
 $assert(str_contains($html, 'Authored questions') && str_contains($html, 'Cached answers') && str_contains($html, 'Setup'), 'The tab bar carries the extension tabs.');
 $assert(preg_match('/<div class="ncli-admin__titlebar">.*Switch profile.*All profiles.*Profile workspace.*<\/div><\/div><header/s', $html) === 1 && !str_contains(substr($html, strpos($html, '<header')), 'Switch profile'), 'The profile switcher, All profiles and the workspace label sit in the title strip, not below the banner.');
 $assert(str_contains($html, 'body access for docs nonce nonce-for-ncli_ext_access action ncli_ext_access'), 'A section is drawn with a Core-issued nonce.');
@@ -263,11 +265,34 @@ $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'name="vector_store_reference"') && str_contains($html, 'Saved. Leave blank to keep it.') && !str_contains($html, 'vs_docs') && str_contains($html, 'name="model_id"'), 'AI & Corpus has a write-only reference field and the model fields.');
 $_GET = ['profile' => 'secret', 'tab' => 'ai-corpus'];
 $assert(!str_contains($render(static fn () => $hub->render()), 'Saved. Leave blank'), 'A profile without a stored reference does not claim one.');
+$_GET = ['profile' => 'off', 'tab' => 'setup'];
+$html = $render(static fn () => $hub->render());
+$assert(str_contains($html, 'Enable this profile, then run a connection test.') && str_contains($html, 'Needs attention'), 'A disabled saved profile clearly reports that its connection test is unavailable until it is enabled.');
 $_GET = ['profile' => 'docs', 'tab' => 'appearance-limits'];
 $html = $render(static fn () => $hub->render());
 $assert(str_contains($html, 'name="panel_width"') && str_contains($html, 'name="visitor_requests_per_day"') && !str_contains($html, 'provider_requests_per_day') && !str_contains($html, 'delete_on_uninstall'), 'Appearance & Limits has no site-wide fields.');
 $_GET = ['profile' => 'docs', 'tab' => 'conversation'];
 $assert(!str_contains($render(static fn () => $hub->render()), 'conversation_log_enabled'), 'Core\'s own conversation log setting is not drawn for an extension profile.');
+$workspace->sections = [
+    new ProfileSectionV1('setup', 'access', 'Visitor access'),
+    new ProfileSectionV1('ai-corpus', 'chronology', 'Chronology records'),
+    new ProfileSectionV1('ai-corpus', 'evidence', 'Evidence links'),
+    new ProfileSectionV1('conversation', 'context', 'Earlier turns', true),
+    new ProfileSectionV1('conversation', 'governance', 'History and governance'),
+    new ProfileSectionV1('conversation', 'export', 'Export'),
+    new ProfileSectionV1('conversation', 'erase', 'Erase'),
+    new ProfileSectionV1('questions', 'questions', 'Questions'),
+    new ProfileSectionV1('cache', 'cache', 'Cached answers'),
+];
+$_GET = ['profile' => 'docs', 'tab' => 'ai-corpus'];
+$html = $render(static fn () => $hub->render());
+$assert(str_contains($html, '>General<') && str_contains($html, '>Chronology records<') && str_contains($html, '>Evidence links<') && str_contains($html, 'body chronology for docs') === false && str_contains($html, 'body evidence for docs') === false, 'AI & Corpus gives separately presented Premium sections their own sub-tabs.');
+$_GET = ['profile' => 'docs', 'tab' => 'conversation'];
+$html = $render(static fn () => $hub->render());
+$assert(str_contains($html, '>General<') && str_contains($html, '>History and governance<') && str_contains($html, '>Export<') && str_contains($html, '>Erase<') && str_contains($html, 'body context for docs') && !str_contains($html, 'body governance for docs'), 'Conversation keeps inline earlier turns in General and separates governance actions into sub-tabs.');
+$_GET = ['profile' => 'docs', 'tab' => 'conversation', 'ncli_sub' => 'export'];
+$html = $render(static fn () => $hub->render());
+$assert(str_contains($html, 'body export for docs') && !str_contains($html, 'body context for docs') && !str_contains($html, 'body governance for docs'), 'Only the selected Conversation sub-tab is rendered.');
 $_GET = ['profile' => 'docs', 'tab' => 'questions'];
 $assert(str_contains($render(static fn () => $hub->render()), 'body questions for docs'), 'An extension-only tab shows its section.');
 $workspace->sections = [new ProfileSectionV1('setup', 'access', 'Visitor access')];
@@ -467,14 +492,21 @@ $site = new NicheCleverInteractive\Core\Admin\SiteSettingsPage($hub, $hostedScre
 $_GET = [];
 $html = $render(static fn () => $site->render());
 $assert(str_contains($html, 'ncli-admin__titlebar') && str_contains($html, 'name="provider_requests_per_day"') && str_contains($html, 'name="delete_on_uninstall"') && str_contains($html, 'name="action" value="ncli_save_site_settings"'), 'Settings > General has the provider allowance and Delete data on uninstall.');
-$assert(str_contains($html, '<h2>Extension settings</h2>') && str_contains($html, 'settings nonce nonce-for-ncli_ext_settings'), 'The extension\'s site settings are hosted under General.');
-$assert(preg_match('/<a class="nav-tab nav-tab-active"[^>]*>General<\/a><a class="nav-tab"[^>]*>Help<\/a>/', $html) === 1, 'The tab bar has General and Help.');
+$assert(!str_contains($html, 'settings nonce nonce-for-ncli_ext_settings'), 'Settings > General does not blend in separately saved extension settings.');
+$assert(preg_match('/<a class="nav-tab nav-tab-active"[^>]*>General<\/a><a class="nav-tab"[^>]*>Extension settings<\/a><a class="nav-tab"[^>]*>Help<\/a>/', $html) === 1, 'The tab bar orders General, Extension settings and Help.');
+$_GET = ['tab' => 'extension-settings'];
+$html = $render(static fn () => $site->render());
+$assert(str_contains($html, '<h2>Extension settings</h2>') && str_contains($html, 'settings nonce nonce-for-ncli_ext_settings'), 'The extension\'s separately saved site settings are hosted on their own tab.');
 $_GET = ['tab' => 'help', 'help' => 'faq'];
 $html = $render(static fn () => $site->render());
 $assert(str_contains($html, 'Help Centre') && str_contains($html, 'Frequently asked questions') && str_contains($html, 'page=ncli-settings&amp;tab=help&amp;help=overview'), 'Settings > Help shows the Help Centre with its own section links.');
 $_GET = ['tab' => 'help'];
 $siteHelp = $render(static fn () => $site->render());
 $assert(!str_contains($siteHelp, 'name="provider_requests_per_day"'), 'The Help tab carries no settings form.');
+$emptyScreens = new NicheCleverInteractive\Core\Admin\ExtensionScreens(new ExtensionRegistryV1());
+$_GET = [];
+$withoutExtensionSettings = $render(static fn () => (new NicheCleverInteractive\Core\Admin\SiteSettingsPage($hub, $emptyScreens))->render());
+$assert(!str_contains($withoutExtensionSettings, '>Extension settings<') && preg_match('/<a class="nav-tab nav-tab-active"[^>]*>General<\/a><a class="nav-tab"[^>]*>Help<\/a>/', $withoutExtensionSettings) === 1, 'Without a declared extension settings screen the hosted page keeps the exact General and Help tab layout.');
 $_POST = ['_ncli_nonce' => 'nonce-ncli_save_site_settings', 'provider_requests_per_day' => '250', 'delete_on_uninstall' => '1'];
 $GLOBALS['ncliUpdated'] = [];
 $site->save();

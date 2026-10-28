@@ -17,8 +17,13 @@ final class ProfileSectionV1
     private string $tab;
     private string $key;
     private string $title;
+    private bool $inlineWithPanel;
 
-    public function __construct(string $tab, string $key, string $title)
+    /**
+     * @param bool $inlineWithPanel True keeps the extension block with Core's General fields instead
+     *                               of giving it a separate sub-tab.
+     */
+    public function __construct(string $tab, string $key, string $title, bool $inlineWithPanel = false)
     {
         $title = trim($title);
         if (!in_array($tab, self::TABS, true) || preg_match('/^[a-z][a-z0-9_]{2,40}$/D', $key) !== 1
@@ -29,6 +34,7 @@ final class ProfileSectionV1
         $this->tab = $tab;
         $this->key = $key;
         $this->title = $title;
+        $this->inlineWithPanel = $inlineWithPanel;
     }
 
     public function tab(): string
@@ -44,5 +50,10 @@ final class ProfileSectionV1
     public function title(): string
     {
         return $this->title;
+    }
+
+    public function inlineWithPanel(): bool
+    {
+        return $this->inlineWithPanel;
     }
 }

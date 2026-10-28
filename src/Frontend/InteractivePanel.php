@@ -48,21 +48,23 @@ final class InteractivePanel
         wp_register_style('ncli-core-public', plugins_url('assets/css/public.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
         wp_register_script('ncli-core-public', plugins_url('assets/js/public.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
         if (function_exists('wp_add_inline_script') && function_exists('rest_url') && function_exists('wp_json_encode')) {
+            $settings = $this->load();
             $config = [
                 'route' => rest_url('ncli/v1/chat'),
                 // Lets the route recognise a logged-in viewer; the client sends it only for named profiles.
                 'nonce' => function_exists('wp_create_nonce') ? wp_create_nonce('wp_rest') : '',
                 'strings' => [
                     'conversationReset' => __('Conversation reset for this browser session.', 'niche-clever-interactive'),
-                    'unavailable' => $this->load()->unavailableMessage(),
+                    'unavailable' => $settings->unavailableMessage(),
                     'invalidQuestion' => __('Please enter a valid question.', 'niche-clever-interactive'),
-                    'findingAnswer' => __('Working…', 'niche-clever-interactive'),
+                    'findingAnswer' => $this->displayProcessingMessage($settings->processingMessage()),
                     'temporaryFailure' => __('This interactive service is temporarily unavailable.', 'niche-clever-interactive'),
                     'answerAdded' => __('Verified answer added to this session.', 'niche-clever-interactive'),
                     'questionLabel' => __('Question:', 'niche-clever-interactive'),
                     'answerLabel' => __('Answer:', 'niche-clever-interactive'),
                     'sourcesLabel' => __('Sources', 'niche-clever-interactive'),
                 ],
+                'progressiveStreaming' => $settings->progressiveStreaming(),
             ];
             // An installed extension may add to the public script's configuration, for example a
             // `cachedNote` string shown under reused answers. Core adds none.
@@ -105,6 +107,7 @@ final class InteractivePanel
             $ready = Readiness::evaluate($settings, new SecretResolver())->isReady();
             $presentation = $settings->presentation();
             $unavailable = $settings->unavailableMessage();
+            $processing = $settings->processingMessage();
         } else {
             $profile = $this->profiles->resolve($requested, $settings);
             if ($profile === null) {
@@ -112,6 +115,7 @@ final class InteractivePanel
                 $ready = false;
                 $presentation = $settings->presentation();
                 $unavailable = $settings->unavailableMessage();
+                $processing = $settings->processingMessage();
             } else {
                 $style = $profile->panelStyle();
                 $width = $profile->panelWidth();
@@ -119,6 +123,7 @@ final class InteractivePanel
                 $showCredit = $profile->showCredit();
                 $presentation = $profile->presentation();
                 $unavailable = $profile->unavailableMessage();
+                $processing = $profile->processingMessage();
                 $access = $this->profiles->access($profile);
                 if ($access->isRestricted()) {
                     // A page whose panel depends on who is viewing must never be served from a shared cache.
@@ -136,6 +141,7 @@ final class InteractivePanel
                 }
             }
         }
+        $processing = $this->displayProcessingMessage($processing);
         $title = isset($attributes['title']) && is_string($attributes['title']) && trim($attributes['title']) !== ''
             ? $attributes['title']
             : $presentation['title'];
@@ -151,7 +157,7 @@ final class InteractivePanel
             : '';
         $disabled = $ready ? '' : ' disabled';
 
-        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" data-ncli-panel="' . $this->attr($panelMarker) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
+        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" data-ncli-panel="' . $this->attr($panelMarker) . '" data-ncli-processing-message="' . $this->attr($processing) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
             . '<div class="ncli-panel__frame">'
             . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . $this->html($title) . '</h2>'
             . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'
@@ -217,5 +223,12 @@ final class InteractivePanel
     private function attr(string $value): string
     {
         return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private function displayProcessingMessage(string $message): string
+    {
+        return $message === CoreSettings::DEFAULT_PROCESSING_MESSAGE
+            ? __('Receiving response…', 'niche-clever-interactive')
+            : $message;
     }
 }

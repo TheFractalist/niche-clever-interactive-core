@@ -8,6 +8,7 @@ use NicheCleverInteractive\Core\Api\V1\Value\ProfileIdV1;
 use NicheCleverInteractive\Core\Api\V1\Value\RequestContextV1;
 use NicheCleverInteractive\Core\Budget\ClientScopeResolver;
 use NicheCleverInteractive\Core\Configuration\CoreSettings;
+use NicheCleverInteractive\Core\Rest\RequestEnvironment;
 use NicheCleverInteractive\Core\Security\ChatRequestValidator;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -41,6 +42,25 @@ $resolver = new ClientScopeResolver();
 $assert($resolver->clientAddress(['REMOTE_ADDR' => '203.0.113.9', 'HTTP_X_FORWARDED_FOR' => '198.51.100.7']) === '203.0.113.9', 'Forwarded headers are ignored without a trusted proxy.');
 $assert($resolver->clientAddress(['REMOTE_ADDR' => 'not-an-ip']) === null && $resolver->clientAddress([]) === null, 'An invalid or missing address is null.');
 $assert($resolver->clientAddress(['REMOTE_ADDR' => '2001:db8::1']) === '2001:db8::1', 'IPv6 addresses are accepted.');
+
+// ---- Minimal request environment ------------------------------------------------------------
+$environment = RequestEnvironment::fromServer([
+    'REMOTE_ADDR' => '203.0.113.9',
+    'HTTP_X_FORWARDED_FOR' => '198.51.100.7',
+    'HTTP_USER_AGENT' => "  Agent/1.0\r\nInjected  ",
+    'HTTP_ACCEPT' => 'application/json, text/event-stream',
+    'HTTP_COOKIE' => 'must-not-cross-the-seam',
+    'SCRIPT_FILENAME' => '/private/path.php',
+]);
+$assert($environment->clientScopeServer() === ['REMOTE_ADDR' => '203.0.113.9', 'HTTP_X_FORWARDED_FOR' => '198.51.100.7'], 'Only address-resolution fields cross the request-environment boundary.');
+$assert($environment->userAgent() === 'Agent/1.0Injected', 'A User-Agent is normalised once and cannot retain CRLF controls.');
+$assert($environment->acceptsEventStream(), 'The normalised Accept header still enables streaming negotiation.');
+$assert(RequestEnvironment::fromServer(['HTTP_USER_AGENT' => ["not-a-header"]])->userAgent() === null, 'A non-scalar User-Agent is refused.');
+$assert(RequestEnvironment::fromServer(['HTTP_USER_AGENT' => "bad\xFFagent"])->userAgent() === null, 'An invalid UTF-8 User-Agent is refused.');
+$longAgent = str_repeat('a', RequestEnvironment::USER_AGENT_BYTES - 1) . "\xE2\x82\xAC";
+$boundedAgent = RequestEnvironment::fromServer(['HTTP_USER_AGENT' => $longAgent])->userAgent();
+$assert($boundedAgent !== null && strlen($boundedAgent) <= RequestEnvironment::USER_AGENT_BYTES && preg_match('//u', $boundedAgent) === 1, 'A long User-Agent is byte-bounded without emitting invalid UTF-8.');
+$assert(!RequestEnvironment::fromServer(['HTTP_ACCEPT' => ['array']])->acceptsEventStream(), 'A malformed server header cannot alter streaming behaviour.');
 
 // ---- Request context value ---------------------------------------------------------------
 $context = new RequestContextV1($id, '203.0.113.9', 'Agent/1.0');

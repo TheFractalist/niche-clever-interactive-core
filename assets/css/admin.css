@@ -60,7 +60,14 @@
 .ncli-admin__checklist li { display: flex; gap: 14px; padding: 12px 0; border-top: 1px solid #e3e8ec; }
 .ncli-admin__checklist li:first-child { border-top: 0; }
 .ncli-admin__checklist p { max-width: 720px; margin: 6px 0 0; }
-.ncli-admin__check { display: inline-flex; flex: 0 0 28px; align-items: center; justify-content: center; width: 28px; height: 28px; border: 2px solid #8a97a1; border-radius: 50%; background: #fff; color: #3c4a55; font-size: 14px; font-weight: 700; }
+.ncli-admin__check { display: inline-flex; flex: 0 0 28px; align-items: center; justify-content: center; width: 28px; height: 28px; border: 2px solid #8a97a1; border-radius: 50%; background: #fff; color: #3c4a55; font-size: 17px; font-weight: 700; line-height: 1; }
+.ncli-admin__check--complete { border-color: #1a7f37; color: #1a7f37; }
+.ncli-admin__check--incomplete { border-color: #b32d2e; color: #b32d2e; }
+.ncli-admin__checklist-copy { flex: 1; min-width: 0; }
+.ncli-admin__checklist-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.ncli-admin__checklist-heading > strong { min-width: 0; }
+.ncli-admin__checklist-action { flex: none; }
+@media (max-width: 782px) { .ncli-admin__checklist-heading { align-items: flex-start; flex-direction: column; gap: 8px; } }
 .ncli-admin__save-bar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 20px 0 0; padding: 10px 20px; border: 1px solid #123b5a; border-radius: 10px; background: #123b5a; box-shadow: 0 -2px 8px rgba(18, 59, 90, .18); }
 .ncli-admin__save-bar .button.button-primary { min-height: 36px; margin: 0; border-color: #fcfbf8; background: #fcfbf8; color: #123b5a; box-shadow: none; text-shadow: none; }
 .ncli-admin__save-bar .button.button-primary:hover, .ncli-admin__save-bar .button.button-primary:active { border-color: #dbe6ee; background: #dbe6ee; color: #17324a; }

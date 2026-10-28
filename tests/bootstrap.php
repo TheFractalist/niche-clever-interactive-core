@@ -34,9 +34,23 @@ if (!function_exists('__')) {
 }
 
 if (!function_exists('wp_kses')) {
-    function wp_kses(string $content, array $allowed_html = []): string
+    function wp_kses(string $content, array $allowed_html = [], ?array $allowed_protocols = null): string
     {
         return $content;
+    }
+}
+
+if (!function_exists('esc_html')) {
+    function esc_html(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('esc_attr')) {
+    function esc_attr(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 }
 
