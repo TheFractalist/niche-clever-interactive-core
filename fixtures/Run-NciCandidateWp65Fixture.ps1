@@ -20,6 +20,8 @@ param(
 
     [string]$EvidenceDirectory = ('C:\Software Dev\NCI Core Candidate Artifacts\' + (Get-Date -Format 'yyyy-MM-dd') + '-wp65-php81-fixture-evidence-1.0.3-r4'),
 
+    [string]$CandidateLabel = '1.0.3-r4 local provenance; public version 1.0.3',
+
     [ValidateRange(1024, 65535)]
     [int]$BasePort = 8097,
 
@@ -70,8 +72,16 @@ function Save-NativeLog {
         [scriptblock]$Command
     )
 
-    $output = & $Command 2>&1
-    $exitCode = $LASTEXITCODE
+    # Windows PowerShell 5.1 turns native stderr progress (docker "Stopping") into a terminating
+    # error under Stop, so the exit code alone decides failure here.
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = & $Command 2>&1
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousPreference
+    }
     $lines = @($output | ForEach-Object { $_.ToString() })
     Set-Content -LiteralPath $LogPath -Value $lines -Encoding utf8
     if ($exitCode -ne 0) {
@@ -244,9 +254,9 @@ function Invoke-NciPhase {
             Invoke-Wp -Name 'active-plugins-premium' -Arguments @('plugin', 'list', '--status=active', '--format=json') | Out-Null
         }
 
-        Invoke-NciDocker -PhaseDirectory $phaseDirectory -Name 'debug-log-clean' -Arguments @('exec', $wpContainer, 'sh', '-lc', 'if [ -f /var/www/html/wp-content/debug.log ]; then if grep -E "PHP (Warning|Fatal|Parse)|WordPress database error" /var/www/html/wp-content/debug.log; then exit 1; else echo "PASS: debug log contains no warning, fatal, parse or database-error line"; fi; else echo "PASS: no debug log was written"; fi') | Out-Null
+        Invoke-NciDocker -PhaseDirectory $phaseDirectory -Name 'debug-log-clean' -Arguments @('exec', $wpContainer, 'sh', '-lc', 'if [ -f /var/www/html/wp-content/debug.log ]; then if grep -E ''PHP (Warning|Fatal|Parse)|WordPress database error'' /var/www/html/wp-content/debug.log; then exit 1; else echo ''PASS: debug log contains no warning, fatal, parse or database-error line''; fi; else echo ''PASS: no debug log was written''; fi') | Out-Null
         $receipt = [ordered]@{
-            candidate = '1.0.3-r4 local provenance; public version 1.0.3'
+            candidate = $CandidateLabel
             phase = $Kind
             project = $project
             url = $baseUrl
