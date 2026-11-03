@@ -6,16 +6,34 @@ Local readiness record. Nothing here has been pushed, tagged, uploaded or sent t
 
 | Item | Value |
 | --- | --- |
-| Branch / commits | `release/1.0.4`: `564b3d4` (analytics contract), `f2811c5` (version 1.0.4), plus tooling fixes listed below |
-| Archive | `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4\niche-clever-interactive-1.0.4.zip` |
-| SHA-256 | `b03b25e12eea9b73b1c0febcc0e5cbe5d5e0c0a3724396d6ff6d187abaaf7f3b` |
+| Branch / commits | `release/1.0.4`: `564b3d4` (analytics contract), `f2811c5` (version 1.0.4), `6542aa2` (tooling), `423fc25` (Help Centre FAQ) |
+| **Archive to upload (r2)** | `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4-r2\niche-clever-interactive-1.0.4.zip` |
+| SHA-256 | `92597dee9f43ce80ba526bca73153024b3c9cf2d3a22d6063519f96c6a5f10ae` |
 | Files | 118 |
-| Manifest | `niche-clever-interactive-1.0.4.install-manifest.sha256` (generated from the verified expansion) |
+| Manifest | `niche-clever-interactive-1.0.4.install-manifest.sha256` in the r2 folder (generated from the verified expansion) |
 | POT | `niche-clever-interactive-1.0.4.pot`, 258 strings, `Project-Id-Version: Niche Clever Interactive 1.0.4` |
+| Superseded | r1 (`b03b25e1…7f3b`, without the Help Centre entry) is kept in `2026-11-03-release-1.0.4-superseded-r1` and must not be uploaded |
 
-Changes since 1.0.3: the browser-local `ncli:analytics` `CustomEvent`, a guard against repeat submission while a request is in flight, and a `try`/`catch` so a failed dispatch cannot fail an answer that has already been shown. The readme FAQ and changelog disclose the event. "External services" is unchanged because nothing is sent.
+Changes since 1.0.3: the browser-local `ncli:analytics` `CustomEvent`, a guard against repeat submission while a request is in flight, and a `try`/`catch` so a failed dispatch cannot fail an answer that has already been shown. The readme FAQ, the Help Centre FAQ and both changelogs disclose the event. "External services" is unchanged because nothing is sent.
 
-## Evidence (3 November 2026)
+## r2 evidence (Help Centre FAQ entry added)
+
+- **Source:** 34 PHP tests pass under PHP 8.1 and 8.2, with zero lint failures. Both JS tests pass. WPCS is clean on the runtime paths, and `git diff --check` is clean.
+- **Archive:** 118 files. The expanded copy matches the manifest, lints under both PHP versions and is WPCS clean. The POT regenerated. The new entry is present in `src/Admin/HelpRenderer.php`.
+- **Test-Site:**
+  - The r1 runtime is backed up under `C:\xampp\backups\Test-Site\nci-core-1.0.4-r1-preinstall-*`.
+  - The r2 install matches the manifest, and WP-CLI lists it as active at 1.0.4.
+  - Plugin Check 2.1.0 reports no errors or warnings.
+  - The Help FAQ now has 37 entries. "Does it send analytics anywhere?" sits under "Visitors, limits and privacy" and opens with Enter.
+  - The setup checklist is still fully complete. The version is unchanged, so the earlier connection test still counts.
+- **Clean-install fixture:** WP 6.5.5 / PHP 8.1.29, evidence in `2026-11-03-wp65-php81-fixture-1.0.4-r2\core`.
+  - Receipt: `1.0.4 r2 resubmission candidate`, with the r2 SHA-256 and a manifest match.
+  - Plugin Check 0/0/0.
+  - All Core, SSE, extension-isolation and uninstall assertions pass. No debug log was written, and cleanup ran.
+
+## r1 evidence (3 November 2026)
+
+Everything else in r2 is unchanged from r1, so this evidence still applies apart from the Help Centre text.
 
 - **Source:** 34 non-live PHP tests pass under PHP 8.1.33 and 8.2.12. 155 PHP files lint under both. `c5-public-js.mjs` and `c7-admin-help.mjs` pass. `git diff --check` is clean.
 - **WPCS (`phpcs.xml.dist`):** zero findings on the plugin file, `uninstall.php`, `src` and `blocks`, and zero on the expanded archive. The whole-checkout scan still reports 32 errors and 16 warnings, all in `tests/`, `fixtures/` and `scripts/verify-install.php`. None of those files ship in the package.
@@ -87,7 +105,7 @@ Check this against the actual review email thread before sending. That email is 
 
 ## Open items
 
-- **Decision: Help Centre FAQ.** The readme discloses the `ncli:analytics` event, but none of the 36 in-plugin Help Centre FAQ entries does. Adding a matching entry changes runtime code (the Help renderer) and needs a rebuilt archive, new hashes and a repeat of this cycle.
+- **Translation gap (existing, not new in 1.0.4).** `HelpRenderer::t()`, and the matching private `t()` in ProfileFieldRenderer, ProfileHub, SettingsPage, SiteSettingsPage and ConversationsPage, returns its input unchanged. The Help Centre overview and FAQ text, about 70 strings, therefore never reaches gettext and is missing from the POT, even though the readme says the interface is translation-ready. The fix is to replace each array entry with a literal `__()` call; a dynamic `__( $var )` would reintroduce the 1.0.1 finding. A reviewer may raise this, so decide before upload whether to fix it now or to soften the readme claim.
 - **Decision: 1.0.3 changelog wording** (checklist item 5).
 - **Independent review** using the checklist above.
 - **Jacob's authorisation** to push `release/1.0.4`, tag, upload the ZIP and send the reply.
