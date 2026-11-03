@@ -152,6 +152,7 @@ NCI Premium is a separately supplied edition from Niche Clever. Details, purchas
 * Adds a browser-local `ncli:analytics` event for question and answer milestones. It carries no question or answer text, and the plugin sends nothing to any analytics service.
 * A question can no longer be submitted again while its answer is still loading.
 * The Help Centre FAQ explains the analytics event.
+* All settings, Help Centre and Diagnostics text can now be translated, and Diagnostics describes readiness and test results in plain words.
 
 = 1.0.3 =
 
