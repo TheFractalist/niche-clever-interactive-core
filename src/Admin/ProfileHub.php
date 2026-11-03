@@ -32,23 +32,8 @@ final class ProfileHub
     public const DELETE_ACTION = 'ncli_delete_profile';
     private const TEST_ACTION = 'ncli_test_profile';
     private const TEST_NONCE_ACTION = 'ncli_ext_profiles';
-    private const TABS = [
-        'setup' => 'Setup', 'profile' => 'Profile', 'ai-corpus' => 'AI & Corpus', 'conversation' => 'Conversation',
-        'appearance-limits' => 'Appearance & Limits', 'questions' => 'Authored questions', 'collections' => 'Question collections', 'placement' => 'Placement',
-        'cache' => 'Cached answers', 'diagnostics' => 'Diagnostics',
-    ];
+    private const TABS = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'questions', 'collections', 'placement', 'cache', 'diagnostics'];
     private const FORM_TABS = ['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits'];
-    private const STATES = [
-        Readiness::READY => ['ready', 'Ready (current test)'],
-        Readiness::STALE_CONNECTION_TEST => ['warn', 'Needs a new test: settings changed'],
-        Readiness::MISSING_CONNECTION_TEST => ['warn', 'Not tested yet'],
-        Readiness::MISSING_VECTOR_STORE => ['warn', 'Needs a vector store'],
-        Readiness::MISSING_CORPUS_VERSION => ['warn', 'Needs a corpus version'],
-        Readiness::MISSING_SECRET => ['warn', 'Needs the server API key'],
-        Readiness::MISSING_SCOPE_SECRET => ['warn', 'Needs the visitor-scope secret'],
-        Readiness::DISABLED => ['off', 'Disabled'],
-        'unavailable' => ['warn', 'Unavailable: check its settings'],
-    ];
 
     private ProfileDirectory $profiles;
     private AdminActionGuard $guard;
@@ -134,7 +119,7 @@ final class ProfileHub
         $tab = $this->query('tab');
         echo '<div class="ncli-admin__titlebar"><span class="ncli-admin__titlebar-name">' . esc_html($title) . '</span><div class="ncli-admin__titlebar-tools">';
         echo '<form class="ncli-admin__titlebar-switch" method="get" action="' . esc_attr($this->adminUrl([])) . '"><input type="hidden" name="page" value="' . esc_attr(SettingsPage::PAGE_SLUG) . '">';
-        if ($tab !== '' && array_key_exists($tab, self::TABS)) {
+        if ($tab !== '' && in_array($tab, self::TABS, true)) {
             echo '<input type="hidden" name="tab" value="' . esc_attr($tab) . '">';
         }
         echo '<label class="screen-reader-text" for="ncli-profile-switch">' . esc_html(__('Profile', 'niche-clever-interactive')) . '</label><select id="ncli-profile-switch" name="profile">';
@@ -163,11 +148,11 @@ final class ProfileHub
         }
 
         $tabs = [];
-        foreach (self::TABS as $id => $label) {
+        foreach ($this->tabLabels() as $id => $label) {
             if (isset($coreTabs[$id])) {
                 $tabs[$id] = $coreTabs[$id];
             } elseif (isset($wanted[$id]) && in_array($id, ['questions', 'collections', 'cache'], true)) {
-                $tabs[$id] = $this->t($label);
+                $tabs[$id] = $label;
             }
         }
         foreach ($coreTabs as $id => $label) {
@@ -258,8 +243,8 @@ final class ProfileHub
         echo '</p>';
 
         echo '<table class="widefat striped ncli-admin__profile-table"><thead><tr>';
-        foreach (['Profile', 'Tag', 'Availability', 'Connection test', 'Last tested', 'Access', 'Actions'] as $heading) {
-            echo '<th scope="col">' . esc_html($this->t($heading)) . '</th>';
+        foreach ([__('Profile', 'niche-clever-interactive'), __('Tag', 'niche-clever-interactive'), __('Availability', 'niche-clever-interactive'), __('Connection test', 'niche-clever-interactive'), __('Last tested', 'niche-clever-interactive'), __('Access', 'niche-clever-interactive'), __('Actions', 'niche-clever-interactive')] as $heading) {
+            echo '<th scope="col">' . esc_html($heading) . '</th>';
         }
         echo '</tr></thead><tbody>';
         $this->landingRow(CoreSettings::DEFAULT_PROFILE_ID, __('Default profile', 'niche-clever-interactive'), $settings->isEnabled(), false, $settings);
@@ -278,15 +263,16 @@ final class ProfileHub
     private function landingRow(string $id, string $label, bool $enabled, bool $protected, CoreSettings $settings): void
     {
         $status = $this->profiles->status($id, $settings, $enabled);
-        [$tone, $text] = self::STATES[$status['state']] ?? ['warn', 'Unavailable: check its settings'];
+        $tone = $status['state'] === Readiness::READY ? 'ready' : ($status['state'] === Readiness::DISABLED ? 'off' : 'warn');
+        $text = Readiness::label($status['state']);
         if ($status['state'] === Readiness::MISSING_CONNECTION_TEST && $status['status'] === 'failed') {
-            $text = 'The last test failed';
+            $text = __('The last test failed', 'niche-clever-interactive');
         }
         $open = $this->adminUrl(['profile' => $id, 'tab' => 'setup']);
 
         echo '<tr><th scope="row"><a href="' . esc_attr($open) . '">' . esc_html($label) . '</a></th><td><code>' . esc_html($id) . '</code></td>';
         echo '<td>' . esc_html($enabled ? __('Enabled', 'niche-clever-interactive') : __('Disabled', 'niche-clever-interactive')) . '</td>';
-        echo '<td><span class="ncli-admin__status ncli-admin__status--' . esc_attr($tone) . '">' . esc_html($this->t($text)) . '</span></td>';
+        echo '<td><span class="ncli-admin__status ncli-admin__status--' . esc_attr($tone) . '">' . esc_html($text) . '</span></td>';
         echo '<td>' . ($status['tested_at'] !== '' ? esc_html($this->testedAt($status['tested_at'])) : '&mdash;') . '</td>';
         echo '<td>' . esc_html($protected ? __('Protected', 'niche-clever-interactive') : __('Public', 'niche-clever-interactive')) . '</td><td>';
         echo '<a href="' . esc_attr($open) . '">' . esc_html(__('Open', 'niche-clever-interactive')) . '</a> ';
@@ -358,7 +344,7 @@ final class ProfileHub
         $this->masthead();
         $coreTabs = [];
         foreach (['setup', 'profile', 'ai-corpus', 'conversation', 'appearance-limits', 'placement', 'diagnostics'] as $coreTab) {
-            $coreTabs[$coreTab] = $this->t(self::TABS[$coreTab]);
+            $coreTabs[$coreTab] = $this->tabLabels()[$coreTab];
         }
         $tabs = $this->tabs($id, $coreTabs);
         echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Profile settings', 'niche-clever-interactive')) . '">';
@@ -550,10 +536,10 @@ final class ProfileHub
     {
         $settings = call_user_func($this->settings);
         $status = $this->profiles->status($id, $settings, $edit->isEnabled());
-        [, $text] = self::STATES[$status['state']] ?? ['warn', 'Unavailable: check its settings'];
+        $text = Readiness::label($status['state']);
         echo '<section class="ncli-admin__tab-panel"><h2>' . esc_html(__('Diagnostics', 'niche-clever-interactive')) . '</h2>';
-        echo '<p>' . esc_html(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . esc_html($this->t($text)) . '</strong></p>';
-        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . esc_html($status['status']) . '</strong>' . ($status['tested_at'] !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($status['tested_at']) . ')' : '') . '</p>';
+        echo '<p>' . esc_html(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . esc_html($text) . '</strong></p>';
+        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . esc_html(Readiness::testStatusLabel($status['status'])) . '</strong>' . ($status['tested_at'] !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($status['tested_at']) . ')' : '') . '</p>';
         if ($edit->isEnabled()) {
         echo '<p>' . wp_kses($this->testForm(self::TEST_ACTION, '_ncli_ext_nonce', self::TEST_NONCE_ACTION, ['profile_id' => $id]), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</p>';
         }
@@ -810,7 +796,7 @@ final class ProfileHub
     {
         $tab = $this->query('tab');
 
-        return $tab !== '' && array_key_exists($tab, self::TABS) && ($this->isCoreTab($tab) || $this->hasSections($profile, $tab)) ? $tab : 'setup';
+        return $tab !== '' && in_array($tab, self::TABS, true) && ($this->isCoreTab($tab) || $this->hasSections($profile, $tab)) ? $tab : 'setup';
     }
 
     private function isCoreTab(string $tab): bool
@@ -820,7 +806,7 @@ final class ProfileHub
 
     private function safeTab($value): string
     {
-        return is_string($value) && array_key_exists($value, self::TABS) ? $value : 'setup';
+        return is_string($value) && in_array($value, self::TABS, true) ? $value : 'setup';
     }
 
     private function postId(): ?string
@@ -869,28 +855,45 @@ final class ProfileHub
     private function notice(): void
     {
         $messages = [
-            'saved' => ['success', 'Profile saved. Run the connection test before visitors can use it.'],
-            'created' => ['success', 'Profile added. Enter its vector store, then run the connection test.'],
-            'deleted' => ['success', 'Profile deleted.'],
-            'invalid' => ['error', 'The profile could not be saved. Check the values: the id uses lower-case letters, numbers, hyphens or underscores, and every value has a maximum length.'],
-            'exists' => ['error', 'A profile with that id already exists, or the maximum number of profiles has been reached.'],
-            'missing' => ['error', 'That profile no longer exists.'],
-            'confirm' => ['error', 'Tick the box to confirm before deleting the profile. Nothing was deleted.'],
-            'failed' => ['error', 'The request could not be completed. Nothing was changed.'],
+            'saved' => ['success', __('Profile saved. Run the connection test before visitors can use it.', 'niche-clever-interactive')],
+            'created' => ['success', __('Profile added. Enter its vector store, then run the connection test.', 'niche-clever-interactive')],
+            'deleted' => ['success', __('Profile deleted.', 'niche-clever-interactive')],
+            'invalid' => ['error', __('The profile could not be saved. Check the values: the id uses lower-case letters, numbers, hyphens or underscores, and every value has a maximum length.', 'niche-clever-interactive')],
+            'exists' => ['error', __('A profile with that id already exists, or the maximum number of profiles has been reached.', 'niche-clever-interactive')],
+            'missing' => ['error', __('That profile no longer exists.', 'niche-clever-interactive')],
+            'confirm' => ['error', __('Tick the box to confirm before deleting the profile. Nothing was deleted.', 'niche-clever-interactive')],
+            'failed' => ['error', __('The request could not be completed. Nothing was changed.', 'niche-clever-interactive')],
         ];
         $notice = AdminRequest::queryText('ncli_notice');
         if (is_string($notice) && isset($messages[$notice])) {
-        echo '<div class="notice notice-' . esc_attr($messages[$notice][0]) . '"><p>' . esc_html($this->t($messages[$notice][1])) . '</p></div>';
+        echo '<div class="notice notice-' . esc_attr($messages[$notice][0]) . '"><p>' . esc_html($messages[$notice][1]) . '</p></div>';
         }
         $tests = [
-            'passed' => ['success', 'The connection test passed.'],
-            'failed' => ['error', 'The connection test did not pass. Check the vector store and corpus version, then try again.'],
-            'unavailable' => ['error', 'That profile could not be tested. Save it and make sure it is enabled.'],
+            'passed' => ['success', __('The connection test passed.', 'niche-clever-interactive')],
+            'failed' => ['error', __('The connection test did not pass. Check the vector store and corpus version, then try again.', 'niche-clever-interactive')],
+            'unavailable' => ['error', __('That profile could not be tested. Save it and make sure it is enabled.', 'niche-clever-interactive')],
         ];
         $test = AdminRequest::queryText('ncli_profile_test');
         if (is_string($test) && isset($tests[$test])) {
-        echo '<div class="notice notice-' . esc_attr($tests[$test][0]) . '"><p>' . esc_html($this->t($tests[$test][1])) . '</p></div>';
+        echo '<div class="notice notice-' . esc_attr($tests[$test][0]) . '"><p>' . esc_html($tests[$test][1]) . '</p></div>';
         }
+    }
+
+    /** @return array<string, string> Translated tab labels by tab id. */
+    private function tabLabels(): array
+    {
+        return [
+            'setup' => __('Setup', 'niche-clever-interactive'),
+            'profile' => __('Profile', 'niche-clever-interactive'),
+            'ai-corpus' => __('AI & Corpus', 'niche-clever-interactive'),
+            'conversation' => __('Conversation', 'niche-clever-interactive'),
+            'appearance-limits' => __('Appearance & Limits', 'niche-clever-interactive'),
+            'questions' => __('Authored questions', 'niche-clever-interactive'),
+            'collections' => __('Question collections', 'niche-clever-interactive'),
+            'placement' => __('Placement', 'niche-clever-interactive'),
+            'cache' => __('Cached answers', 'niche-clever-interactive'),
+            'diagnostics' => __('Diagnostics', 'niche-clever-interactive'),
+        ];
     }
 
     public function masthead(): void
@@ -928,10 +931,5 @@ final class ProfileHub
         $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
 
         return '<input type="hidden" name="_ncli_nonce" value="' . esc_attr($nonce) . '">';
-    }
-
-    private function t(string $text): string
-    {
-        return $text;
     }
 }

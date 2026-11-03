@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 — 3 November 2026
+
+WordPress.org resubmission candidate; not published, listed, deployed or submitted. The public panel dispatches a bounded browser-local `ncli:analytics` `CustomEvent` for authored-question clicks, question submissions and answer success or error. Core never pushes `dataLayer`, calls `gtag`, stores data or makes a network request for it; event parameters are limited to the page path (never the query string), validated profile and authored identifiers, question type, live or cached source and a reviewed error category. A failed dispatch is ignored so it cannot change an answer's outcome. A repeat submission while a request is in flight is ignored. The Help Centre FAQ and the readme FAQ both disclose the event.
+
+About 220 administrator strings (settings fields, help notes and options, the Help Centre FAQ and comparison, profile-hub tabs and notices, model guidance, readiness states and provider-problem wording) were passed through identity helpers and never reached gettext. Each is now a literal `__()` call; model guidance, readiness and provider wording are translated only in display-only methods so validation and the transport never load translations. Diagnostics shows readiness and connection-test status in plain words. `tests/i18n-coverage.php` fails if any rendered administrator text bypasses gettext.
+
 ## 1.0.3 — 28 October 2026
 
 Local WordPress.org recovery candidate; not published, listed, deployed or submitted. Adds a default-on progressive-answer preference, an editable “Receiving response…” processing message and per-profile inherited processing wording. Core retains the public route, provider, allowance and final-validation boundary: it uses WordPress’s documented temporary `http_api_curl` hook only to receive the fixed provider response progressively, and parses the retained completed response once where that hook is unavailable. No retry or duplicate provider request is introduced. The disposable WordPress 6.5/PHP 8.1 fixture now accepts an explicitly hashed separately built NCI Premium archive; its current Premium assertion requests the explicit Exports view rather than assuming the historical default view.

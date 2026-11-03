@@ -27,21 +27,11 @@ final class ProviderFailure extends RuntimeException
     public const EVIDENCE_MISMATCH = 'evidence_mismatch';
     public const UNEXPECTED_ERROR = 'unexpected_error';
 
-    /** @var array<string, array{0: string, 1: string}> reason => [label, what to try] */
-    private const DESCRIPTIONS = [
-        self::TIMEOUT => ['The provider did not reply in time', 'Lower the reasoning effort or choose a faster model in AI & Corpus, or raise the request timeout, then run the connection test again.'],
-        self::CONNECTION_ERROR => ['The provider could not be reached', "Check this server's internet access, DNS and firewall, then try again."],
-        self::HTTP_429 => ['The provider refused the request as too frequent or over quota', 'Check your OpenAI usage limits and billing, or wait and try again.'],
-        self::HTTP_4XX => ['The provider rejected the request (client error)', "Check the API key, the model name, the vector store reference and the account's access to the chosen model."],
-        self::HTTP_5XX => ['The provider reported a server error', "This is usually temporary on the provider's side; try again shortly."],
-        self::HTTP_OTHER => ['The provider returned an unexpected status', "Try again; if it persists, check the provider's status page."],
-        self::MALFORMED_RESPONSE => ['The provider reply could not be read', 'Try again; if it persists, the provider may have changed its response format.'],
-        self::INCOMPLETE_RESPONSE => ['The provider reply was missing expected parts', 'Try again; if it persists, check the model and retrieval settings.'],
-        self::NOT_CONFIGURED => ['The live provider configuration is incomplete', 'Check the server-side key, the transport setting and the vector store reference.'],
-        self::EMPTY_ANSWER => ['The provider returned no answer text', 'Raise the maximum answer length or lower the reasoning effort, so reasoning does not use the whole allowance.'],
-        self::ANSWER_TOO_LONG => ['The answer was longer than Core will show', 'Lower the maximum answer length or ask for a more concise response style.'],
-        self::EVIDENCE_MISMATCH => ['The answer did not come from a completed search of your corpus', 'Check the vector store reference and corpus version, then run the connection test again.'],
-        self::UNEXPECTED_ERROR => ['An unexpected error occurred', 'Try again; if it persists, enable WordPress debug logging and check the server error log.'],
+    /** @var list<string> */
+    private const REASONS = [
+        self::TIMEOUT, self::CONNECTION_ERROR, self::HTTP_429, self::HTTP_4XX, self::HTTP_5XX, self::HTTP_OTHER,
+        self::MALFORMED_RESPONSE, self::INCOMPLETE_RESPONSE, self::NOT_CONFIGURED, self::EMPTY_ANSWER,
+        self::ANSWER_TOO_LONG, self::EVIDENCE_MISMATCH, self::UNEXPECTED_ERROR,
     ];
 
     private string $reason;
@@ -59,7 +49,7 @@ final class ProviderFailure extends RuntimeException
 
     public static function isKnown(string $reason): bool
     {
-        return isset(self::DESCRIPTIONS[$reason]);
+        return in_array($reason, self::REASONS, true);
     }
 
     public static function fromHttpStatus(int $status): self
@@ -88,14 +78,70 @@ final class ProviderFailure extends RuntimeException
         return new self(self::CONNECTION_ERROR);
     }
 
+    /** A translated plain-words reason for Diagnostics. Display-only, so translations load only when shown. */
     public static function label(string $reason): string
     {
-        return (self::DESCRIPTIONS[$reason] ?? self::DESCRIPTIONS[self::UNEXPECTED_ERROR])[0];
+        switch ($reason) {
+            case self::TIMEOUT:
+                return __('The provider did not reply in time', 'niche-clever-interactive');
+            case self::CONNECTION_ERROR:
+                return __('The provider could not be reached', 'niche-clever-interactive');
+            case self::HTTP_429:
+                return __('The provider refused the request as too frequent or over quota', 'niche-clever-interactive');
+            case self::HTTP_4XX:
+                return __('The provider rejected the request (client error)', 'niche-clever-interactive');
+            case self::HTTP_5XX:
+                return __('The provider reported a server error', 'niche-clever-interactive');
+            case self::HTTP_OTHER:
+                return __('The provider returned an unexpected status', 'niche-clever-interactive');
+            case self::MALFORMED_RESPONSE:
+                return __('The provider reply could not be read', 'niche-clever-interactive');
+            case self::INCOMPLETE_RESPONSE:
+                return __('The provider reply was missing expected parts', 'niche-clever-interactive');
+            case self::NOT_CONFIGURED:
+                return __('The live provider configuration is incomplete', 'niche-clever-interactive');
+            case self::EMPTY_ANSWER:
+                return __('The provider returned no answer text', 'niche-clever-interactive');
+            case self::ANSWER_TOO_LONG:
+                return __('The answer was longer than Core will show', 'niche-clever-interactive');
+            case self::EVIDENCE_MISMATCH:
+                return __('The answer did not come from a completed search of your corpus', 'niche-clever-interactive');
+            default:
+                return __('An unexpected error occurred', 'niche-clever-interactive');
+        }
     }
 
+    /** What to try next, translated, for Diagnostics. */
     public static function advice(string $reason): string
     {
-        return (self::DESCRIPTIONS[$reason] ?? self::DESCRIPTIONS[self::UNEXPECTED_ERROR])[1];
+        switch ($reason) {
+            case self::TIMEOUT:
+                return __('Lower the reasoning effort or choose a faster model in AI & Corpus, or raise the request timeout, then run the connection test again.', 'niche-clever-interactive');
+            case self::CONNECTION_ERROR:
+                return __('Check this server\'s internet access, DNS and firewall, then try again.', 'niche-clever-interactive');
+            case self::HTTP_429:
+                return __('Check your OpenAI usage limits and billing, or wait and try again.', 'niche-clever-interactive');
+            case self::HTTP_4XX:
+                return __('Check the API key, the model name, the vector store reference and the account\'s access to the chosen model.', 'niche-clever-interactive');
+            case self::HTTP_5XX:
+                return __('This is usually temporary on the provider\'s side; try again shortly.', 'niche-clever-interactive');
+            case self::HTTP_OTHER:
+                return __('Try again; if it persists, check the provider\'s status page.', 'niche-clever-interactive');
+            case self::MALFORMED_RESPONSE:
+                return __('Try again; if it persists, the provider may have changed its response format.', 'niche-clever-interactive');
+            case self::INCOMPLETE_RESPONSE:
+                return __('Try again; if it persists, check the model and retrieval settings.', 'niche-clever-interactive');
+            case self::NOT_CONFIGURED:
+                return __('Check the server-side key, the transport setting and the vector store reference.', 'niche-clever-interactive');
+            case self::EMPTY_ANSWER:
+                return __('Raise the maximum answer length or lower the reasoning effort, so reasoning does not use the whole allowance.', 'niche-clever-interactive');
+            case self::ANSWER_TOO_LONG:
+                return __('Lower the maximum answer length or ask for a more concise response style.', 'niche-clever-interactive');
+            case self::EVIDENCE_MISMATCH:
+                return __('Check the vector store reference and corpus version, then run the connection test again.', 'niche-clever-interactive');
+            default:
+                return __('Try again; if it persists, enable WordPress debug logging and check the server error log.', 'niche-clever-interactive');
+        }
     }
 
     public static function reasonFor(\Throwable $exception): string

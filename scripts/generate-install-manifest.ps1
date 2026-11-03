@@ -33,6 +33,8 @@ $parent = Split-Path -Parent $OutputFile
 if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
     New-Item -ItemType Directory -Path $parent -Force | Out-Null
 }
-@("# $CandidateLabel") + @($rows | Sort-Object) | Set-Content -LiteralPath $OutputFile -Encoding utf8NoBOM
+# Windows PowerShell 5.1 has no utf8NoBOM encoding, so write BOM-free UTF-8 through .NET.
+$lines = @("# $CandidateLabel") + @($rows | Sort-Object)
+[System.IO.File]::WriteAllText([System.IO.Path]::GetFullPath($OutputFile), ($lines -join "`r`n") + "`r`n", (New-Object System.Text.UTF8Encoding $false))
 Write-Output "Manifest: $OutputFile"
 Write-Output "Files:    $(@($rows).Count)"

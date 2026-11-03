@@ -402,9 +402,4 @@ final class ConversationsPage
     {
         return function_exists('wp_unslash') ? wp_unslash($value) : stripslashes($value);
     }
-
-    private function t(string $text): string
-    {
-        return $text;
-    }
 }
