@@ -6,13 +6,37 @@ Local readiness record. Nothing here has been pushed, tagged, uploaded or sent t
 
 | Item | Value |
 | --- | --- |
-| Branch / commits | `release/1.0.4`: `564b3d4` (analytics contract), `f2811c5` (version 1.0.4), `6542aa2` (tooling), `423fc25` (Help Centre FAQ) |
-| **Archive to upload (r2)** | `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4-r2\niche-clever-interactive-1.0.4.zip` |
-| SHA-256 | `92597dee9f43ce80ba526bca73153024b3c9cf2d3a22d6063519f96c6a5f10ae` |
+| Branch / commits | `release/1.0.4`: `564b3d4` (analytics contract), `f2811c5` (version 1.0.4), `6542aa2` (tooling), `423fc25` (Help Centre FAQ), `6dcde7d` (translatable administrator strings) |
+| **Archive to upload (r3)** | `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4-r3\niche-clever-interactive-1.0.4.zip` |
+| SHA-256 | `8b57d753a26b6856476673f9fa2ccd838bf0308e3d847a4709937499ec949307` |
 | Files | 118 |
-| Manifest | `niche-clever-interactive-1.0.4.install-manifest.sha256` in the r2 folder (generated from the verified expansion) |
-| POT | `niche-clever-interactive-1.0.4.pot`, 258 strings, `Project-Id-Version: Niche Clever Interactive 1.0.4` |
-| Superseded | r1 (`b03b25e1…7f3b`, without the Help Centre entry) is kept in `2026-11-03-release-1.0.4-superseded-r1` and must not be uploaded |
+| Manifest | `niche-clever-interactive-1.0.4.install-manifest.sha256` in the r3 folder (generated from the verified expansion) |
+| POT | `niche-clever-interactive-1.0.4.pot`, 561 strings (was 258), `Project-Id-Version: Niche Clever Interactive 1.0.4` |
+| Superseded | r1 (`b03b25e1…7f3b`) and r2 (`92597dee…10ae`) are kept in their `-superseded-r1`/`-superseded-r2` folders and must not be uploaded |
+
+## r3 evidence (translatable administrator strings)
+
+**Change:** about 220 visible administrator strings never reached gettext and were missing from the POT, because they passed through identity `t()` helpers. They covered the settings field labels, help notes and options, the Help Centre FAQ and comparison table, profile-hub tabs and notices, model guidance, readiness states and provider-problem wording.
+- Every display literal is now a literal `__()` call, and the helpers are removed.
+- `ModelCatalogue::all()` and `ProviderFailure` keep untranslated data for validation and the transport. Their wording moved into display-only `describe()`, `label()` and `advice()` methods, so translations never load early.
+- Diagnostics now shows "Ready (current test)" and "Passed" instead of the raw codes.
+
+**Regression test:** `tests/i18n-coverage.php` renders every Settings tab and Help section with a marking `__()`. It fails on any visible text that bypassed gettext, or on any identity `t()` left in `src/`. It failed with 261 findings before the change and passes after it.
+
+**Results:**
+- **Source:** 35 PHP tests pass under PHP 8.1 and 8.2, with zero lint failures. JS tests pass, WPCS is clean on the runtime paths and `git diff --check` is clean.
+- **Archive:** 118 files. The expanded copy matches the manifest, lints under both PHP versions and is WPCS clean.
+- **Test-Site:**
+  - The r3 install matches the manifest, is active at 1.0.4 and passes Plugin Check 2.1.0 with no errors or warnings.
+  - All ten admin screens plus Conversations return without PHP warnings.
+  - Comparing visible text against the POT left zero untranslatable strings. The only leftovers are "30/60/90/120 seconds", which come from `sprintf(__('%d seconds'))` and are translatable.
+  - The public panel is still live. The version is unchanged, so the connection test still counts.
+  - The r2 runtime is backed up under `C:\xampp\backups\Test-Site\nci-core-1.0.4-r2-preinstall-*`.
+- **Clean-install fixture:** WP 6.5.5 / PHP 8.1.29, evidence in `2026-11-03-wp65-php81-fixture-1.0.4-r3\core`.
+  - Receipt: `1.0.4 r3 resubmission candidate`, with the r3 SHA-256 and a manifest match.
+  - Plugin Check 0/0/0.
+  - All Core, SSE/JSON, extension-isolation and uninstall assertions pass.
+  - No debug log was written, so the new gettext calls raise no early-translation notice.
 
 Changes since 1.0.3: the browser-local `ncli:analytics` `CustomEvent`, a guard against repeat submission while a request is in flight, and a `try`/`catch` so a failed dispatch cannot fail an answer that has already been shown. The readme FAQ, the Help Centre FAQ and both changelogs disclose the event. "External services" is unchanged because nothing is sent.
 
@@ -90,7 +114,7 @@ Check this against the actual review email thread before sending. That email is 
 >
 > Thank you for the review. I have uploaded version 1.0.4, which addresses the reported issues:
 >
-> - **Translations:** all fixed strings use literal gettext calls with the `niche-clever-interactive` text domain, and the POT extracts cleanly.
+> - **Translations:** every fixed administrator string, including settings help, the Help Centre and diagnostics, is now a literal gettext call with the `niche-clever-interactive` text domain. There are no pass-through or variable gettext calls, and a test enforces this.
 > - **Input handling:** administrator request values are unslashed and sanitised at a single boundary before capability and nonce checks. Server values are reduced to a small validated request environment before reaching any service.
 > - **Output escaping:** broad sniff suppressions have been removed in favour of direct contextual escaping. Markup from an optional extension passes through one restrictive `wp_kses` policy at every output point.
 > - **Direct file access:** the block renderer has the standard `ABSPATH` guard.
@@ -105,7 +129,7 @@ Check this against the actual review email thread before sending. That email is 
 
 ## Open items
 
-- **Translation gap (existing, not new in 1.0.4).** `HelpRenderer::t()`, and the matching private `t()` in ProfileFieldRenderer, ProfileHub, SettingsPage, SiteSettingsPage and ConversationsPage, returns its input unchanged. The Help Centre overview and FAQ text, about 70 strings, therefore never reaches gettext and is missing from the POT, even though the readme says the interface is translation-ready. The fix is to replace each array entry with a literal `__()` call; a dynamic `__( $var )` would reintroduce the 1.0.1 finding. A reviewer may raise this, so decide before upload whether to fix it now or to soften the readme claim.
+- **Translation gap:** fixed in r3; see "r3 evidence". The readme changelog does not mention it yet. Adding a line changes `readme.txt`, which ships in the package, so it would need an r4 build.
 - **Decision: 1.0.3 changelog wording** (checklist item 5).
 - **Independent review** using the checklist above.
 - **Jacob's authorisation** to push `release/1.0.4`, tag, upload the ZIP and send the reply.
