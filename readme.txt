@@ -4,7 +4,7 @@ Tags: question and answer, openai, file search, knowledge base, interactive
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -102,6 +102,10 @@ Yes, but on its own Core answers each question separately: earlier questions in 
 
 Yes. Progressive delivery is enabled by default. Visitors first see the editable processing message, then answer text can appear as WordPress receives it. If the browser or hosting transport cannot stream, the same message remains until the complete validated answer is ready. You can turn progressive delivery off in Conversation.
 
+= Does it send analytics anywhere? =
+
+No. The panel announces question and answer milestones inside the visitor's browser as an `ncli:analytics` event, so a consent-managed analytics tool you add yourself can listen for them. The plugin itself sends nothing to Google or any other analytics service, stores nothing, and never includes question or answer text: each event carries only the page path, the profile, authored-question identifiers, whether the question was authored or typed, whether the answer was live or reused and a general error category.
+
 = Are answers cached? =
 
 Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved.
@@ -142,6 +146,11 @@ NCI Premium is a separately supplied edition from Niche Clever. Details, purchas
 4. Appearance & Limits tab: panel style and width, accent colour, optional credit line and daily request limits.
 
 == Changelog ==
+
+= 1.0.4 =
+
+* Adds a browser-local `ncli:analytics` event for question and answer milestones. It carries no question or answer text, and the plugin sends nothing to any analytics service.
+* A question can no longer be submitted again while its answer is still loading.
 
 = 1.0.3 =
 
