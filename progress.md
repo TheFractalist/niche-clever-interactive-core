@@ -1,5 +1,43 @@
 # Progress
 
+## 3 November 2026 — Core `1.0.4` resubmission candidate (tagged and merged; not uploaded)
+
+**Scope:** Jacob directed final tests and fixes before WordPress.org resubmission. His decisions were:
+- include the 1 November `ncli:analytics` contract, which supersedes the "uncommitted local staging" status below;
+- add a Help Centre FAQ entry for it;
+- make every administrator string translatable;
+- note that in the changelog;
+- tag `v1.0.4` and merge to `main`.
+
+**Source:** the changes since `1146f1d` are:
+- `564b3d4`: analytics contract, a guard so a failed dispatch is ignored, and a repeat-submission guard;
+- `f2811c5`: version 1.0.4;
+- `6542aa2`: PowerShell 5.1 tooling fixes;
+- `423fc25`: Help Centre FAQ entry;
+- `6dcde7d`: literal gettext for about 220 administrator strings, display-only `describe()`/`label()`/`advice()`/`testStatusLabel()` methods, and `tests/i18n-coverage.php`;
+- `1a6bb88`: changelog note.
+
+Tag `v1.0.4` is at `1a6bb88`. `main` is `574b60f` (TheFractalist/niche-clever-interactive-core#1, merge commit).
+
+**Candidate and evidence:**
+- **Archive:** build r4, `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4-r4\niche-clever-interactive-1.0.4.zip`, SHA-256 `9df638bfdf01ae8ce2b9795f4d53121122ea2c364aac3c10bae23802f1560356`, 118 files, POT 561 strings. Builds r1 to r3 are superseded.
+- **Source checks:** 35 PHP tests pass under PHP 8.1.33 and 8.2.12. JS tests and lint pass, and WPCS is clean on the runtime paths and the archive.
+- **Test-Site:**
+  - The install matches the manifest, and Plugin Check 2.1.0 reports no errors or warnings.
+  - No `debug.log` was written.
+  - The admin screens are clean and fully translatable.
+  - A Jacob-approved connection test passed, and one live streamed answer emitted only the allowed analytics fields.
+- **Clean-install fixture:** the WordPress 6.5.5 / PHP 8.1.29 run passed with Plugin Check 0/0/0 and no debug log.
+
+Detail is in `docs/WORDPRESS-ORG-RESUBMISSION-1.0.4.md` and the NCI pack hand-off `2026-11-03-NCI-CORE-1.0.4-RESUBMISSION-HANDOFF.md`.
+
+**Still required:**
+- Jacob's further independent review.
+- Uploading r4 and replying in the existing WordPress.org review thread, both Jacob's own actions.
+- A decision on the wording of the `1.0.3` readme changelog entry.
+
+Live-host streaming conditions remain unverified. `docs/context/` is a Harness-managed projection and was not refreshed.
+
 ## 1 November 2026 — NCPP local event-staging bridge
 
 **Scope:** Jacob authorised local `nicheclever.test` staging only. Core adds a browser-local `ncli:analytics` custom-event contract for the accepted submission/outcome lifecycle; it does not push `dataLayer`, call `gtag`, create storage, alter the public route or send analytics externally. The contract permits only bounded authored identifiers, profile/path, question type, cache/live source and reviewed error categories; question/answer text, query values, visitor/browser IDs, IPs, user agents, conversation IDs and provider traces are excluded.
