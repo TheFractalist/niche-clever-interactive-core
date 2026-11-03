@@ -510,6 +510,64 @@
     return !!panel.querySelector('.ncli-panel__turn');
   }
 
+  // Deliberately browser-local analytics contract. This never creates a dataLayer entry or a
+  // network request: a separately approved, consent-gated consumer may listen for this event.
+  function emitAnalytics(target, name, params) {
+    if (!target || typeof name !== 'string' || !params || typeof params !== 'object') {
+      return;
+    }
+    // Analytics must never change the outcome of a question, so a failed dispatch is ignored.
+    try {
+      target.dispatchEvent(new window.CustomEvent('ncli:analytics', {
+        bubbles: true,
+        detail: { event: name, params: params }
+      }));
+    } catch (error) {
+      // Ignored deliberately.
+    }
+  }
+
+  function analyticsPagePath() {
+    return window.location && typeof window.location.pathname === 'string' ? window.location.pathname : '/';
+  }
+
+  function validAnalyticsId(value) {
+    return typeof value === 'string' && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(value) ? value : '';
+  }
+
+  function authoredMarker(detail) {
+    var analytics = detail && detail.analytics;
+    if (!analytics || typeof analytics !== 'object' || analytics.kind !== 'predefined') {
+      return null;
+    }
+    var questionId = validAnalyticsId(analytics.question_id);
+    var placementId = validAnalyticsId(analytics.placement_id);
+    var origin = analytics.origin === 'button' || analytics.origin === 'authored_link' ? analytics.origin : '';
+    if (!questionId || !placementId || !origin) {
+      return null;
+    }
+    return { question_id: questionId, placement_id: placementId, origin: origin };
+  }
+
+  function requestAnalytics(marker, profile) {
+    var params = { page_path: analyticsPagePath() };
+    if (validAnalyticsId(profile)) {
+      params.profile_id = profile;
+    }
+    if (marker) {
+      params.question_id = marker.question_id;
+      params.placement_id = marker.placement_id;
+      params.origin = marker.origin;
+    }
+    return params;
+  }
+
+  function errorCategory(payload) {
+    var code = payload && payload.error && typeof payload.error.code === 'string' ? payload.error.code : '';
+    var allowed = ['policy_refusal', 'allowance_exceeded', 'provider_failure', 'evidence_failure', 'access_required', 'profile_unavailable', 'invalid_request'];
+    return allowed.indexOf(code) !== -1 ? code : 'temporary_failure';
+  }
+
   document.addEventListener('click', function (event) {
     var reset = event.target;
     if (!reset || !reset.matches('.ncli-panel__reset')) {
@@ -553,6 +611,13 @@
       textarea.focus();
       return;
     }
+    var marker = authoredMarker(detail);
+    if (marker) {
+      panel.__ncliAnalyticsMarker = marker;
+      if (marker.origin === 'button') {
+        emitAnalytics(panel, 'nci_predefined_question_click', requestAnalytics(marker, form.getAttribute('data-ncli-profile') || ''));
+      }
+    }
     if (typeof form.requestSubmit === 'function') {
       form.requestSubmit();
     } else {
@@ -583,6 +648,9 @@
       }
       return;
     }
+    if (panel.getAttribute('aria-busy') === 'true' || textarea.disabled) {
+      return;
+    }
     var question = textarea.value.trim();
     if (!question) {
       setStatus(panel, text('invalidQuestion', 'Please enter a valid question.'));
@@ -598,6 +666,12 @@
     var pending = addPendingTurn(panel, question);
     textarea.value = '';
     var profile = form.getAttribute('data-ncli-profile') || '';
+    var marker = panel.__ncliAnalyticsMarker || null;
+    panel.__ncliAnalyticsMarker = null;
+    var eventParams = requestAnalytics(marker, profile);
+    var questionType = marker ? 'predefined' : 'custom';
+    eventParams.question_type = questionType;
+    emitAnalytics(panel, marker ? 'nci_predefined_question_submit' : 'nci_custom_question_submit', eventParams);
     // A browser requests a stream only when the site owner has kept progressive answers enabled.
     // The route still falls back to JSON for errors, reused answers and non-streaming transports.
     var progressiveStreaming = !window.NCLI_CORE_CHAT || window.NCLI_CORE_CHAT.progressiveStreaming !== false;
@@ -630,6 +704,10 @@
     }).then(function (payload) {
       var detached = pending && !pending.turn.isConnected;
       if (!payload || payload.ok !== true || typeof payload.answer !== 'string') {
+        var errorParams = requestAnalytics(marker, profile);
+        errorParams.question_type = questionType;
+        errorParams.error_category = errorCategory(payload);
+        emitAnalytics(panel, 'nci_answer_error', errorParams);
         var message = payload && payload.error && typeof payload.error.message === 'string'
           ? payload.error.message
           : text('temporaryFailure', 'This interactive service is temporarily unavailable.');
@@ -640,7 +718,15 @@
         completeTurn(pending, payload.answer, payload.links, payload.cached);
         setStatus(panel, text('answerAdded', 'Verified answer added to this session.'), true);
       }
+      var successParams = requestAnalytics(marker, profile);
+      successParams.question_type = questionType;
+      successParams.response_source = payload.cached === true ? 'cache' : 'live';
+      emitAnalytics(panel, 'nci_answer_success', successParams);
     }).catch(function () {
+      var networkErrorParams = requestAnalytics(marker, profile);
+      networkErrorParams.question_type = questionType;
+      networkErrorParams.error_category = 'network_failure';
+      emitAnalytics(panel, 'nci_answer_error', networkErrorParams);
       failTurn(text('temporaryFailure', 'This interactive service is temporarily unavailable.'));
     }).finally(function () {
       textarea.disabled = false;

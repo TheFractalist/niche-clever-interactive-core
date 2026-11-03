@@ -1,5 +1,11 @@
 # Progress
 
+## 1 November 2026 — NCPP local event-staging bridge
+
+**Scope:** Jacob authorised local `nicheclever.test` staging only. Core adds a browser-local `ncli:analytics` custom-event contract for the accepted submission/outcome lifecycle; it does not push `dataLayer`, call `gtag`, create storage, alter the public route or send analytics externally. The contract permits only bounded authored identifiers, profile/path, question type, cache/live source and reviewed error categories; question/answer text, query values, visitor/browser IDs, IPs, user agents, conversation IDs and provider traces are excluded.
+
+**Boundary and validation:** this is uncommitted local staging work on `feat/ncpp-261101-local-event-staging`, not a release, production deployment, Google configuration, privacy conclusion or accepted NCPP product interface. Premium remains optional and no NCPP dependency is introduced. Core contract, provenance and source audits, the public-JS boundary test, JavaScript syntax check and `git diff --check` passed. The local runtime was installed from a separately built staging package and verified against its 118-file manifest; browser dataLayer/Tag Manager delivery remains deliberately untested/disabled.
+
 ## 28 October 2026 — Core/Premium source-consolidation fixture rerun (local evidence only)
 
 **Archive and fixture evidence:** the final 118-file Core `1.0.3` source-consolidation archive was built outside Git at `C:\Software Dev\NCI Core Candidate Artifacts\2026-10-28-consolidation-1.0.3-final\niche-clever-interactive-1.0.3.zip`, SHA-256 `7796328840ded60fb9fba850ce6f0ab94c806ea01743e463881870913c0a2f85`. Its expanded 118-entry manifest matched. The final separately built NCI Premium `1.0.0` archive was SHA-256 `40154da22698d5241d029c7e37cfeb67742ad36321c7f623741b93608a5f46de` and its stamped 104 runtime files matched its source after normalising the documented per-copy build marker.

@@ -32,6 +32,11 @@ assert(source.includes('textarea.value = question') && source.includes('failTurn
 assert(source.includes('prefers-reduced-motion') && source.includes('scrollIntoView'), 'The newest turn must be brought into view, respecting reduced motion.');
 assert(source.includes("hiddenLabel(text('questionLabel'") && source.includes("hiddenLabel(text('answerLabel'"), 'Question and answer blocks must carry hidden labels for assistive technology.');
 assert(source.includes('isConnected'), 'A reset during a request must not resurrect a cleared turn.');
+assert(source.includes("'ncli:analytics'") && source.includes("'nci_predefined_question_click'") && source.includes("'nci_predefined_question_submit'") && source.includes("'nci_custom_question_submit'") && source.includes("'nci_answer_success'") && source.includes("'nci_answer_error'"), 'The local analytics contract must expose only the documented event names.');
+assert(!source.includes('window.dataLayer') && !source.includes('window.gtag('), 'The Core browser contract must not itself forward analytics to Google or another external endpoint.');
+assert(source.includes('window.location.pathname') && !source.includes('window.location.href'), 'Analytics page context must use only the path, never a query-bearing URL.');
+assert(source.includes('question_id') && source.includes('placement_id') && !source.includes('params.question ='), 'The authored-question contract must use stable identifiers rather than question text.');
+assert(/function emitAnalytics[\s\S]{0,400}try \{[\s\S]{0,300}dispatchEvent[\s\S]{0,300}catch \(/.test(source), 'A failed analytics dispatch must not turn a completed answer into a failure.');
 
 
 // Behavioural check of the link renderer: extract the function and run it against a minimal DOM.
