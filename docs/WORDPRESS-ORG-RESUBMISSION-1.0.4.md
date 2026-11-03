@@ -6,13 +6,29 @@ Local readiness record. Nothing here has been pushed, tagged, uploaded or sent t
 
 | Item | Value |
 | --- | --- |
-| Branch / commits | `release/1.0.4`: `564b3d4` (analytics contract), `f2811c5` (version 1.0.4), `6542aa2` (tooling), `423fc25` (Help Centre FAQ), `6dcde7d` (translatable administrator strings) |
-| **Archive to upload (r3)** | `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4-r3\niche-clever-interactive-1.0.4.zip` |
-| SHA-256 | `8b57d753a26b6856476673f9fa2ccd838bf0308e3d847a4709937499ec949307` |
+| Branch / commits | `release/1.0.4`: `564b3d4` (analytics contract), `f2811c5` (version 1.0.4), `6542aa2` (tooling), `423fc25` (Help Centre FAQ), `6dcde7d` (translatable administrator strings), `1a6bb88` (changelog) |
+| **Archive to upload (r4)** | `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-03-release-1.0.4-r4\niche-clever-interactive-1.0.4.zip` |
+| SHA-256 | `9df638bfdf01ae8ce2b9795f4d53121122ea2c364aac3c10bae23802f1560356` |
 | Files | 118 |
-| Manifest | `niche-clever-interactive-1.0.4.install-manifest.sha256` in the r3 folder (generated from the verified expansion) |
+| Manifest | `niche-clever-interactive-1.0.4.install-manifest.sha256` in the r4 folder (generated from the verified expansion) |
 | POT | `niche-clever-interactive-1.0.4.pot`, 561 strings (was 258), `Project-Id-Version: Niche Clever Interactive 1.0.4` |
-| Superseded | r1 (`b03b25e1…7f3b`) and r2 (`92597dee…10ae`) are kept in their `-superseded-r1`/`-superseded-r2` folders and must not be uploaded |
+| Superseded | r1 (`b03b25e1…7f3b`), r2 (`92597dee…10ae`) and r3 (`8b57d753…9307`) are kept in their `-superseded-r*` folders and must not be uploaded |
+
+## r4 evidence (changelog only)
+
+- **What differs from r3:** only `readme.txt` (a new 1.0.4 changelog bullet: settings, Help Centre and Diagnostics text can now be translated) and `CHANGELOG.md`. This was checked by comparing SHA-256 hashes across both expanded archives.
+- **Source:** 35 PHP tests pass under PHP 8.1 and 8.2, and both JS tests pass.
+- **Archive:** the expanded copy matches the manifest, lints under both PHP versions and is WPCS clean. The POT has 561 strings.
+- **Test-Site:**
+  - The r3 runtime is backed up at `C:\xampp\backups\Test-Site\nci-core-1.0.4-r3-preinstall-20261103-220343`.
+  - The r4 install matches the manifest, is active at 1.0.4 and passes Plugin Check 2.1.0 with no errors or warnings.
+  - The Setup, Diagnostics and Help FAQ screens load without PHP warnings.
+  - The public panel is live with `public.js?ver=1.0.4`.
+- **Clean-install fixture:** WP 6.5.5 / PHP 8.1.29, evidence in `2026-11-03-wp65-php81-fixture-1.0.4-r4\core`.
+  - Receipt: `1.0.4 r4 resubmission candidate`, with the r4 SHA-256 and a manifest match.
+  - Plugin Check 0/0/0.
+  - All Core, SSE, extension-isolation and uninstall assertions pass.
+  - No debug log was written.
 
 ## r3 evidence (translatable administrator strings)
 
@@ -129,7 +145,7 @@ Check this against the actual review email thread before sending. That email is 
 
 ## Open items
 
-- **Translation gap:** fixed in r3; see "r3 evidence". The readme changelog does not mention it yet. Adding a line changes `readme.txt`, which ships in the package, so it would need an r4 build.
+- **Translation gap:** fixed in r3 and noted in the r4 readme changelog.
 - **Decision: 1.0.3 changelog wording** (checklist item 5).
 - **Independent review** using the checklist above.
 - **Jacob's authorisation** to push `release/1.0.4`, tag, upload the ZIP and send the reply.
