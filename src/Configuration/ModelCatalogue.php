@@ -25,7 +25,7 @@ final class ModelCatalogue
     /**
      * Ordered Economy, Balanced, Flagship, then previous default.
      *
-     * @return array<string, array{id: string, label: string, tier: string, best_for: string, cost_note: string, efforts: list<string>}>
+     * @return array<string, array{id: string, label: string, efforts: list<string>}>
      */
     public static function all(): array
     {
@@ -33,36 +33,60 @@ final class ModelCatalogue
             'gpt-6-luna' => [
                 'id' => 'gpt-6-luna',
                 'label' => 'GPT-6 Luna',
-                'tier' => 'Economy',
-                'best_for' => 'High-volume, straightforward questions',
-                'cost_note' => 'Lowest cost',
                 'efforts' => ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
             ],
             'gpt-6.1-sol' => [
                 'id' => 'gpt-6.1-sol',
                 'label' => 'GPT-6.1 Sol',
-                'tier' => 'Balanced',
-                'best_for' => 'General questions about a knowledge base',
-                'cost_note' => 'Middle cost',
                 'efforts' => ['low', 'medium', 'high', 'xhigh', 'max'],
             ],
             'gpt-6-astra' => [
                 'id' => 'gpt-6-astra',
                 'label' => 'GPT-6 Astra',
-                'tier' => 'Flagship',
-                'best_for' => 'Nuanced or high-stakes answers',
-                'cost_note' => 'Highest cost',
                 'efforts' => ['low', 'medium', 'high', 'xhigh', 'max'],
             ],
             'gpt-5.6' => [
                 'id' => 'gpt-5.6',
                 'label' => 'GPT-5.6',
-                'tier' => 'Previous default',
-                'best_for' => 'Sites already tuned on this model',
-                'cost_note' => 'Not on the provider\'s current model list; check provider pricing',
                 'efforts' => [],
             ],
         ];
+    }
+
+    /**
+     * Translated, qualitative guidance for the administrator dropdown and help table. It is kept out of
+     * all() so validation and the transport never load translations.
+     *
+     * @return array{tier: string, best_for: string, cost_note: string}
+     */
+    public static function describe(string $id): array
+    {
+        switch ($id) {
+            case 'gpt-6-luna':
+                return [
+                    'tier' => __('Economy', 'niche-clever-interactive'),
+                    'best_for' => __('High-volume, straightforward questions', 'niche-clever-interactive'),
+                    'cost_note' => __('Lowest cost', 'niche-clever-interactive'),
+                ];
+            case 'gpt-6.1-sol':
+                return [
+                    'tier' => __('Balanced', 'niche-clever-interactive'),
+                    'best_for' => __('General questions about a knowledge base', 'niche-clever-interactive'),
+                    'cost_note' => __('Middle cost', 'niche-clever-interactive'),
+                ];
+            case 'gpt-6-astra':
+                return [
+                    'tier' => __('Flagship', 'niche-clever-interactive'),
+                    'best_for' => __('Nuanced or high-stakes answers', 'niche-clever-interactive'),
+                    'cost_note' => __('Highest cost', 'niche-clever-interactive'),
+                ];
+            default:
+                return [
+                    'tier' => __('Previous default', 'niche-clever-interactive'),
+                    'best_for' => __('Sites already tuned on this model', 'niche-clever-interactive'),
+                    'cost_note' => __('Not on the provider\'s current model list; check provider pricing', 'niche-clever-interactive'),
+                ];
+        }
     }
 
     /**

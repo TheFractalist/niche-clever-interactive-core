@@ -24,6 +24,44 @@ final class Readiness
         $this->state = $state;
     }
 
+    /** A translated plain-words state for administrator screens. Display-only, so translations load only when shown. */
+    public static function label(string $state): string
+    {
+        switch ($state) {
+            case self::READY:
+                return __('Ready (current test)', 'niche-clever-interactive');
+            case self::STALE_CONNECTION_TEST:
+                return __('Needs a new test: settings changed', 'niche-clever-interactive');
+            case self::MISSING_CONNECTION_TEST:
+                return __('Not tested yet', 'niche-clever-interactive');
+            case self::MISSING_VECTOR_STORE:
+                return __('Needs a vector store', 'niche-clever-interactive');
+            case self::MISSING_CORPUS_VERSION:
+                return __('Needs a corpus version', 'niche-clever-interactive');
+            case self::MISSING_SECRET:
+                return __('Needs the server API key', 'niche-clever-interactive');
+            case self::MISSING_SCOPE_SECRET:
+                return __('Needs the visitor-scope secret', 'niche-clever-interactive');
+            case self::DISABLED:
+                return __('Disabled', 'niche-clever-interactive');
+            default:
+                return __('Unavailable: check its settings', 'niche-clever-interactive');
+        }
+    }
+
+    /** A translated connection-test status (`never`, `passed` or `failed`) for administrator screens. */
+    public static function testStatusLabel(string $status): string
+    {
+        if ($status === 'passed') {
+            return __('Passed', 'niche-clever-interactive');
+        }
+        if ($status === 'failed') {
+            return __('Failed', 'niche-clever-interactive');
+        }
+
+        return __('Not run yet', 'niche-clever-interactive');
+    }
+
     public static function evaluate(CoreSettings $settings, SecretResolver $secrets): self
     {
         if (!$settings->isEnabled()) {

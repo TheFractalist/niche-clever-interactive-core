@@ -244,11 +244,11 @@ final class SettingsPage
     private function renderDiagnostics(Readiness $readiness): void
     {
         echo '<section class="ncli-admin__tab-panel"><h2>' . esc_html(__('Diagnostics', 'niche-clever-interactive')) . '</h2>';
-        echo '<p>' . esc_html(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . esc_html($readiness->state()) . '</strong></p>';
+        echo '<p>' . esc_html(__('Readiness:', 'niche-clever-interactive')) . ' <strong>' . esc_html(Readiness::label($readiness->state())) . '</strong></p>';
         $settings = $this->load();
         $status = $settings->connectionTestStatus();
         $time = $settings->connectionTestTime();
-        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . esc_html($status) . '</strong>' . ($time !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($time) . ')' : '') . '</p>';
+        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . esc_html(Readiness::testStatusLabel($status)) . '</strong>' . ($time !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($time) . ')' : '') . '</p>';
         $this->renderLastFailure();
         echo '<p>' . esc_html(__('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.', 'niche-clever-interactive')) . '</p></section>';
     }
@@ -262,9 +262,9 @@ final class SettingsPage
             return;
         }
         $where = $last['source'] === 'connection_test' ? __('connection test', 'niche-clever-interactive') : __('public question', 'niche-clever-interactive');
-        echo '<p><strong>' . esc_html($this->t(ProviderFailure::label($last['reason']))) . '</strong> (' . esc_html($last['reason']) . ')</p>';
+        echo '<p><strong>' . esc_html(ProviderFailure::label($last['reason'])) . '</strong> (' . esc_html($last['reason']) . ')</p>';
         echo '<p>' . esc_html(__('Seen in a', 'niche-clever-interactive')) . ' ' . esc_html($where) . ', ' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($last['at']) . ', ' . esc_html(__('after about', 'niche-clever-interactive')) . ' ' . esc_html((string) $last['elapsed']) . ' ' . esc_html(__('seconds', 'niche-clever-interactive')) . '.</p>';
-        echo '<p>' . esc_html(__('What to try:', 'niche-clever-interactive')) . ' ' . esc_html($this->t(ProviderFailure::advice($last['reason']))) . '</p>';
+        echo '<p>' . esc_html(__('What to try:', 'niche-clever-interactive')) . ' ' . esc_html(ProviderFailure::advice($last['reason'])) . '</p>';
         echo '<p>' . esc_html(__('Only the reason, time and duration are kept. Visitors always see the same generic message. Only the latest problem is shown.', 'niche-clever-interactive')) . '</p>';
     }
 
@@ -565,10 +565,5 @@ final class SettingsPage
     private function unslash(string $value): string
     {
         return function_exists('wp_unslash') ? wp_unslash($value) : stripslashes($value);
-    }
-
-    private function t(string $text): string
-    {
-        return $text;
     }
 }

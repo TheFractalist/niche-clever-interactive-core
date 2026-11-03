@@ -47,9 +47,11 @@ $assert(ModelCatalogue::ids() === ['gpt-6-luna', 'gpt-6.1-sol', 'gpt-6-astra', '
 $assert(ModelCatalogue::DEFAULT_MODEL === 'gpt-6-astra', 'Astra must remain the default model.');
 $assert(ModelCatalogue::validEffort('gpt-6-luna', 'none') && !ModelCatalogue::validEffort('gpt-6-astra', 'none'), '"none" must be valid only where the model offers it.');
 $assert(!ModelCatalogue::supportsReasoning('gpt-5.6') && ModelCatalogue::validEffort('gpt-5.6', 'default') && !ModelCatalogue::validEffort('gpt-5.6', 'low'), 'The retained legacy model must not accept a reasoning effort.');
-foreach (ModelCatalogue::all() as $entry) {
-    $assert(!preg_match('/\d\s?(usd|\$|dollar)|\$\s?\d/i', $entry['cost_note'] . $entry['best_for']), 'Catalogue guidance must be qualitative and carry no prices.');
+foreach (ModelCatalogue::ids() as $modelId) {
+    $guidance = ModelCatalogue::describe($modelId);
+    $assert(!preg_match('/\d\s?(usd|\$|dollar)|\$\s?\d/i', $guidance['cost_note'] . $guidance['best_for']), 'Catalogue guidance must be qualitative and carry no prices.');
 }
+$assert(ModelCatalogue::describe('gpt-5.6')['tier'] === 'Previous default' && ModelCatalogue::describe('gpt-6-luna')['tier'] === 'Economy', 'Each model must keep its own tier guidance.');
 
 // Defaults and tolerant load of settings stored before the model group existed.
 $defaults = CoreSettings::defaults();

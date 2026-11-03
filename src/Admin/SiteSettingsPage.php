@@ -17,7 +17,6 @@ final class SiteSettingsPage
 {
     public const PAGE_SLUG = 'ncli-settings';
     private const SAVE_ACTION = 'ncli_save_site_settings';
-    private const BASE_TABS = ['general' => 'General', 'help' => 'Help'];
 
     private ?ProfileHub $hub;
     private ?ExtensionScreens $screens;
@@ -91,7 +90,7 @@ final class SiteSettingsPage
         }
         echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
         foreach ($this->tabs() as $id => $label) {
-            echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"' . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->url(['tab' => $id])) . '">' . esc_html($this->t($label)) . '</a>';
+            echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"' . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->url(['tab' => $id])) . '">' . esc_html($label) . '</a>';
         }
         echo '</nav>';
         $this->notice();
@@ -180,11 +179,11 @@ final class SiteSettingsPage
     /** @return array<string, string> */
     private function tabs(): array
     {
-        $tabs = ['general' => self::BASE_TABS['general']];
+        $tabs = ['general' => __('General', 'niche-clever-interactive')];
         if ($this->screens !== null && $this->screens->declares('settings')) {
             $tabs['extension-settings'] = __('Extension settings', 'niche-clever-interactive');
         }
-        $tabs['help'] = self::BASE_TABS['help'];
+        $tabs['help'] = __('Help', 'niche-clever-interactive');
 
         return $tabs;
     }
@@ -218,10 +217,5 @@ final class SiteSettingsPage
         $nonce = function_exists('wp_create_nonce') ? (string) wp_create_nonce($action) : '';
 
         return '<input type="hidden" name="_ncli_nonce" value="' . esc_attr($nonce) . '">';
-    }
-
-    private function t(string $text): string
-    {
-        return $text;
     }
 }

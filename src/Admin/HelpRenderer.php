@@ -97,62 +97,62 @@ final class HelpRenderer
     private function renderHelpFaq(): void
     {
         $groups = [
-            'Setup and connection' => [
-                ['What do I need before I start?', 'An OpenAI API account with billing controls and an API key, an OpenAI File Search vector store with your approved files indexed, a WordPress 6.5 or later site and PHP 8.1 or later.'],
-                ['Where does the API key go?', 'Define NCLI_OPENAI_API_KEY_DEFAULT in wp-config.php or equivalent secure server configuration. Never add the key to the plugin settings, page content or a public repository. Defining the key is all the server setup the plugin needs; there is no separate switch to turn on live answers.'],
-                ['Can I switch the provider off without removing the key?', 'Yes. Set Visitor availability to Unavailable in the Setup tab, or untick Enable the Core profile in the Profile tab. Server administrators can also define NCLI_CORE_LIVE_TRANSPORT as false in wp-config.php to stop all provider requests while the key stays in place.'],
-                ['Does the plugin upload or index my documents?', 'No. It connects to an existing vector store that you manage through your own OpenAI account.'],
-                ['What is the corpus version for?', 'It is a label you choose, such as v10, for the material in your vector store. Changing it requires a fresh connection test, so answers are never served against material you have not re-checked. Change it whenever you change the files in the store.'],
-                ['What does Visitor availability do?', 'The panel answers only when it is enabled and its current configuration has passed the connection test. Otherwise visitors see your unavailable message instead.'],
-                ['Why did my connection test fail?', 'Check the server-side key, transport configuration, vector store reference, corpus version and your provider account. Diagnostics shows the latest provider problem in plain words and never reveals provider payloads or credentials.'],
-                ['Why is the public panel unavailable after changing settings?', 'A changed key, vector store, corpus version, response guidance, response preset, model, reasoning effort, retrieval depth, answer length or timeout requires a fresh successful connection test before public answers are available again.'],
+            __('Setup and connection', 'niche-clever-interactive') => [
+                [__('What do I need before I start?', 'niche-clever-interactive'), __('An OpenAI API account with billing controls and an API key, an OpenAI File Search vector store with your approved files indexed, a WordPress 6.5 or later site and PHP 8.1 or later.', 'niche-clever-interactive')],
+                [__('Where does the API key go?', 'niche-clever-interactive'), __('Define NCLI_OPENAI_API_KEY_DEFAULT in wp-config.php or equivalent secure server configuration. Never add the key to the plugin settings, page content or a public repository. Defining the key is all the server setup the plugin needs; there is no separate switch to turn on live answers.', 'niche-clever-interactive')],
+                [__('Can I switch the provider off without removing the key?', 'niche-clever-interactive'), __('Yes. Set Visitor availability to Unavailable in the Setup tab, or untick Enable the Core profile in the Profile tab. Server administrators can also define NCLI_CORE_LIVE_TRANSPORT as false in wp-config.php to stop all provider requests while the key stays in place.', 'niche-clever-interactive')],
+                [__('Does the plugin upload or index my documents?', 'niche-clever-interactive'), __('No. It connects to an existing vector store that you manage through your own OpenAI account.', 'niche-clever-interactive')],
+                [__('What is the corpus version for?', 'niche-clever-interactive'), __('It is a label you choose, such as v10, for the material in your vector store. Changing it requires a fresh connection test, so answers are never served against material you have not re-checked. Change it whenever you change the files in the store.', 'niche-clever-interactive')],
+                [__('What does Visitor availability do?', 'niche-clever-interactive'), __('The panel answers only when it is enabled and its current configuration has passed the connection test. Otherwise visitors see your unavailable message instead.', 'niche-clever-interactive')],
+                [__('Why did my connection test fail?', 'niche-clever-interactive'), __('Check the server-side key, transport configuration, vector store reference, corpus version and your provider account. Diagnostics shows the latest provider problem in plain words and never reveals provider payloads or credentials.', 'niche-clever-interactive')],
+                [__('Why is the public panel unavailable after changing settings?', 'niche-clever-interactive'), __('A changed key, vector store, corpus version, response guidance, response preset, model, reasoning effort, retrieval depth, answer length or timeout requires a fresh successful connection test before public answers are available again.', 'niche-clever-interactive')],
             ],
-            'Answers, models and cost' => [
-                ['Who pays for the answers?', 'Each public question is billed by OpenAI to your own account. Core shows no prices, so check OpenAI pricing and set a usage limit in your OpenAI dashboard as well as Core\'s request limits.'],
-                ['Which model and settings should I choose?', 'The Overview tab explains each setting. For the lowest cost use an Economy model, a small retrieval depth and the Concise preset. For the best quality use a Flagship model, a larger retrieval depth and the Detailed preset.'],
-                ['What do the response guidance and presets do?', 'They shape tone, format and level of detail only. Retrieval, safety, privacy and disclosure rules always take priority, and changing them requires a fresh connection test.'],
-                ['Can answers appear progressively?', 'Yes. Progressive delivery is enabled by default. Visitors first see the processing message you set in Conversation, then answer text can appear as WordPress receives it. If the browser or hosting transport cannot stream, that message remains until the complete validated answer is ready. Turn off Progressively reveal answers in Conversation to use the final-answer view everywhere.'],
-                ['Does it show sources or citations?', 'No. Core never publishes provider citations or source links. Approved evidence links that you choose yourself are available in NCI Premium.'],
-                ['Why did the panel refuse my question?', 'Core applies fixed safety rules. A question that tries to override its instructions or reveal them is declined with a short refusal.'],
-                ['Why does it say a verified answer is not available?', 'The answer did not come from a completed search of your corpus. Check the vector store reference and corpus version, then run the connection test again.'],
-                ['Can visitors ask follow-up questions?', 'Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. NCI Premium can send a limited number of earlier turns as context so follow-ups make sense, with a setting for how many.'],
-                ['Are answers cached?', 'Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved to save cost and time.'],
-                ['Can visitors ask in other languages?', 'They can ask in any language the model understands. The interface text is translation-ready, while wording you write in the Profile and Conversation tabs appears exactly as you wrote it.'],
+            __('Answers, models and cost', 'niche-clever-interactive') => [
+                [__('Who pays for the answers?', 'niche-clever-interactive'), __('Each public question is billed by OpenAI to your own account. Core shows no prices, so check OpenAI pricing and set a usage limit in your OpenAI dashboard as well as Core\'s request limits.', 'niche-clever-interactive')],
+                [__('Which model and settings should I choose?', 'niche-clever-interactive'), __('The Overview tab explains each setting. For the lowest cost use an Economy model, a small retrieval depth and the Concise preset. For the best quality use a Flagship model, a larger retrieval depth and the Detailed preset.', 'niche-clever-interactive')],
+                [__('What do the response guidance and presets do?', 'niche-clever-interactive'), __('They shape tone, format and level of detail only. Retrieval, safety, privacy and disclosure rules always take priority, and changing them requires a fresh connection test.', 'niche-clever-interactive')],
+                [__('Can answers appear progressively?', 'niche-clever-interactive'), __('Yes. Progressive delivery is enabled by default. Visitors first see the processing message you set in Conversation, then answer text can appear as WordPress receives it. If the browser or hosting transport cannot stream, that message remains until the complete validated answer is ready. Turn off Progressively reveal answers in Conversation to use the final-answer view everywhere.', 'niche-clever-interactive')],
+                [__('Does it show sources or citations?', 'niche-clever-interactive'), __('No. Core never publishes provider citations or source links. Approved evidence links that you choose yourself are available in NCI Premium.', 'niche-clever-interactive')],
+                [__('Why did the panel refuse my question?', 'niche-clever-interactive'), __('Core applies fixed safety rules. A question that tries to override its instructions or reveal them is declined with a short refusal.', 'niche-clever-interactive')],
+                [__('Why does it say a verified answer is not available?', 'niche-clever-interactive'), __('The answer did not come from a completed search of your corpus. Check the vector store reference and corpus version, then run the connection test again.', 'niche-clever-interactive')],
+                [__('Can visitors ask follow-up questions?', 'niche-clever-interactive'), __('Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. NCI Premium can send a limited number of earlier turns as context so follow-ups make sense, with a setting for how many.', 'niche-clever-interactive')],
+                [__('Are answers cached?', 'niche-clever-interactive'), __('Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved to save cost and time.', 'niche-clever-interactive')],
+                [__('Can visitors ask in other languages?', 'niche-clever-interactive'), __('They can ask in any language the model understands. The interface text is translation-ready, while wording you write in the Profile and Conversation tabs appears exactly as you wrote it.', 'niche-clever-interactive')],
             ],
-            'Visitors, limits and privacy' => [
-                ['What information is sent to OpenAI?', 'Only the visitor\'s current question, together with your instructions and the vector store reference, is sent when the enabled panel is used. Earlier questions in the same conversation are not sent with it by Core itself; if NCI Premium is installed it can add a limited number of earlier turns and any chronology records you have entered.'],
-                ['Does it send analytics anywhere?', 'No. The panel announces question and answer milestones inside the visitor\'s browser as an ncli:analytics event, so a consent-managed analytics tool you add yourself can listen for them. Core itself sends nothing to Google or any other analytics service, stores nothing and never includes question or answer text: each event carries only the page path, the profile, authored-question identifiers, whether the question was authored or typed, whether the answer was live or reused and a general error category.'],
-                ['Why does the panel say the question allowance has been reached?', 'Either one visitor has used their daily questions or the whole site has used its daily provider allowance. Both limits are set in Appearance & Limits, count by UTC day and start again at UTC midnight. Visitors are counted with a privacy-bounded code, not a stored address, and no extra server setup is needed for this.'],
-                ['Does it keep a record of visitors\' conversations?', 'Not unless you switch on the optional conversation history in the Conversation tab. It is off by default. If you turn it on you choose how long records are kept and can review and delete them under NC Interactive > Conversations.'],
-                ['How do I review or delete stored conversations?', 'Open NC Interactive > Conversations to view them and to delete one, several or all. Records are removed automatically after the retention period you choose. Deleted records can reappear if you restore an older database backup, so repeat the deletion after a restore.'],
-                ['Can I respond to a privacy request about a visitor?', 'WordPress\'s personal-data export and erase tools are supported, but Core stores no name, address, account or browser identifier with a conversation, so a record cannot be matched to a person. Use the Conversations screen to remove records you need to remove.'],
-                ['What happens to my data if I delete the plugin?', 'By default nothing is removed, so a reinstall can pick up your settings, request counters and stored conversations. If you turn on Delete data on uninstall in the Conversation tab, deleting the plugin removes all of them.'],
-                ['What should I put in my privacy policy?', 'The plugin offers suggested wording in the WordPress privacy policy guide, describing the OpenAI service and the optional history. Review it against your own practices and your OpenAI account terms.'],
-                ['What does Reset conversation do?', 'It clears the thread in that visitor\'s browser tab and starts a new conversation. Nothing is saved in the browser, and any history you have chosen to keep on the site is not affected.'],
+            __('Visitors, limits and privacy', 'niche-clever-interactive') => [
+                [__('What information is sent to OpenAI?', 'niche-clever-interactive'), __('Only the visitor\'s current question, together with your instructions and the vector store reference, is sent when the enabled panel is used. Earlier questions in the same conversation are not sent with it by Core itself; if NCI Premium is installed it can add a limited number of earlier turns and any chronology records you have entered.', 'niche-clever-interactive')],
+                [__('Does it send analytics anywhere?', 'niche-clever-interactive'), __('No. The panel announces question and answer milestones inside the visitor\'s browser as an ncli:analytics event, so a consent-managed analytics tool you add yourself can listen for them. Core itself sends nothing to Google or any other analytics service, stores nothing and never includes question or answer text: each event carries only the page path, the profile, authored-question identifiers, whether the question was authored or typed, whether the answer was live or reused and a general error category.', 'niche-clever-interactive')],
+                [__('Why does the panel say the question allowance has been reached?', 'niche-clever-interactive'), __('Either one visitor has used their daily questions or the whole site has used its daily provider allowance. Both limits are set in Appearance & Limits, count by UTC day and start again at UTC midnight. Visitors are counted with a privacy-bounded code, not a stored address, and no extra server setup is needed for this.', 'niche-clever-interactive')],
+                [__('Does it keep a record of visitors\' conversations?', 'niche-clever-interactive'), __('Not unless you switch on the optional conversation history in the Conversation tab. It is off by default. If you turn it on you choose how long records are kept and can review and delete them under NC Interactive > Conversations.', 'niche-clever-interactive')],
+                [__('How do I review or delete stored conversations?', 'niche-clever-interactive'), __('Open NC Interactive > Conversations to view them and to delete one, several or all. Records are removed automatically after the retention period you choose. Deleted records can reappear if you restore an older database backup, so repeat the deletion after a restore.', 'niche-clever-interactive')],
+                [__('Can I respond to a privacy request about a visitor?', 'niche-clever-interactive'), __('WordPress\'s personal-data export and erase tools are supported, but Core stores no name, address, account or browser identifier with a conversation, so a record cannot be matched to a person. Use the Conversations screen to remove records you need to remove.', 'niche-clever-interactive')],
+                [__('What happens to my data if I delete the plugin?', 'niche-clever-interactive'), __('By default nothing is removed, so a reinstall can pick up your settings, request counters and stored conversations. If you turn on Delete data on uninstall in the Conversation tab, deleting the plugin removes all of them.', 'niche-clever-interactive')],
+                [__('What should I put in my privacy policy?', 'niche-clever-interactive'), __('The plugin offers suggested wording in the WordPress privacy policy guide, describing the OpenAI service and the optional history. Review it against your own practices and your OpenAI account terms.', 'niche-clever-interactive')],
+                [__('What does Reset conversation do?', 'niche-clever-interactive'), __('It clears the thread in that visitor\'s browser tab and starts a new conversation. Nothing is saved in the browser, and any history you have chosen to keep on the site is not affected.', 'niche-clever-interactive')],
             ],
-            'Appearance and placement' => [
-                ['How do I put the panel on a page?', 'Add the NC Interactive block to a page, or use the [ncli_interactive] shortcode. The Placement tab shows where Core has detected a published panel.'],
-                ['Can I use more than one panel?', 'You can place the panel on as many pages as you like, but every placement uses the same single profile. Several knowledge profiles are available in NCI Premium.'],
-                ['How do I change how it looks?', 'Choose the style, width and accent colour in Appearance & Limits. Edit the title, headline, introduction and unavailable message in Profile, and the placeholder, processing message and footer labels in Conversation. Finer colour control for questions and answers is available in NCI Premium.'],
-                ['Do I have to show a credit link?', 'No. The optional Powered by NC Interactive link is off by default and appears only if you turn it on in Appearance & Limits.'],
-                ['Is the panel accessible?', 'The panel and the settings screens are built to work with a keyboard and a screen reader, with labelled controls, visible focus and announcements when an answer arrives, and they respect reduced-motion settings.'],
+            __('Appearance and placement', 'niche-clever-interactive') => [
+                [__('How do I put the panel on a page?', 'niche-clever-interactive'), __('Add the NC Interactive block to a page, or use the [ncli_interactive] shortcode. The Placement tab shows where Core has detected a published panel.', 'niche-clever-interactive')],
+                [__('Can I use more than one panel?', 'niche-clever-interactive'), __('You can place the panel on as many pages as you like, but every placement uses the same single profile. Several knowledge profiles are available in NCI Premium.', 'niche-clever-interactive')],
+                [__('How do I change how it looks?', 'niche-clever-interactive'), __('Choose the style, width and accent colour in Appearance & Limits. Edit the title, headline, introduction and unavailable message in Profile, and the placeholder, processing message and footer labels in Conversation. Finer colour control for questions and answers is available in NCI Premium.', 'niche-clever-interactive')],
+                [__('Do I have to show a credit link?', 'niche-clever-interactive'), __('No. The optional Powered by NC Interactive link is off by default and appears only if you turn it on in Appearance & Limits.', 'niche-clever-interactive')],
+                [__('Is the panel accessible?', 'niche-clever-interactive'), __('The panel and the settings screens are built to work with a keyboard and a screen reader, with labelled controls, visible focus and announcements when an answer arrives, and they respect reduced-motion settings.', 'niche-clever-interactive')],
             ],
-            'Troubleshooting' => [
-                ['The panel says the service is temporarily unavailable. What happened?', 'The provider did not return a usable answer in time. The most common cause is a timeout when the reasoning effort is high. Open Diagnostics: "Last provider problem" shows the reason, when it happened and what to try, such as lowering the reasoning effort or choosing a faster model. Run the connection test again after changing a model setting.'],
-                ['The panel shows my unavailable message although I enabled it. Why?', 'Open Diagnostics and read the readiness state. It tells you whether the key, the vector store, the corpus version or a current connection test is missing.'],
-                ['I changed the files in my vector store. What should I do?', 'Wait for OpenAI to finish indexing, change the corpus version in Profile, save and run the connection test again.'],
-                ['What does Diagnostics show?', 'The readiness state, the connection test result and the latest provider problem. It never shows a credential, provider payload, file identifier or retrieved content.'],
+            __('Troubleshooting', 'niche-clever-interactive') => [
+                [__('The panel says the service is temporarily unavailable. What happened?', 'niche-clever-interactive'), __('The provider did not return a usable answer in time. The most common cause is a timeout when the reasoning effort is high. Open Diagnostics: "Last provider problem" shows the reason, when it happened and what to try, such as lowering the reasoning effort or choosing a faster model. Run the connection test again after changing a model setting.', 'niche-clever-interactive')],
+                [__('The panel shows my unavailable message although I enabled it. Why?', 'niche-clever-interactive'), __('Open Diagnostics and read the readiness state. It tells you whether the key, the vector store, the corpus version or a current connection test is missing.', 'niche-clever-interactive')],
+                [__('I changed the files in my vector store. What should I do?', 'niche-clever-interactive'), __('Wait for OpenAI to finish indexing, change the corpus version in Profile, save and run the connection test again.', 'niche-clever-interactive')],
+                [__('What does Diagnostics show?', 'niche-clever-interactive'), __('The readiness state, the connection test result and the latest provider problem. It never shows a credential, provider payload, file identifier or retrieved content.', 'niche-clever-interactive')],
             ],
-            'Editions' => [
-                ['What is NCI Premium?', 'NCI Premium is a separately supplied edition from Niche Clever that adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. The NCI Premium tab lists what each edition includes and links to the NCI Premium page (nicheclever.co.uk/nc-interactive-pro). This plugin, NCI Core, contains no Premium code, and nothing in Core is locked, limited or time-restricted.'],
+            __('Editions', 'niche-clever-interactive') => [
+                [__('What is NCI Premium?', 'niche-clever-interactive'), __('NCI Premium is a separately supplied edition from Niche Clever that adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. The NCI Premium tab lists what each edition includes and links to the NCI Premium page (nicheclever.co.uk/nc-interactive-pro). This plugin, NCI Core, contains no Premium code, and nothing in Core is locked, limited or time-restricted.', 'niche-clever-interactive')],
             ],
         ];
 
         echo '<h3>' . esc_html(__('Frequently asked questions', 'niche-clever-interactive')) . '</h3>';
         foreach ($groups as $group => $questions) {
-            echo '<h4 class="ncli-admin__faq-group">' . esc_html($this->t($group)) . '</h4>';
+            echo '<h4 class="ncli-admin__faq-group">' . esc_html($group) . '</h4>';
             foreach ($questions as $question) {
-                echo '<details><summary>' . esc_html($this->t($question[0])) . '</summary><p>' . esc_html($this->t($question[1])) . '</p></details>';
+                echo '<details><summary>' . esc_html($question[0]) . '</summary><p>' . esc_html($question[1]) . '</p></details>';
             }
         }
     }
@@ -169,52 +169,52 @@ final class HelpRenderer
     private function renderComparisonTable(): void
     {
         $groups = [
-            'Included in NCI Core' => [
-                ['One knowledge profile and public question panel', 'Answers visitors\' questions from your own OpenAI File Search vector store, on as many pages as you like.', true, true],
-                ['Guided setup and connection test', 'A step-by-step checklist, with a test that must pass again after any change that affects answers.', true, true],
-                ['Model, reasoning and cost controls', 'Choose the model, reasoning effort, retrieval depth, answer length and timeout, with no prices shown.', true, true],
-                ['Response guidance and presets', 'Your own bounded guidance plus Concise, Balanced or Detailed answers, inside fixed safety rules.', true, true],
-                ['Conversation thread', 'Questions and answers build up as a thread with a Reset conversation control; nothing is kept in the browser.', true, true],
-                ['Safe answer formatting', 'Headings, lists, emphasis, quotes and code display cleanly; provider text is never run as markup and no provider links are published.', true, true],
-                ['Panel styles, width and accent colour', 'Three built-in styles, three widths and your own accent colour.', true, true],
-                ['Editable panel wording', 'Title, headline, introduction, placeholder, footer labels and unavailable message.', true, true],
-                ['Daily request limits', 'A per-visitor and a site-wide daily allowance, with no stored addresses and no extra setup.', true, true],
-                ['Block and shortcode placement', 'The NC Interactive block or the [ncli_interactive] shortcode, with placement detection.', true, true],
-                ['Optional conversation history', 'Off by default; when on, you can view and delete records and set how long they are kept.', true, true],
-                ['Privacy tools', 'Suggested privacy-policy wording, WordPress export and erase support, and an opt-in to delete data on uninstall.', true, true],
-                ['Diagnostics', 'Readiness, connection-test result and the latest provider problem in plain words.', true, true],
-                ['Accessible, translation-ready interface', 'Labelled controls, keyboard operation and translatable text across the panel and the settings screens.', true, true],
+            __('Included in NCI Core', 'niche-clever-interactive') => [
+                [__('One knowledge profile and public question panel', 'niche-clever-interactive'), __('Answers visitors\' questions from your own OpenAI File Search vector store, on as many pages as you like.', 'niche-clever-interactive'), true, true],
+                [__('Guided setup and connection test', 'niche-clever-interactive'), __('A step-by-step checklist, with a test that must pass again after any change that affects answers.', 'niche-clever-interactive'), true, true],
+                [__('Model, reasoning and cost controls', 'niche-clever-interactive'), __('Choose the model, reasoning effort, retrieval depth, answer length and timeout, with no prices shown.', 'niche-clever-interactive'), true, true],
+                [__('Response guidance and presets', 'niche-clever-interactive'), __('Your own bounded guidance plus Concise, Balanced or Detailed answers, inside fixed safety rules.', 'niche-clever-interactive'), true, true],
+                [__('Conversation thread', 'niche-clever-interactive'), __('Questions and answers build up as a thread with a Reset conversation control; nothing is kept in the browser.', 'niche-clever-interactive'), true, true],
+                [__('Safe answer formatting', 'niche-clever-interactive'), __('Headings, lists, emphasis, quotes and code display cleanly; provider text is never run as markup and no provider links are published.', 'niche-clever-interactive'), true, true],
+                [__('Panel styles, width and accent colour', 'niche-clever-interactive'), __('Three built-in styles, three widths and your own accent colour.', 'niche-clever-interactive'), true, true],
+                [__('Editable panel wording', 'niche-clever-interactive'), __('Title, headline, introduction, placeholder, footer labels and unavailable message.', 'niche-clever-interactive'), true, true],
+                [__('Daily request limits', 'niche-clever-interactive'), __('A per-visitor and a site-wide daily allowance, with no stored addresses and no extra setup.', 'niche-clever-interactive'), true, true],
+                [__('Block and shortcode placement', 'niche-clever-interactive'), __('The NC Interactive block or the [ncli_interactive] shortcode, with placement detection.', 'niche-clever-interactive'), true, true],
+                [__('Optional conversation history', 'niche-clever-interactive'), __('Off by default; when on, you can view and delete records and set how long they are kept.', 'niche-clever-interactive'), true, true],
+                [__('Privacy tools', 'niche-clever-interactive'), __('Suggested privacy-policy wording, WordPress export and erase support, and an opt-in to delete data on uninstall.', 'niche-clever-interactive'), true, true],
+                [__('Diagnostics', 'niche-clever-interactive'), __('Readiness, connection-test result and the latest provider problem in plain words.', 'niche-clever-interactive'), true, true],
+                [__('Accessible, translation-ready interface', 'niche-clever-interactive'), __('Labelled controls, keyboard operation and translatable text across the panel and the settings screens.', 'niche-clever-interactive'), true, true],
             ],
-            'Added in NCI Premium: knowledge and access' => [
-                ['Multiple knowledge profiles', 'Separate profiles, each with its own vector store, wording, style and request limits.', false, true],
-                ['Protected profiles', 'Limit a profile to visitors who have been granted access, with an editable access-required message.', false, true],
-                ['Contextual placement and reusable content routes', 'Place questions in context and route visitors to them from other content.', false, true],
+            __('Added in NCI Premium: knowledge and access', 'niche-clever-interactive') => [
+                [__('Multiple knowledge profiles', 'niche-clever-interactive'), __('Separate profiles, each with its own vector store, wording, style and request limits.', 'niche-clever-interactive'), false, true],
+                [__('Protected profiles', 'niche-clever-interactive'), __('Limit a profile to visitors who have been granted access, with an editable access-required message.', 'niche-clever-interactive'), false, true],
+                [__('Contextual placement and reusable content routes', 'niche-clever-interactive'), __('Place questions in context and route visitors to them from other content.', 'niche-clever-interactive'), false, true],
             ],
-            'Added in NCI Premium: answers and evidence' => [
-                ['Approved public evidence links', 'Titles and links you have approved, shown under answers; never raw provider citations.', false, true],
-                ['Chronology records', 'Verified, dated summaries so answers about history stay within what your records support.', false, true],
-                ['Earlier turns sent as context for follow-up questions', 'Lets follow-ups build on the conversation so far, with a setting for how many earlier turns to include; Core answers each question on its own.', false, true],
-                ['Approved-answer cache', 'Reuses an approved answer to a repeated first question to save cost and time, and does not use a live allowance when it does.', false, true],
+            __('Added in NCI Premium: answers and evidence', 'niche-clever-interactive') => [
+                [__('Approved public evidence links', 'niche-clever-interactive'), __('Titles and links you have approved, shown under answers; never raw provider citations.', 'niche-clever-interactive'), false, true],
+                [__('Chronology records', 'niche-clever-interactive'), __('Verified, dated summaries so answers about history stay within what your records support.', 'niche-clever-interactive'), false, true],
+                [__('Earlier turns sent as context for follow-up questions', 'niche-clever-interactive'), __('Lets follow-ups build on the conversation so far, with a setting for how many earlier turns to include; Core answers each question on its own.', 'niche-clever-interactive'), false, true],
+                [__('Approved-answer cache', 'niche-clever-interactive'), __('Reuses an approved answer to a repeated first question to save cost and time, and does not use a live allowance when it does.', 'niche-clever-interactive'), false, true],
             ],
-            'Added in NCI Premium: authored questions' => [
-                ['Authored questions and shareable links', 'A catalogue of reusable questions with stable keys, shortcodes and links to share.', false, true],
-                ['Ordered question collections', 'Group authored questions into a sequence and place it where it fits.', false, true],
+            __('Added in NCI Premium: authored questions', 'niche-clever-interactive') => [
+                [__('Authored questions and shareable links', 'niche-clever-interactive'), __('A catalogue of reusable questions with stable keys, shortcodes and links to share.', 'niche-clever-interactive'), false, true],
+                [__('Ordered question collections', 'niche-clever-interactive'), __('Group authored questions into a sequence and place it where it fits.', 'niche-clever-interactive'), false, true],
             ],
-            'Added in NCI Premium: conversation governance' => [
-                ['Conversation export', 'Export one or more conversations for review, filtered by profile.', false, true],
-                ['Governance controls', 'Per-profile scope, retention schedules and audited bulk erasure on top of Core\'s history.', false, true],
+            __('Added in NCI Premium: conversation governance', 'niche-clever-interactive') => [
+                [__('Conversation export', 'niche-clever-interactive'), __('Export one or more conversations for review, filtered by profile.', 'niche-clever-interactive'), false, true],
+                [__('Governance controls', 'niche-clever-interactive'), __('Per-profile scope, retention schedules and audited bulk erasure on top of Core\'s history.', 'niche-clever-interactive'), false, true],
             ],
-            'Added in NCI Premium: presentation' => [
-                ['Response colour controls', 'Set the colours of question and answer blocks, not only the accent colour.', false, true],
+            __('Added in NCI Premium: presentation', 'niche-clever-interactive') => [
+                [__('Response colour controls', 'niche-clever-interactive'), __('Set the colours of question and answer blocks, not only the accent colour.', 'niche-clever-interactive'), false, true],
             ],
         ];
 
         echo '<table class="widefat ncli-admin__comparison-table"><caption class="screen-reader-text">' . esc_html(__('NCI Core compared with NCI Premium', 'niche-clever-interactive')) . '</caption>';
         echo '<thead><tr><th scope="col">' . esc_html(__('Feature', 'niche-clever-interactive')) . '</th><th scope="col">' . esc_html(__('What it does', 'niche-clever-interactive')) . '</th><th scope="col">' . esc_html(__('NCI Core', 'niche-clever-interactive')) . '</th><th scope="col">' . esc_html(__('NCI Premium', 'niche-clever-interactive')) . '</th></tr></thead><tbody>';
         foreach ($groups as $group => $rows) {
-            echo '<tr class="ncli-admin__comparison-group"><th scope="rowgroup" colspan="4">' . esc_html($this->t($group)) . '</th></tr>';
+            echo '<tr class="ncli-admin__comparison-group"><th scope="rowgroup" colspan="4">' . esc_html($group) . '</th></tr>';
             foreach ($rows as $row) {
-                echo '<tr><th scope="row">' . esc_html($this->t($row[0])) . '</th><td class="ncli-admin__comparison-what">' . esc_html($this->t($row[1])) . '</td>';
+                echo '<tr><th scope="row">' . esc_html($row[0]) . '</th><td class="ncli-admin__comparison-what">' . esc_html($row[1]) . '</td>';
                 foreach ([$row[2], $row[3]] as $included) {
                     echo '<td class="' . ($included ? 'ncli-admin__comparison-yes' : 'ncli-admin__comparison-no') . '"><span aria-hidden="true">' . ($included ? '&#10003;' : '&#10005;') . '</span><span class="screen-reader-text">' . esc_html($included ? __('Included', 'niche-clever-interactive') : __('Not included', 'niche-clever-interactive')) . '</span></td>';
                 }
@@ -222,10 +222,5 @@ final class HelpRenderer
             }
         }
         echo '</tbody></table>';
-    }
-
-    private function t(string $text): string
-    {
-        return $text;
     }
 }
