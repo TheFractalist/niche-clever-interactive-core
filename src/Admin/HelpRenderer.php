@@ -12,8 +12,8 @@ namespace NicheCleverInteractive\Core\Admin;
  */
 final class HelpRenderer
 {
-    /** Where NCI Premium is described, bought and downloaded. */
-    public const PREMIUM_URL = 'https://nicheclever.co.uk/nc-interactive-pro/';
+    /** Public information page for the separate NCI Premium companion. */
+    public const PREMIUM_URL = 'https://www.nicheclever.co.uk/nc-interactive-premium/';
 
     private ProfileFieldRenderer $fields;
     /** @var callable(string): string */
@@ -89,7 +89,7 @@ final class HelpRenderer
         echo '<p>' . esc_html(__('Example profiles: for lowest cost, choose an Economy model with a small retrieval depth and a Concise preset. For best quality, choose a Flagship model with a larger retrieval depth and a Detailed preset.', 'niche-clever-interactive')) . '</p>';
         echo '<p>' . esc_html(__('Also set a usage limit in your OpenAI dashboard. Core\'s request limits help, but they are not a billing control.', 'niche-clever-interactive')) . ' <a href="https://openai.com/api/pricing/" target="_blank" rel="noopener">' . esc_html(__('OpenAI API pricing', 'niche-clever-interactive')) . '</a></p>';
         echo '<h3>' . esc_html(__('Safe public use', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . esc_html(__('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it by Core itself, although an installed extension such as NCI Premium can add a limited number of earlier turns. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.', 'niche-clever-interactive')) . '</p>';
+        echo '<p>' . esc_html(__('Each public question is sent to OpenAI to generate an answer; earlier questions in the same conversation are not sent with it by Core itself. The separate NCI Premium information page records a possible companion scope for limited earlier-turn context. The plugin limits visitor and site-wide requests, but those safeguards do not replace monitoring your API account and spend. Do not use the panel as a substitute for human review.', 'niche-clever-interactive')) . '</p>';
         echo '<h3>' . esc_html(__('What it does not do', 'niche-clever-interactive')) . '</h3>';
         echo '<p>' . esc_html(__('Niche Clever Interactive does not create or manage your vector store, upload documents, store your API key in WordPress, or publish provider citations or source links. It keeps no record of visitor conversations unless you switch on the optional conversation history in the Conversation tab.', 'niche-clever-interactive')) . '</p>';
     }
@@ -112,16 +112,16 @@ final class HelpRenderer
                 [__('Which model and settings should I choose?', 'niche-clever-interactive'), __('The Overview tab explains each setting. For the lowest cost use an Economy model, a small retrieval depth and the Concise preset. For the best quality use a Flagship model, a larger retrieval depth and the Detailed preset.', 'niche-clever-interactive')],
                 [__('What do the response guidance and presets do?', 'niche-clever-interactive'), __('They shape tone, format and level of detail only. Retrieval, safety, privacy and disclosure rules always take priority, and changing them requires a fresh connection test.', 'niche-clever-interactive')],
                 [__('Can answers appear progressively?', 'niche-clever-interactive'), __('Yes. Progressive delivery is enabled by default. Visitors first see the processing message you set in Conversation, then answer text can appear as WordPress receives it. If the browser or hosting transport cannot stream, that message remains until the complete validated answer is ready. Turn off Progressively reveal answers in Conversation to use the final-answer view everywhere.', 'niche-clever-interactive')],
-                [__('Does it show sources or citations?', 'niche-clever-interactive'), __('No. Core never publishes provider citations or source links. Approved evidence links that you choose yourself are available in NCI Premium.', 'niche-clever-interactive')],
+                [__('Does it show sources or citations?', 'niche-clever-interactive'), __('No. Core never publishes provider citations or source links. The NCI Premium information page describes an optional companion scope for owner-approved evidence links.', 'niche-clever-interactive')],
                 [__('Why did the panel refuse my question?', 'niche-clever-interactive'), __('Core applies fixed safety rules. A question that tries to override its instructions or reveal them is declined with a short refusal.', 'niche-clever-interactive')],
                 [__('Why does it say a verified answer is not available?', 'niche-clever-interactive'), __('The answer did not come from a completed search of your corpus. Check the vector store reference and corpus version, then run the connection test again.', 'niche-clever-interactive')],
-                [__('Can visitors ask follow-up questions?', 'niche-clever-interactive'), __('Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. NCI Premium can send a limited number of earlier turns as context so follow-ups make sense, with a setting for how many.', 'niche-clever-interactive')],
-                [__('Are answers cached?', 'niche-clever-interactive'), __('Core itself does not cache: each question is a fresh request to OpenAI. NCI Premium can reuse answers you have approved to save cost and time.', 'niche-clever-interactive')],
+                [__('Can visitors ask follow-up questions?', 'niche-clever-interactive'), __('Yes, but on its own Core answers each question separately: earlier questions in the same conversation are not sent with it. The NCI Premium information page describes a companion scope for limited earlier-turn context.', 'niche-clever-interactive')],
+                [__('Are answers cached?', 'niche-clever-interactive'), __('Core itself does not cache: each question is a fresh request to OpenAI. The NCI Premium information page describes a companion scope for owner-approved answer reuse.', 'niche-clever-interactive')],
                 [__('Can visitors ask in other languages?', 'niche-clever-interactive'), __('They can ask in any language the model understands. The interface text is translation-ready, while wording you write in the Profile and Conversation tabs appears exactly as you wrote it.', 'niche-clever-interactive')],
             ],
             __('Visitors, limits and privacy', 'niche-clever-interactive') => [
-                [__('What information is sent to OpenAI?', 'niche-clever-interactive'), __('Only the visitor\'s current question, together with your instructions and the vector store reference, is sent when the enabled panel is used. Earlier questions in the same conversation are not sent with it by Core itself; if NCI Premium is installed it can add a limited number of earlier turns and any chronology records you have entered.', 'niche-clever-interactive')],
-                [__('Does it send analytics anywhere?', 'niche-clever-interactive'), __('No. The panel announces question and answer milestones inside the visitor\'s browser as an ncli:analytics event, so a consent-managed analytics tool you add yourself can listen for them. Core itself sends nothing to Google or any other analytics service, stores nothing and never includes question or answer text: each event carries only the page path, the profile, authored-question identifiers, whether the question was authored or typed, whether the answer was live or reused and a general error category.', 'niche-clever-interactive')],
+                [__('What information is sent to OpenAI?', 'niche-clever-interactive'), __('Only the visitor\'s current question, together with your instructions and the vector store reference, is sent when the enabled panel is used. Earlier questions in the same conversation are not sent with it by Core itself. The NCI Premium information page records a possible companion scope for earlier-turn context and chronology records.', 'niche-clever-interactive')],
+                [__('Does it send analytics anywhere?', 'niche-clever-interactive'), __('No. The panel announces question and answer milestones inside the visitor\'s browser as an ncli:analytics event, so a consent-managed analytics tool you add yourself can listen for them. Core itself sends nothing to Google or any other analytics service, stores nothing and never includes question or answer text, page paths, query values or browser identifiers. Each event carries only validated profile and authored-question identifiers, whether the question was authored or typed, whether the answer was live or reused and a general error category.', 'niche-clever-interactive')],
                 [__('Why does the panel say the question allowance has been reached?', 'niche-clever-interactive'), __('Either one visitor has used their daily questions or the whole site has used its daily provider allowance. Both limits are set in Appearance & Limits, count by UTC day and start again at UTC midnight. Visitors are counted with a privacy-bounded code, not a stored address, and no extra server setup is needed for this.', 'niche-clever-interactive')],
                 [__('Does it keep a record of visitors\' conversations?', 'niche-clever-interactive'), __('Not unless you switch on the optional conversation history in the Conversation tab. It is off by default. If you turn it on you choose how long records are kept and can review and delete them under NC Interactive > Conversations.', 'niche-clever-interactive')],
                 [__('How do I review or delete stored conversations?', 'niche-clever-interactive'), __('Open NC Interactive > Conversations to view them and to delete one, several or all. Records are removed automatically after the retention period you choose. Deleted records can reappear if you restore an older database backup, so repeat the deletion after a restore.', 'niche-clever-interactive')],
@@ -144,7 +144,7 @@ final class HelpRenderer
                 [__('What does Diagnostics show?', 'niche-clever-interactive'), __('The readiness state, the connection test result and the latest provider problem. It never shows a credential, provider payload, file identifier or retrieved content.', 'niche-clever-interactive')],
             ],
             __('Editions', 'niche-clever-interactive') => [
-                [__('What is NCI Premium?', 'niche-clever-interactive'), __('NCI Premium is a separately supplied edition from Niche Clever that adds several knowledge profiles, approved evidence links, authored questions, conversation export and governance, answer reuse and finer colour control. The NCI Premium tab lists what each edition includes and links to the NCI Premium page (nicheclever.co.uk/nc-interactive-pro). This plugin, NCI Core, contains no Premium code, and nothing in Core is locked, limited or time-restricted.', 'niche-clever-interactive')],
+                [__('What is NCI Premium?', 'niche-clever-interactive'), __('NCI Premium is a separate Niche Clever companion described on an informational page. That page records its intended scope, including several knowledge profiles, approved evidence links, authored questions, conversation governance, answer reuse and finer colour control. It makes no purchase, download, pricing or availability promise. This plugin, NCI Core, contains no Premium code, and nothing in Core is locked, limited or time-restricted.', 'niche-clever-interactive')],
             ],
         ];
 
@@ -160,10 +160,10 @@ final class HelpRenderer
     private function renderHelpPremium(): void
     {
         echo '<h3>' . esc_html(__('NCI Core and NCI Premium', 'niche-clever-interactive')) . '</h3>';
-        echo '<p>' . esc_html(__('NCI Core is complete for one focused question-and-answer panel. NCI Premium, supplied separately by Niche Clever, is for sites that need several knowledge profiles, curated evidence, authored questions, deeper conversation governance and cost-saving answer reuse. The table shows what each edition includes.', 'niche-clever-interactive')) . '</p>';
-        echo '<p><a class="button button-primary" href="' . esc_attr(self::PREMIUM_URL) . '" target="_blank" rel="noopener">' . esc_html(__('See NCI Premium: details, purchase and download', 'niche-clever-interactive')) . '</a></p>';
+        echo '<p>' . esc_html(__('NCI Core is complete for one focused question-and-answer panel. The separate NCI Premium information page records a companion scope for sites that may need several knowledge profiles, curated evidence, authored questions, deeper conversation governance and answer reuse. The table records intended scope only; it is not a purchase, download, pricing or availability statement.', 'niche-clever-interactive')) . '</p>';
+        echo '<p><a class="button button-primary" href="' . esc_attr(self::PREMIUM_URL) . '" target="_blank" rel="noopener">' . esc_html(__('Learn about NCI Premium', 'niche-clever-interactive')) . '</a></p>';
         $this->renderComparisonTable();
-        echo '<p class="ncli-admin__comparison-note">' . esc_html(__('NCI Premium is a separately supplied edition. NCI Core contains no Premium code, and nothing in Core is locked, limited or time-restricted. Core never publishes provider citations or source links; Premium\'s evidence links would be titles and addresses that you approve yourself.', 'niche-clever-interactive')) . '</p>';
+        echo '<p class="ncli-admin__comparison-note">' . esc_html(__('NCI Premium is a separate informational companion; its status and delivery are not represented here. NCI Core contains no Premium code, and nothing in Core is locked, limited or time-restricted. Core never publishes provider citations or source links; the recorded companion scope would use titles and addresses that an owner approves.', 'niche-clever-interactive')) . '</p>';
     }
 
     private function renderComparisonTable(): void
@@ -185,26 +185,26 @@ final class HelpRenderer
                 [__('Diagnostics', 'niche-clever-interactive'), __('Readiness, connection-test result and the latest provider problem in plain words.', 'niche-clever-interactive'), true, true],
                 [__('Accessible, translation-ready interface', 'niche-clever-interactive'), __('Labelled controls, keyboard operation and translatable text across the panel and the settings screens.', 'niche-clever-interactive'), true, true],
             ],
-            __('Added in NCI Premium: knowledge and access', 'niche-clever-interactive') => [
+            __('Recorded NCI Premium scope: knowledge and access', 'niche-clever-interactive') => [
                 [__('Multiple knowledge profiles', 'niche-clever-interactive'), __('Separate profiles, each with its own vector store, wording, style and request limits.', 'niche-clever-interactive'), false, true],
                 [__('Protected profiles', 'niche-clever-interactive'), __('Limit a profile to visitors who have been granted access, with an editable access-required message.', 'niche-clever-interactive'), false, true],
                 [__('Contextual placement and reusable content routes', 'niche-clever-interactive'), __('Place questions in context and route visitors to them from other content.', 'niche-clever-interactive'), false, true],
             ],
-            __('Added in NCI Premium: answers and evidence', 'niche-clever-interactive') => [
+            __('Recorded NCI Premium scope: answers and evidence', 'niche-clever-interactive') => [
                 [__('Approved public evidence links', 'niche-clever-interactive'), __('Titles and links you have approved, shown under answers; never raw provider citations.', 'niche-clever-interactive'), false, true],
                 [__('Chronology records', 'niche-clever-interactive'), __('Verified, dated summaries so answers about history stay within what your records support.', 'niche-clever-interactive'), false, true],
                 [__('Earlier turns sent as context for follow-up questions', 'niche-clever-interactive'), __('Lets follow-ups build on the conversation so far, with a setting for how many earlier turns to include; Core answers each question on its own.', 'niche-clever-interactive'), false, true],
                 [__('Approved-answer cache', 'niche-clever-interactive'), __('Reuses an approved answer to a repeated first question to save cost and time, and does not use a live allowance when it does.', 'niche-clever-interactive'), false, true],
             ],
-            __('Added in NCI Premium: authored questions', 'niche-clever-interactive') => [
+            __('Recorded NCI Premium scope: authored questions', 'niche-clever-interactive') => [
                 [__('Authored questions and shareable links', 'niche-clever-interactive'), __('A catalogue of reusable questions with stable keys, shortcodes and links to share.', 'niche-clever-interactive'), false, true],
                 [__('Ordered question collections', 'niche-clever-interactive'), __('Group authored questions into a sequence and place it where it fits.', 'niche-clever-interactive'), false, true],
             ],
-            __('Added in NCI Premium: conversation governance', 'niche-clever-interactive') => [
+            __('Recorded NCI Premium scope: conversation governance', 'niche-clever-interactive') => [
                 [__('Conversation export', 'niche-clever-interactive'), __('Export one or more conversations for review, filtered by profile.', 'niche-clever-interactive'), false, true],
                 [__('Governance controls', 'niche-clever-interactive'), __('Per-profile scope, retention schedules and audited bulk erasure on top of Core\'s history.', 'niche-clever-interactive'), false, true],
             ],
-            __('Added in NCI Premium: presentation', 'niche-clever-interactive') => [
+            __('Recorded NCI Premium scope: presentation', 'niche-clever-interactive') => [
                 [__('Response colour controls', 'niche-clever-interactive'), __('Set the colours of question and answer blocks, not only the accent colour.', 'niche-clever-interactive'), false, true],
             ],
         ];

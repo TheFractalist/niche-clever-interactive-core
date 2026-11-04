@@ -1,5 +1,13 @@
 # Progress
 
+## 4 November 2026 — Core 1.0.5 local WordPress.org readiness correction (implemented; local commit pending)
+
+Core is now version `1.0.5` locally. The browser-local `ncli:analytics` contract no longer carries `page_path` or any URL component; its regression coverage rejects pathname/query/URL, question/answer text, browser identity, storage and network forwarding. The concise `readme.txt` is 5,484 bytes, points to the intended support URL and links only to the live NCI Premium information page without commercial or availability claims. The changelog, Help Centre and readiness record document the privacy decision. The historical 1.0.4 reviewer-reply draft is explicitly superseded; the new record corrects the HTTP and scoped-suppression wording.
+
+Candidate `1.0.5-r1` is `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-04-release-1.0.5-r1\niche-clever-interactive-1.0.5.zip` (SHA-256 `3a84acabee49f2482c5de8ab914449d8ab0851e2a7f317e3143e375bd91030fe`, 118 files, expanded/install manifest match). Test-Site was recoverably backed up at `C:\xampp\backup\Test-Site-ncli-core-pre-1.0.5-r1-20261104-000248`, then installed with the verified candidate. Pure tests, JS tests, PHP 8.2 lint, source/expanded WPCS, local Plugin Check categories and a fresh WordPress 6.5.5/PHP 8.1.29/MariaDB fixture passed. One authorised Core connection test passed and one benign public request returned live HTTP 200; no sensitive content is recorded. Full evidence and remaining browser/manual checks are in `docs/WORDPRESS-ORG-READINESS-1.0.5.md`.
+
+**Hard external gate:** `https://nicheclever.co.uk/plugin-support/` returned HTTP 404 on 4 November 2026. Do not upload to WordPress.org until it returns HTTP 200 and its production page is visually checked. No upload, tag, push, production deployment or WordPress.org action has occurred.
+
 ## 3 November 2026 — Core `1.0.4` resubmission candidate (tagged and merged; not uploaded)
 
 **Scope:** Jacob directed final tests and fixes before WordPress.org resubmission. His decisions were:

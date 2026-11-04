@@ -124,6 +124,8 @@ For Jacob or a second reviewer, before authorising the upload:
 
 ## Reviewer reply draft
 
+**Superseded by 1.0.5:** this unsent 1.0.4 draft is retained as historical evidence only. Do not send it: its statements about direct cURL calls and broad suppression removal were too absolute. Use the corrected draft in `docs/WORDPRESS-ORG-READINESS-1.0.5.md`.
+
 Check this against the actual review email thread before sending. That email is not in this repository. Reply in the same thread.
 
 > Hello,

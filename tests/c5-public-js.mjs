@@ -34,7 +34,11 @@ assert(source.includes("hiddenLabel(text('questionLabel'") && source.includes("h
 assert(source.includes('isConnected'), 'A reset during a request must not resurrect a cleared turn.');
 assert(source.includes("'ncli:analytics'") && source.includes("'nci_predefined_question_click'") && source.includes("'nci_predefined_question_submit'") && source.includes("'nci_custom_question_submit'") && source.includes("'nci_answer_success'") && source.includes("'nci_answer_error'"), 'The local analytics contract must expose only the documented event names.');
 assert(!source.includes('window.dataLayer') && !source.includes('window.gtag('), 'The Core browser contract must not itself forward analytics to Google or another external endpoint.');
-assert(source.includes('window.location.pathname') && !source.includes('window.location.href'), 'Analytics page context must use only the path, never a query-bearing URL.');
+const analyticsContract = source.slice(source.indexOf('function emitAnalytics'), source.indexOf("document.addEventListener('click'"));
+assert(!/window\.location|document\.location|URLSearchParams|page_path/.test(analyticsContract), 'Analytics must not expose page paths, query strings, fragments or whole URLs.');
+assert(!/params\.question(?!_)|params\.answer\b|\bquestion_text\b|\banswer_text\b/.test(analyticsContract), 'Analytics must not carry visitor question or answer text.');
+assert(!/navigator|userAgent|document\.cookie|localStorage|sessionStorage|client_id|browser_id|ip_address/.test(analyticsContract), 'Analytics must not carry browser identity or use browser storage.');
+assert(!/fetch\(|XMLHttpRequest|sendBeacon|dataLayer|gtag\(/.test(analyticsContract), 'Analytics must not forward events over the network.');
 assert(source.includes('question_id') && source.includes('placement_id') && !source.includes('params.question ='), 'The authored-question contract must use stable identifiers rather than question text.');
 assert(/function emitAnalytics[\s\S]{0,400}try \{[\s\S]{0,300}dispatchEvent[\s\S]{0,300}catch \(/.test(source), 'A failed analytics dispatch must not turn a completed answer into a failure.');
 

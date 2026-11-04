@@ -159,7 +159,7 @@ $assert(substr_count($faq, '<details>') >= 30 && substr_count($faq, '<details>')
 $assert(!preg_match('/\$\s?\d/', $faq), 'The FAQ must not quote prices.');
 $premium = $renderHelp('premium');
 $assert(str_contains($premium, 'ncli-admin__comparison-table'), 'The NCI Premium tab must provide the Core and planned-Premium comparison table.');
-$assert(substr_count($premium, 'scope="rowgroup"') === 6 && str_contains($premium, 'Included in NCI Core') && str_contains($premium, 'Added in NCI Premium: knowledge and access') && str_contains($premium, 'Added in NCI Premium: conversation governance'), 'The comparison must be grouped into Core features and themed planned Premium groups.');
+$assert(substr_count($premium, 'scope="rowgroup"') === 6 && str_contains($premium, 'Included in NCI Core') && str_contains($premium, 'Recorded NCI Premium scope: knowledge and access') && str_contains($premium, 'Recorded NCI Premium scope: conversation governance'), 'The comparison must be grouped into Core features and themed recorded Premium-scope groups.');
 $assert(substr_count($premium, 'class="ncli-admin__comparison-yes"') === 40 && substr_count($premium, 'class="ncli-admin__comparison-no"') === 12 && substr_count($premium, '<tr><th scope="row">') === 26, 'The comparison must list 14 Core features (included in both) and 12 planned Premium-only features.');
 foreach (['Conversation thread', 'Safe answer formatting', 'Editable panel wording', 'Privacy tools', 'Accessible, translation-ready interface', 'Conversation export', 'Governance controls'] as $feature) {
     $assert(str_contains($premium, $feature), 'The comparison must list: ' . $feature);
@@ -168,10 +168,8 @@ foreach (['Multiple knowledge profiles', 'Approved public evidence links', 'Chro
     $assert(str_contains($premium, $feature), 'The comparison must list the planned Premium feature: ' . $feature);
 }
 $assert(!str_contains($premium, 'NCI Pro') && !str_contains($help . $faq . $premium, '>Pro<'), 'User-facing Help must call the planned edition NCI Premium.');
-$assert(str_contains($premium, 'contains no Premium code') && str_contains($premium, 'nothing in Core is locked, limited or time-restricted'), 'The comparison must state that Core contains no Premium code and nothing in Core is locked.');
-foreach ([$help, $faq, $premium] as $helpPage) {
-    $assert(stripos($helpPage, 'planned') === false && stripos($helpPage, 'intended to') === false && stripos($helpPage, 'makes no availability') === false, 'Premium wording must be in the present tense, with no planned or intended-to hedging.');
-}
+$assert(str_contains($premium, 'contains no Premium code') && str_contains($premium, 'nothing in Core is locked, limited or time-restricted') && str_contains($premium, 'not a purchase, download, pricing or availability statement'), 'The comparison must state Core boundaries and that Premium information is not an availability claim.');
+$assert(!str_contains($premium, 'Buy NCI Premium') && !str_contains($premium, 'Download NCI Premium') && !str_contains($premium, 'Price:'), 'Premium wording must not market, distribute or price the separate companion.');
 $unknown = $renderHelp('<script>');
 $assert(!str_contains($unknown, '<script>') && str_contains($unknown, 'What Niche Clever Interactive is for'), 'An unknown Help section must fall back to the overview.');
 $assert(str_contains($help, 'Choosing a model and managing cost'), 'The Help Centre must explain model cost drivers.');

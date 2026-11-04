@@ -527,10 +527,6 @@
     }
   }
 
-  function analyticsPagePath() {
-    return window.location && typeof window.location.pathname === 'string' ? window.location.pathname : '/';
-  }
-
   function validAnalyticsId(value) {
     return typeof value === 'string' && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(value) ? value : '';
   }
@@ -550,7 +546,7 @@
   }
 
   function requestAnalytics(marker, profile) {
-    var params = { page_path: analyticsPagePath() };
+    var params = {};
     if (validAnalyticsId(profile)) {
       params.profile_id = profile;
     }

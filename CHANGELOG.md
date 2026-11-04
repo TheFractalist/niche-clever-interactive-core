@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.5 — 3 November 2026
+
+Local WordPress.org resubmission candidate; not published, listed, deployed or submitted. The browser-local `ncli:analytics` custom event no longer includes a page path or any browser URL component. Its bounded payload is limited to validated profile and authored identifiers, question type, live or cached source and a reviewed error category; it still sends nothing, stores nothing and excludes question and answer text. The Help Centre and readme disclose that privacy boundary.
+
+The NCI Premium link now leads only to its live information page and makes no purchase, download, pricing or availability claim. The intended public support route is `https://nicheclever.co.uk/plugin-support/`; it must be live before any WordPress.org upload. The directory readme is kept below 10 KB; older release history remains here.
+
 ## 1.0.4 — 3 November 2026
 
 WordPress.org resubmission candidate; not published, listed, deployed or submitted. The public panel dispatches a bounded browser-local `ncli:analytics` `CustomEvent` for authored-question clicks, question submissions and answer success or error. Core never pushes `dataLayer`, calls `gtag`, stores data or makes a network request for it; event parameters are limited to the page path (never the query string), validated profile and authored identifiers, question type, live or cached source and a reviewed error category. A failed dispatch is ignored so it cannot change an answer's outcome. A repeat submission while a request is in flight is ignored. The Help Centre FAQ and the readme FAQ both disclose the event.
