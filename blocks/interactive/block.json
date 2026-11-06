@@ -8,12 +8,11 @@
   "attributes": {
     "title": {
       "type": "string",
-      "default": "Ask Niche Clever"
+      "default": ""
     },
     "profile": {
       "type": "string",
       "default": ""
     }
-  },
-  "render": "file:./render.php"
+  }
 }

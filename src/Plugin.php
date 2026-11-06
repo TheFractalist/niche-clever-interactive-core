@@ -183,10 +183,10 @@ final class Plugin
             return;
         }
 
-        $content = '<p>' . $this->escapeHtml(__('Niche Clever Interactive sends each public visitor question to OpenAI when the site administrator has enabled the public panel.', 'niche-clever-interactive') . ' ' . $this->contextSentence() . ' ' . __('OpenAI File Search may use material in the administrator-selected vector store to generate an answer.', 'niche-clever-interactive')) . '</p>'
-            . '<p>' . $this->escapeHtml(__('The plugin does not store the OpenAI API key in WordPress options. To enforce daily limits it stores a server-secret HMAC of the visitor network scope, rather than a raw IP address.', 'niche-clever-interactive')) . '</p>'
-            . '<p>' . $this->escapeHtml(__('Conversation history is off by default. If the site owner turns it on, each successfully answered question and its answer are stored in the site database with a random conversation identifier, the time, and the plugin and corpus versions, until the owner deletes them or the chosen retention period ends. No IP address, account or browser identifier is stored with them. Visitors can type personal information into a question, so tell them if questions and answers are kept and for how long.', 'niche-clever-interactive')) . '</p>'
-            . '<p>' . $this->escapeHtml(__('Site owners are responsible for their own OpenAI account, provider terms, billing, retention choices and privacy information.', 'niche-clever-interactive')) . '</p>';
+        $content = '<p>' . esc_html(__('Niche Clever Interactive sends each public visitor question to OpenAI when the site administrator has enabled the public panel.', 'niche-clever-interactive') . ' ' . $this->contextSentence() . ' ' . __('OpenAI File Search may use material in the administrator-selected vector store to generate an answer.', 'niche-clever-interactive')) . '</p>'
+            . '<p>' . esc_html(__('The plugin does not store the OpenAI API key in WordPress options. To enforce daily limits it stores a server-secret HMAC of the visitor network scope, rather than a raw IP address.', 'niche-clever-interactive')) . '</p>'
+            . '<p>' . esc_html(__('Conversation history is off by default. If the site owner turns it on, each successfully answered question and its answer are stored in the site database with a random conversation identifier, the time, and the plugin and corpus versions, until the owner deletes them or the chosen retention period ends. No IP address, account or browser identifier is stored with them. Visitors can type personal information into a question, so tell them if questions and answers are kept and for how long.', 'niche-clever-interactive')) . '</p>'
+            . '<p>' . esc_html(__('Site owners are responsible for their own OpenAI account, provider terms, billing, retention choices and privacy information.', 'niche-clever-interactive')) . '</p>';
 
         wp_add_privacy_policy_content(__('Niche Clever Interactive', 'niche-clever-interactive'), wp_kses_post($content));
     }
@@ -301,10 +301,5 @@ final class Plugin
         ) {$collate} ENGINE=InnoDB;";
 
         dbDelta($sql);
-    }
-
-    private function escapeHtml(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 }

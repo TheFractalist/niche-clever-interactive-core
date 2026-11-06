@@ -81,7 +81,10 @@ final class InteractivePanel
     public function registerBlock(): void
     {
         if (function_exists('register_block_type')) {
-            register_block_type(dirname(__DIR__, 2) . '/blocks/interactive');
+            // The block shares the shortcode's renderer; WordPress outputs the returned, escaped markup.
+            register_block_type(dirname(__DIR__, 2) . '/blocks/interactive', [
+                'render_callback' => fn (array $attributes): string => $this->renderInteractive($attributes),
+            ]);
         }
     }
 
@@ -155,35 +158,35 @@ final class InteractivePanel
             $inlineStyle = $inlineStyle === '' ? $colourStyle : ($colourStyle === '' ? $inlineStyle : $inlineStyle . ';' . $colourStyle);
         }
         $credit = $showCredit
-            ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL)
+            ? '<p class="ncli-panel__credit"><a href="' . esc_attr(self::CREDIT_URL)
                 . '" target="_blank" rel="noopener">'
-                . $this->html(__('Powered by NC Interactive', 'niche-clever-interactive')) . '</a></p>'
+                . esc_html(__('Powered by NC Interactive', 'niche-clever-interactive')) . '</a></p>'
             : '';
         $disabled = $ready ? '' : ' disabled';
 
-        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" data-ncli-panel="'
-            . $this->attr($panelMarker) . '" data-ncli-processing-message="' . $this->attr($processing) . '"'
-            . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '')
+        return '<section class="ncli-panel ncli-panel--' . esc_attr($style) . '" data-ncli-panel="'
+            . esc_attr($panelMarker) . '" data-ncli-processing-message="' . esc_attr($processing) . '"'
+            . ($inlineStyle !== '' ? ' style="' . esc_attr($inlineStyle) . '"' : '')
             . ' aria-labelledby="ncli-panel-title">'
             . '<div class="ncli-panel__frame">'
-            . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . $this->html($title) . '</h2>'
-            . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'
-            . ($presentation['introduction'] !== '' ? '<p class="ncli-panel__introduction">' . $this->html($presentation['introduction']) . '</p>' : '')
+            . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . esc_html($title) . '</h2>'
+            . '<p class="ncli-panel__headline">' . esc_html($presentation['headline']) . '</p>'
+            . ($presentation['introduction'] !== '' ? '<p class="ncli-panel__introduction">' . esc_html($presentation['introduction']) . '</p>' : '')
             . '</header>'
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
-            . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
+            . '<p class="ncli-panel__status" aria-live="polite">' . esc_html($status) . '</p>'
             . '<form class="ncli-panel__form" data-ncli-interactive="1"'
-                . ($profileId !== '' ? ' data-ncli-profile="' . $this->attr($profileId) . '"' : '') . '>'
-            . '<label class="screen-reader-text" for="ncli-question">' . $this->html(__('Ask a question', 'niche-clever-interactive')) . '</label>'
+                . ($profileId !== '' ? ' data-ncli-profile="' . esc_attr($profileId) . '"' : '') . '>'
+            . '<label class="screen-reader-text" for="ncli-question">' . esc_html(__('Ask a question', 'niche-clever-interactive')) . '</label>'
             . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="'
-                . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
-            . '<button type="submit" aria-label="' . $this->attr(__('Submit question', 'niche-clever-interactive'))
+                . esc_attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
+            . '<button type="submit" aria-label="' . esc_attr(__('Submit question', 'niche-clever-interactive'))
                 . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">'
-                . $this->html(__('Ask', 'niche-clever-interactive')) . '</span></button></div>'
-            . '<button class="ncli-panel__reset" type="button" hidden>' . $this->html(__('Reset conversation', 'niche-clever-interactive')) . '</button>'
+                . esc_html(__('Ask', 'niche-clever-interactive')) . '</span></button></div>'
+            . '<button class="ncli-panel__reset" type="button" hidden>' . esc_html(__('Reset conversation', 'niche-clever-interactive')) . '</button>'
             . '</form>'
-            . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>'
-                . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
+            . '<footer class="ncli-panel__footer"><span>' . esc_html($presentation['footer_left']) . '</span><span>'
+                . esc_html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
             . '</div>'
             . $credit
             . '</section>';
@@ -198,7 +201,7 @@ final class InteractivePanel
             ? $attributes['message']
             : __('Question limits help keep this service available.', 'niche-clever-interactive');
 
-        return '<p class="ncli-limit-notice" role="status">' . $this->html($message) . '</p>';
+        return '<p class="ncli-limit-notice" role="status">' . esc_html($message) . '</p>';
     }
 
     private function markUncacheable(): void
@@ -225,16 +228,6 @@ final class InteractivePanel
         if (function_exists('wp_enqueue_script')) {
             wp_enqueue_script('ncli-core-public');
         }
-    }
-
-    private function html(string $value): string
-    {
-        return function_exists('esc_html') ? esc_html($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function attr(string $value): string
-    {
-        return function_exists('esc_attr') ? esc_attr($value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
     private function displayProcessingMessage(string $message): string

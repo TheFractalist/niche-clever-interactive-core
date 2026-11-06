@@ -69,6 +69,7 @@ sort($log);
 $expected = [
     'clear_cron:1:ncli_core_purge_conversations',
     'delete_option:1:ncli_core_last_failure',
+    'delete_option:1:ncli_core_profile_tests',
     'delete_option:1:ncli_core_schema_version',
     'delete_option:1:ncli_core_settings',
     'sql:DROP TABLE IF EXISTS wp_ncli_core_conversation_turns',
