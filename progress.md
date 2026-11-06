@@ -1,5 +1,38 @@
 # Progress
 
+## 6 November 2026 — Core 1.0.6 candidate: counter pruning and administrator legibility (branch, not pushed)
+
+**Scope:** Jacob asked for both fixes from a reviewer-oriented code review: never-pruned request-allowance counters, and the very long administrator output lines. Work is on branch `feat/core-261106-legibility-and-bucket-purge`, starting from `main` `2217133` (1.0.5). Commits:
+- `ca3a9fb`: counter pruning.
+- `5964ddc`: re-wrap.
+- `538c5cb`: version 1.0.6.
+- `d12f575`: translator-comment placement.
+
+**Counter pruning:** `RateBucketPurge` runs on Core's existing daily purge event.
+- It deletes `ncli_core_rate_buckets` rows for UTC days before yesterday, 500 rows per batch and at most 20 batches a run. Limits only read today's row; yesterday's row is kept so a request spanning midnight can still settle.
+- `WordPressBucketStore` implements the new `PrunableBucketStore`, with one prepared, bounded `DELETE` on Core's own table. `BucketStore` is unchanged.
+- `tests/c4-rate-bucket-purge.php` covers the cutoff, batching, the batch ceiling, error containment and the exact SQL. The occurrence register classifies the new hook (1) and query references (31 to 39).
+- On Test-Site the hook carries two callbacks (conversation and counter purge), and one real run removed all 14 stale rows (12 October to 4 November).
+
+**Legibility:** long single-line output chains in the administrator renderers are broken before their concatenation operators, and long field-definition calls put one argument per line.
+- Lines over 300 characters fell from 126 to 48. Of the rest, 38 are single translatable sentences and 10 are line-scoped `phpcs:ignore` rationales or data lists.
+- Plugin Check then flagged four `MissingTranslatorsComment` errors, because the re-wrap had separated `/* translators: */` comments from their calls. `d12f575` moved each comment onto the line directly above its call.
+- **Proof of no behavioural change:** ignoring comments and whitespace, all 98 untouched runtime files have the same code as 1.0.5. The rendered HTML of all ten Settings and Help screens is byte-identical to 1.0.5 once asset cache-busting numbers are normalised.
+
+**Candidate:** `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-06-release-1.0.6-r2\niche-clever-interactive-1.0.6.zip`, SHA-256 `909aed330cf09ed7828654574a7a85e46318512be308aa1405753665ebd8224f`, 120 files. r1 (`df6f020f…e2c8`) is superseded by the translator-comment fix.
+
+**Verification:**
+- 36 PHP tests pass under PHP 8.1.33 and 8.2.12, and both JS tests pass.
+- WPCS (`phpcs.xml.dist`) and the `WordPress.WP.I18n` sniff are clean on the source and on the expanded archive.
+- The expanded archive matches its manifest and lints under PHP 8.1. The POT has 561 strings.
+- Test-Site (backup `C:\xampp\backups\Test-Site\nci-core-1.0.5-r1-preinstall-20261106-171531`, with a database dump): the install matches the manifest and Plugin Check 2.1.0 reports **no errors found**.
+
+**Not verified:**
+- The WordPress 6.5 / PHP 8.1 Docker fixture: Docker Desktop crashed on startup.
+- Test-Site's public panel now needs the administrator connection test, because the version is part of the fingerprint. No provider call was made.
+- The branch is not pushed or tagged, and nothing was uploaded to WordPress.org.
+- The draft Privacy Notice can now state that counters are deleted within about two days. That is a separate legal-copy decision.
+
 ## 4 November 2026 — Core 1.0.5 local WordPress.org readiness correction (implemented; local commit pending)
 
 Core is now version `1.0.5` locally. The browser-local `ncli:analytics` contract no longer carries `page_path` or any URL component; its regression coverage rejects pathname/query/URL, question/answer text, browser identity, storage and network forwarding. The concise `readme.txt` is 5,484 bytes, points to the intended support URL and links only to the live NCI Premium information page without commercial or availability claims. The changelog, Help Centre and readiness record document the privacy decision. The historical 1.0.4 reviewer-reply draft is explicitly superseded; the new record corrects the HTTP and scoped-suppression wording.
