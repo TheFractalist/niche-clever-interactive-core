@@ -514,8 +514,9 @@ final class ProfileFieldRenderer
 
     private function sectionRow(string $title, string $description): void
     {
-        echo '<tr class="ncli-admin__section-row"><td colspan="2"><h3>' . esc_html($title)
-            . '</h3><p class="description">' . esc_html($description) . '</p></td></tr>';
+        // An h2 follows the page's h1 directly, so the heading order has no gap.
+        echo '<tr class="ncli-admin__section-row"><td colspan="2"><h2>' . esc_html($title)
+            . '</h2><p class="description">' . esc_html($description) . '</p></td></tr>';
     }
 
     private function accentRow(string $style, string $accent): void

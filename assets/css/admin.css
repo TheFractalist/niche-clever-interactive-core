@@ -76,7 +76,7 @@
 .ncli-admin__brand img { display: block; width: auto; height: 36px; max-width: min(180px, 42vw); }
 @media screen and (max-width: 782px) { .ncli-admin { margin-right: 10px; } .ncli-admin__workspace, .ncli-admin__tab-panel { padding: 8px 14px 18px; } .ncli-admin__tabs .nav-tab { margin-bottom: 0; } .ncli-admin__form-table, .ncli-admin__form-table tbody, .ncli-admin__form-table tr, .ncli-admin__form-table th, .ncli-admin__form-table td { display: block; width: auto; } .ncli-admin__form-table th { padding: 16px 0 6px; } .ncli-admin__form-table td { padding: 0 0 16px; } .ncli-admin__form-table tr + tr th, .ncli-admin__form-table tr + tr td { border-top: 0; } .ncli-admin__form-table tr + tr th { border-top: 1px solid #eef1f3; } .ncli-admin__save-bar { gap: 12px; padding: 10px 14px; } .ncli-admin__brand img { height: 32px; } .ncli-admin__comparison-table { display: block; overflow-x: auto; } .ncli-admin__comparison-table thead th:nth-child(n+3), .ncli-admin__comparison-table td.ncli-admin__comparison-yes, .ncli-admin__comparison-table td.ncli-admin__comparison-no { width: 72px; } .ncli-admin__comparison-what { min-width: 180px; } }
 .ncli-admin__section-row td { padding: 26px 0 4px; border-top: 1px solid #d5dbe0; }
-.ncli-admin__section-row h3 { margin: 0 0 6px; color: #123b5a; font-size: 16px; }
+.ncli-admin__section-row h2 { margin: 0 0 6px; padding: 0; color: #123b5a; font-size: 16px; font-weight: 600; line-height: 1.4; }
 .ncli-admin__colour { width: 56px; height: 34px; padding: 2px; border: 1px solid #8c98a1; border-radius: 6px; background: #fff; vertical-align: middle; }
 .ncli-admin__conversations h2 { margin-bottom: 14px; }
 .ncli-admin__conversation-table { margin: 14px 0; }
