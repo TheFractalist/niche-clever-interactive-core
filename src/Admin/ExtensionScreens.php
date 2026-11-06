@@ -96,9 +96,11 @@ final class ExtensionScreens
             return;
         }
 
-        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
+        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
         if (function_exists('wp_enqueue_script')) {
-            wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
+            wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2)
+                . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
         }
     }
 
@@ -205,7 +207,9 @@ final class ExtensionScreens
             return;
         }
 
-        echo '<section class="ncli-admin__tab-panel ncli-admin__extension">' . wp_kses($body, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</section></div>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__extension">'
+            . wp_kses($body, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols())
+            . '</section></div>';
     }
 
     private function masthead(): void
@@ -218,7 +222,8 @@ final class ExtensionScreens
             $url .= (str_contains($url, '?') ? '&' : '?') . 'ver=' . $modified;
         }
 
-        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . esc_attr($url) . '" alt="" width="1544" height="500"></header>';
+        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . esc_attr($url)
+            . '" alt="" width="1544" height="500"></header>';
     }
 
     /**
@@ -235,10 +240,14 @@ final class ExtensionScreens
         // With the profile hub the way back is the Profiles page; without it, Core's Settings.
         $hub = $this->registry->implementation('profile_editor') instanceof ProfileEditorV1;
         $back = $hub ? $admin(SettingsPage::PAGE_SLUG) . '&view=profiles' : $admin(SettingsPage::PAGE_SLUG);
-        echo '<a class="nav-tab" href="' . esc_attr($back) . '">' . esc_html($hub ? __('Profiles', 'niche-clever-interactive') : __('Settings', 'niche-clever-interactive')) . '</a>';
+        echo '<a class="nav-tab" href="' . esc_attr($back) . '">'
+            . esc_html($hub ? __('Profiles', 'niche-clever-interactive') : __('Settings', 'niche-clever-interactive'))
+            . '</a>';
         foreach ($ids as $id) {
             $active = $id === $current;
-            echo '<a class="nav-tab' . ($active ? ' nav-tab-active' : '') . '" href="' . esc_attr($admin(self::PAGE_PREFIX . $id)) . '"' . ($active ? ' aria-current="page"' : '') . '>' . esc_html(self::label($id)) . '</a>';
+            echo '<a class="nav-tab' . ($active ? ' nav-tab-active' : '') . '" href="'
+                . esc_attr($admin(self::PAGE_PREFIX . $id)) . '"' . ($active ? ' aria-current="page"' : '') . '>'
+                . esc_html(self::label($id)) . '</a>';
         }
         echo '</nav>';
     }

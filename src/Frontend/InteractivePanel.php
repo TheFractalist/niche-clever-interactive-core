@@ -45,8 +45,10 @@ final class InteractivePanel
             return;
         }
 
-        wp_register_style('ncli-core-public', plugins_url('assets/css/public.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
-        wp_register_script('ncli-core-public', plugins_url('assets/js/public.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
+        wp_register_style('ncli-core-public', plugins_url('assets/css/public.css', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
+        wp_register_script('ncli-core-public', plugins_url('assets/js/public.js', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
         if (function_exists('wp_add_inline_script') && function_exists('rest_url') && function_exists('wp_json_encode')) {
             $settings = $this->load();
             $config = [
@@ -153,11 +155,16 @@ final class InteractivePanel
             $inlineStyle = $inlineStyle === '' ? $colourStyle : ($colourStyle === '' ? $inlineStyle : $inlineStyle . ';' . $colourStyle);
         }
         $credit = $showCredit
-            ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL) . '" target="_blank" rel="noopener">' . $this->html(__('Powered by NC Interactive', 'niche-clever-interactive')) . '</a></p>'
+            ? '<p class="ncli-panel__credit"><a href="' . $this->attr(self::CREDIT_URL)
+                . '" target="_blank" rel="noopener">'
+                . $this->html(__('Powered by NC Interactive', 'niche-clever-interactive')) . '</a></p>'
             : '';
         $disabled = $ready ? '' : ' disabled';
 
-        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" data-ncli-panel="' . $this->attr($panelMarker) . '" data-ncli-processing-message="' . $this->attr($processing) . '"' . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '') . ' aria-labelledby="ncli-panel-title">'
+        return '<section class="ncli-panel ncli-panel--' . $this->attr($style) . '" data-ncli-panel="'
+            . $this->attr($panelMarker) . '" data-ncli-processing-message="' . $this->attr($processing) . '"'
+            . ($inlineStyle !== '' ? ' style="' . $this->attr($inlineStyle) . '"' : '')
+            . ' aria-labelledby="ncli-panel-title">'
             . '<div class="ncli-panel__frame">'
             . '<header class="ncli-panel__header"><h2 id="ncli-panel-title" class="ncli-panel__title">' . $this->html($title) . '</h2>'
             . '<p class="ncli-panel__headline">' . $this->html($presentation['headline']) . '</p>'
@@ -165,13 +172,18 @@ final class InteractivePanel
             . '</header>'
             . '<div class="ncli-panel__transcript" aria-live="polite"></div>'
             . '<p class="ncli-panel__status" aria-live="polite">' . $this->html($status) . '</p>'
-            . '<form class="ncli-panel__form" data-ncli-interactive="1"' . ($profileId !== '' ? ' data-ncli-profile="' . $this->attr($profileId) . '"' : '') . '>'
+            . '<form class="ncli-panel__form" data-ncli-interactive="1"'
+                . ($profileId !== '' ? ' data-ncli-profile="' . $this->attr($profileId) . '"' : '') . '>'
             . '<label class="screen-reader-text" for="ncli-question">' . $this->html(__('Ask a question', 'niche-clever-interactive')) . '</label>'
-            . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="' . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
-            . '<button type="submit" aria-label="' . $this->attr(__('Submit question', 'niche-clever-interactive')) . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">' . $this->html(__('Ask', 'niche-clever-interactive')) . '</span></button></div>'
+            . '<div class="ncli-panel__input-shell"><textarea id="ncli-question" name="question" rows="1" maxlength="2000" placeholder="'
+                . $this->attr($presentation['placeholder']) . '"' . $disabled . '></textarea>'
+            . '<button type="submit" aria-label="' . $this->attr(__('Submit question', 'niche-clever-interactive'))
+                . '"' . $disabled . '><span aria-hidden="true">↗</span><span class="screen-reader-text">'
+                . $this->html(__('Ask', 'niche-clever-interactive')) . '</span></button></div>'
             . '<button class="ncli-panel__reset" type="button" hidden>' . $this->html(__('Reset conversation', 'niche-clever-interactive')) . '</button>'
             . '</form>'
-            . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>' . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
+            . '<footer class="ncli-panel__footer"><span>' . $this->html($presentation['footer_left']) . '</span><span>'
+                . $this->html($presentation['footer_right']) . ' <b aria-hidden="true">→</b></span></footer>'
             . '</div>'
             . $credit
             . '</section>';

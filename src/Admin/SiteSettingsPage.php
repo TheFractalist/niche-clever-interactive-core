@@ -60,7 +60,8 @@ final class SiteSettingsPage
         $hook = add_submenu_page(SettingsPage::PAGE_SLUG, __('Settings', 'niche-clever-interactive'), __('Settings', 'niche-clever-interactive'), 'manage_options', self::PAGE_SLUG, [$this, 'render']);
         $this->hook = is_string($hook) ? $hook : null;
         // A menu entry that opens the Help tab directly: WordPress links a slug that is not a registered page as written.
-        add_submenu_page(SettingsPage::PAGE_SLUG, __('Help', 'niche-clever-interactive'), __('Help', 'niche-clever-interactive'), 'manage_options', 'admin.php?page=' . self::PAGE_SLUG . '&tab=help');
+        add_submenu_page(SettingsPage::PAGE_SLUG, __('Help', 'niche-clever-interactive'), __('Help', 'niche-clever-interactive'), 'manage_options', 'admin.php?page='
+            . self::PAGE_SLUG . '&tab=help');
     }
 
     public function enqueueAssets(string $hook): void
@@ -69,8 +70,10 @@ final class SiteSettingsPage
             return;
         }
 
-        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
-        wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
+        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
+        wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
     }
 
     public function render(): void
@@ -83,14 +86,18 @@ final class SiteSettingsPage
         }
 
         $tab = $this->tab();
-        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">' . esc_html(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '</h1>';
+        echo '<div class="wrap ncli-admin ncli-admin--workspace"><h1 class="screen-reader-text">'
+            . esc_html(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '</h1>';
         if ($this->hub !== null) {
             $this->hub->titleBar(__('Settings', 'niche-clever-interactive'), __('Site settings', 'niche-clever-interactive'));
             $this->hub->masthead();
         }
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="'
+            . esc_attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
         foreach ($this->tabs() as $id => $label) {
-            echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"' . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->url(['tab' => $id])) . '">' . esc_html($label) . '</a>';
+            echo '<a class="nav-tab' . ($id === $tab ? ' nav-tab-active' : '') . '"'
+                . ($id === $tab ? ' aria-current="page"' : '') . ' href="' . esc_attr($this->url(['tab' => $id])) . '">'
+                . esc_html($label) . '</a>';
         }
         echo '</nav>';
         $this->notice();
@@ -108,12 +115,14 @@ final class SiteSettingsPage
     private function renderGeneral(): void
     {
         $values = $this->load()->toArray();
-        echo '<form class="ncli-admin__workspace" method="post" action="' . esc_attr($this->postUrl()) . '"><input type="hidden" name="action" value="' . esc_attr(self::SAVE_ACTION) . '">';
+        echo '<form class="ncli-admin__workspace" method="post" action="' . esc_attr($this->postUrl())
+            . '"><input type="hidden" name="action" value="' . esc_attr(self::SAVE_ACTION) . '">';
         echo wp_kses($this->nonceField(self::SAVE_ACTION), ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols());
         echo '<table class="form-table ncli-admin__form-table" role="presentation"><tbody>';
         (new ProfileFieldRenderer())->siteRows($values);
         echo '</tbody></table>';
-        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . esc_html(__('Save settings', 'niche-clever-interactive')) . '</button></div></form>';
+        echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">'
+            . esc_html(__('Save settings', 'niche-clever-interactive')) . '</button></div></form>';
 
     }
 
@@ -122,11 +131,16 @@ final class SiteSettingsPage
     {
         $body = $this->screens !== null ? $this->screens->bodyHtml('settings') : '';
         if ($body === '') {
-            echo '<section class="ncli-admin__tab-panel"><p>' . esc_html(__('Extension settings are temporarily unavailable.', 'niche-clever-interactive')) . '</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><p>'
+                . esc_html(__('Extension settings are temporarily unavailable.', 'niche-clever-interactive'))
+                . '</p></section>';
             return;
         }
 
-        echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>' . esc_html(__('Extension settings', 'niche-clever-interactive')) . '</h2>' . wp_kses($body, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</section>';
+        echo '<section class="ncli-admin__tab-panel ncli-admin__extension ncli-admin__profile-section"><h2>'
+            . esc_html(__('Extension settings', 'niche-clever-interactive')) . '</h2>'
+            . wp_kses($body, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols())
+            . '</section>';
     }
 
     public function save(): void
@@ -194,7 +208,9 @@ final class SiteSettingsPage
         if ($notice === 'saved') {
             echo '<div class="notice notice-success"><p>' . esc_html(__('Settings saved.', 'niche-clever-interactive')) . '</p></div>';
         } elseif ($notice === 'invalid') {
-            echo '<div class="notice notice-error"><p>' . esc_html(__('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive')) . '</p></div>';
+            echo '<div class="notice notice-error"><p>'
+                . esc_html(__('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive'))
+                . '</p></div>';
         }
     }
 
