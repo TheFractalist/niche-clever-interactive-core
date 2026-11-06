@@ -4,7 +4,7 @@ Tags: question and answer, openai, file search, knowledge base, interactive
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,11 @@ Support information is at https://nicheclever.co.uk/plugin-support/. Do not incl
 4. Appearance & Limits tab with panel style, width, credit and daily limits.
 
 == Changelog ==
+
+= 1.0.6 =
+
+* Deletes daily request-allowance counters once their day is over, so the counter table no longer grows indefinitely.
+* Tidies the administrator screen code for readability; screens and behaviour are unchanged.
 
 = 1.0.5 =
 

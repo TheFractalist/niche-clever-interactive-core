@@ -1,6 +1,6 @@
 # Niche Clever Interactive
 
-This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.5` package is a local WordPress.org resubmission candidate; it is not yet approved, listed or publicly released. It keeps the default-on progressive-answer presentation with a complete-response fallback and adds a browser-local `ncli:analytics` event that sends nothing externally or includes page paths, while the repository's internal architecture remains Core-first; no NCI Premium implementation is included. “Pro” is historical terminology for the now separately maintained private companion, NCI Premium.
+This public repository holds the Niche Clever Interactive WordPress plugin. The current `1.0.6` package is a local WordPress.org resubmission candidate; it is not yet approved, listed or publicly released. It keeps the default-on progressive-answer presentation with a complete-response fallback and adds a browser-local `ncli:analytics` event that sends nothing externally or includes page paths, while the repository's internal architecture remains Core-first; no NCI Premium implementation is included. “Pro” is historical terminology for the now separately maintained private companion, NCI Premium.
 
 ## Current scope
 
