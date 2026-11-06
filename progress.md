@@ -1,5 +1,37 @@
 # Progress
 
+## 6 November 2026 — Core 1.0.6 r4: clean install, accessibility check, release
+
+**Clean-install test** on Test-Site, at Jacob's direction instead of the Docker fixture (Docker Desktop is down):
+- **Preparation:** `WP_DEBUG` and `WP_DEBUG_LOG` were on, the owner's "Delete data on uninstall" was ticked, and a backup was taken at `C:\xampp\backups\Test-Site\nci-core-1.0.6-r3-clean-install-test-20261106-175145`.
+- **Uninstall:** `wp plugin uninstall` deleted the files, all four `ncli_core_` options (including `ncli_core_profile_tests`), both tables and the daily cron job.
+- **Fresh install:** the r3 ZIP went in through WordPress's installer (`wp plugin install … --activate`). The files match the manifest. Activation created both tables, default settings (not autoloaded) and the schema option, and scheduled the daily event with both purge callbacks.
+- **Results:** the block and shortcode each render the panel, and the home and `/ask/` pages return 200. Plugin Check reports no errors. With debug logging on, every admin screen and both public pages loaded and no `debug.log` was written.
+
+**Accessibility check** (axe-core could not be loaded from a CDN in the browser, so equivalent checks ran in-page, with real keyboard input):
+- **Public panel:**
+  - It is a labelled `section` with an `h2`, every control has an accessible name, and there are polite live regions.
+  - All text meets WCAG AA contrast, and the placeholder is 7.46:1.
+  - Tab order runs question box, then submit button, then Reset, each with a 3px visible focus outline, and Enter submits.
+  - The question, the processing message, the answer and the completion message are announced, and focus returns to the question box.
+  - Reset and error states are announced, and the question is restored after an error.
+  - At 375px there is no overflow and the touch targets are 48×48. At 200% text size there is no horizontal scroll. A reduced-motion rule is present.
+- **Admin:** across 12 screens there were no unnamed controls, images without `alt`, broken ARIA references or duplicate IDs.
+  - Help toggles work by keyboard: Enter opens with `aria-expanded`, Escape closes and keeps focus, and the 24×24 target shows a 3px `:focus-visible` outline.
+  - **One real finding, fixed in `d1c330b`:** the Conversation tab's section heading skipped from h1 to h3. Section headings are now h2, with identical appearance.
+  - Other reported items were tool false positives: a logo link named by its `alt`, a translucent code background, and the extension-only settings page.
+
+**Candidate r4:** `2026-11-06-release-1.0.6-r4`, SHA-256 `f8e0a9881ff922c858f2c844ffef9f8af08e50af5e0e603bd993dbb72810817c`, 119 files, source `d1c330b`. It was installed over r3 through WordPress's installer, and the manifest matches. Plugin Check reports no errors, all screens load with HTTP 200, and no debug log was written. 37 PHP tests pass on 8.1 and 8.2, and WPCS is clean. r3 is superseded.
+
+**Restoration:** Test-Site's four NCI options were restored and are byte-identical to the backup. `wp-config.php` is identical to its backup, with `WP_DEBUG` off.
+
+**Still open:**
+- Test connection plus one live question (provider calls not made).
+- The visual check of the support page (Jacob).
+- The 1.0.6 reply draft.
+- Jacob's independent review.
+- Upload.
+
 ## 6 November 2026 — Core 1.0.6 r3: fixes from the WordPress.org review cross-check
 
 **Cross-check:** 1.0.6 was checked issue by issue against the verbatim T1, T2 and T3 reviews in the NCI pack (`2026-10-25-NCI-WPORG-T1-T3-REVIEW-CORRESPONDENCE-SOURCE-v1.md`).
