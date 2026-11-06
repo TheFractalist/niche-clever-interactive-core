@@ -83,12 +83,15 @@ final class SettingsPage
 
     public function enqueueAssets(string $hook): void
     {
-        if ($hook !== 'toplevel_page_' . self::PAGE_SLUG || !function_exists('wp_enqueue_style') || !function_exists('wp_enqueue_script') || !function_exists('plugins_url')) {
+        if ($hook !== 'toplevel_page_'
+            . self::PAGE_SLUG || !function_exists('wp_enqueue_style') || !function_exists('wp_enqueue_script') || !function_exists('plugins_url')) {
             return;
         }
 
-        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
-        wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2) . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
+        wp_enqueue_style('ncli-core-admin', plugins_url('assets/css/admin.css', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION);
+        wp_enqueue_script('ncli-core-admin', plugins_url('assets/js/admin.js', dirname(__DIR__, 2)
+            . '/niche-clever-interactive-core.php'), [], NCLI_CORE_VERSION, true);
     }
 
     public function render(): void
@@ -126,8 +129,11 @@ final class SettingsPage
         if ($this->hubActive()) {
             $this->hub->header(CoreSettings::DEFAULT_PROFILE_ID, __('Default profile', 'niche-clever-interactive'));
         }
-        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="' . esc_attr($this->assetUrl('assets/images/ncli-admin-banner.png')) . '" alt="" width="1544" height="500"></header>';
-        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="' . esc_attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
+        echo '<header class="ncli-admin__masthead"><img class="ncli-admin__masthead-art" src="'
+            . esc_attr($this->assetUrl('assets/images/ncli-admin-banner.png'))
+            . '" alt="" width="1544" height="500"></header>';
+        echo '<nav class="nav-tab-wrapper ncli-admin__tabs" aria-label="'
+            . esc_attr(__('Niche Clever Interactive settings', 'niche-clever-interactive')) . '">';
         foreach ($tabs as $id => $label) {
             $class = $id === $tab ? ' nav-tab-active' : '';
             $url = $this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => $id]);
@@ -158,7 +164,10 @@ final class SettingsPage
         } elseif ($tab === 'help') {
             $this->help->render();
         } elseif ($tab === 'placement') {
-            echo '<section class="ncli-admin__tab-panel"><h2>' . esc_html(__('Placement', 'niche-clever-interactive')) . '</h2><p>' . esc_html(__('Use the', 'niche-clever-interactive')) . ' <code>[ncli_interactive]</code> ' . esc_html(__('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.', 'niche-clever-interactive')) . '</p></section>';
+            echo '<section class="ncli-admin__tab-panel"><h2>' . esc_html(__('Placement', 'niche-clever-interactive'))
+                . '</h2><p>' . esc_html(__('Use the', 'niche-clever-interactive')) . ' <code>[ncli_interactive]</code> '
+                . esc_html(__('shortcode or the NC Interactive block. Contextual and collection placement is available in NCI Premium.', 'niche-clever-interactive'))
+                . '</p></section>';
         } elseif ($tab === 'questions' || $tab === 'collections' || $tab === 'cache') {
             // Only the extension's sections, drawn below.
         } elseif ($sub === null || $sub === 'panel') {
@@ -236,7 +245,16 @@ final class SettingsPage
         echo '</tbody></table>';
 
         if ($tab === 'setup' || $tab === 'profile' || $tab === 'ai-corpus' || $tab === 'conversation' || $tab === 'appearance-limits') {
-            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">' . esc_html(__('Save settings', 'niche-clever-interactive')) . '</button>' . ($this->hubActive() ? '<a class="button" href="' . esc_attr($this->hub->landingUrl()) . '">' . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a>' : '') . ($this->hubActive() ? '' : '<a class="ncli-admin__upgrade" href="' . esc_attr(HelpRenderer::PREMIUM_URL) . '" target="_blank" rel="noopener">' . esc_html(__('Explore NCI Premium', 'niche-clever-interactive')) . '</a>') . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="' . esc_attr($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="' . esc_attr(__('Niche Clever', 'niche-clever-interactive')) . '" width="180" height="35"></a></div>';
+            echo '<div class="ncli-admin__save-bar"><button type="submit" class="button button-primary">'
+                . esc_html(__('Save settings', 'niche-clever-interactive')) . '</button>'
+                . ($this->hubActive() ? '<a class="button" href="' . esc_attr($this->hub->landingUrl()) . '">'
+                    . esc_html(__('All profiles', 'niche-clever-interactive')) . '</a>' : '')
+                . ($this->hubActive() ? '' : '<a class="ncli-admin__upgrade" href="'
+                    . esc_attr(HelpRenderer::PREMIUM_URL) . '" target="_blank" rel="noopener">'
+                    . esc_html(__('Explore NCI Premium', 'niche-clever-interactive')) . '</a>')
+                . '<a class="ncli-admin__brand" href="https://nicheclever.co.uk/" target="_blank" rel="noopener"><img src="'
+                . esc_attr($this->assetUrl('assets/images/ncli-logo.png')) . '" alt="'
+                . esc_attr(__('Niche Clever', 'niche-clever-interactive')) . '" width="180" height="35"></a></div>';
         }
         echo '</form>';
     }
@@ -248,9 +266,14 @@ final class SettingsPage
         $settings = $this->load();
         $status = $settings->connectionTestStatus();
         $time = $settings->connectionTestTime();
-        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>' . esc_html(Readiness::testStatusLabel($status)) . '</strong>' . ($time !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($time) . ')' : '') . '</p>';
+        echo '<p>' . esc_html(__('Connection test:', 'niche-clever-interactive')) . ' <strong>'
+            . esc_html(Readiness::testStatusLabel($status)) . '</strong>'
+            . ($time !== '' ? ' (' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($time) . ')' : '')
+            . '</p>';
         $this->renderLastFailure();
-        echo '<p>' . esc_html(__('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.', 'niche-clever-interactive')) . '</p></section>';
+        echo '<p>'
+            . esc_html(__('No credential, provider payload, file identifier, vector-store identifier, fingerprint or retrieved content is shown in diagnostics.', 'niche-clever-interactive'))
+            . '</p></section>';
     }
 
     private function renderLastFailure(): void
@@ -263,9 +286,14 @@ final class SettingsPage
         }
         $where = $last['source'] === 'connection_test' ? __('connection test', 'niche-clever-interactive') : __('public question', 'niche-clever-interactive');
         echo '<p><strong>' . esc_html(ProviderFailure::label($last['reason'])) . '</strong> (' . esc_html($last['reason']) . ')</p>';
-        echo '<p>' . esc_html(__('Seen in a', 'niche-clever-interactive')) . ' ' . esc_html($where) . ', ' . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($last['at']) . ', ' . esc_html(__('after about', 'niche-clever-interactive')) . ' ' . esc_html((string) $last['elapsed']) . ' ' . esc_html(__('seconds', 'niche-clever-interactive')) . '.</p>';
+        echo '<p>' . esc_html(__('Seen in a', 'niche-clever-interactive')) . ' ' . esc_html($where) . ', '
+            . esc_html(__('UTC', 'niche-clever-interactive')) . ' ' . esc_html($last['at']) . ', '
+            . esc_html(__('after about', 'niche-clever-interactive')) . ' ' . esc_html((string) $last['elapsed']) . ' '
+            . esc_html(__('seconds', 'niche-clever-interactive')) . '.</p>';
         echo '<p>' . esc_html(__('What to try:', 'niche-clever-interactive')) . ' ' . esc_html(ProviderFailure::advice($last['reason'])) . '</p>';
-        echo '<p>' . esc_html(__('Only the reason, time and duration are kept. Visitors always see the same generic message. Only the latest problem is shown.', 'niche-clever-interactive')) . '</p>';
+        echo '<p>'
+            . esc_html(__('Only the reason, time and duration are kept. Visitors always see the same generic message. Only the latest problem is shown.', 'niche-clever-interactive'))
+            . '</p>';
     }
 
     private function renderSetupChecklist(CoreSettings $settings): void
@@ -286,18 +314,34 @@ final class SettingsPage
         $placementReady = $placements !== [];
         $placementState = $placementReady
             ? __('Detected placement:', 'niche-clever-interactive') . ' ' . implode(', ', $placements) . '.'
-            : esc_html(__('Add the NC Interactive block or', 'niche-clever-interactive')) . ' <code>[ncli_interactive]</code> ' . esc_html(__('shortcode to a published page.', 'niche-clever-interactive'));
+            : esc_html(__('Add the NC Interactive block or', 'niche-clever-interactive'))
+                . ' <code>[ncli_interactive]</code> '
+                . esc_html(__('shortcode to a published page.', 'niche-clever-interactive'));
         $items = [
-            [__('Add your API key', 'niche-clever-interactive'), esc_html($keyState) . ' ' . esc_html(__('Configure', 'niche-clever-interactive')) . ' <code>NCLI_OPENAI_API_KEY_DEFAULT</code> ' . esc_html(__('in server configuration only, for example', 'niche-clever-interactive')) . ' <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.', $keyReady, ''],
-            [__('Choose your vector store', 'niche-clever-interactive'), esc_html($corpusState) . ' <a href="' . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">' . esc_html(__('Open AI & Corpus', 'niche-clever-interactive')) . '</a>.', $corpusReady, ''],
-            [__('Test your connection', 'niche-clever-interactive'), esc_html($testState), $testReady, '<button type="submit" class="button button-secondary" form="ncli-connection-test">' . esc_html(__('Test connection', 'niche-clever-interactive')) . '</button>'],
-            [__('Place your conversation', 'niche-clever-interactive'), $placementState . ' <a href="' . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">' . esc_html(__('Open placement guidance', 'niche-clever-interactive')) . '</a>.', $placementReady, ''],
+            [__('Add your API key', 'niche-clever-interactive'), esc_html($keyState) . ' '
+                . esc_html(__('Configure', 'niche-clever-interactive')) . ' <code>NCLI_OPENAI_API_KEY_DEFAULT</code> '
+                . esc_html(__('in server configuration only, for example', 'niche-clever-interactive'))
+                . ' <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.', $keyReady, ''],
+            [__('Choose your vector store', 'niche-clever-interactive'), esc_html($corpusState) . ' <a href="'
+                . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">'
+                . esc_html(__('Open AI & Corpus', 'niche-clever-interactive')) . '</a>.', $corpusReady, ''],
+            [__('Test your connection', 'niche-clever-interactive'), esc_html($testState), $testReady, '<button type="submit" class="button button-secondary" form="ncli-connection-test">'
+                . esc_html(__('Test connection', 'niche-clever-interactive')) . '</button>'],
+            [__('Place your conversation', 'niche-clever-interactive'), $placementState . ' <a href="'
+                . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'placement'])) . '">'
+                . esc_html(__('Open placement guidance', 'niche-clever-interactive')) . '</a>.', $placementReady, ''],
         ];
 
         $done = count(array_filter($items, static fn (array $item): bool => $item[2]));
-        /* translators: 1: completed setup steps, 2: total setup steps. */
-        echo '<section class="ncli-admin__get-started"><h2><span>' . esc_html(__('Get started', 'niche-clever-interactive')) . '</span><span class="ncli-admin__get-started-count">' . esc_html(sprintf(__('%1$d of %2$d complete', 'niche-clever-interactive'), $done, count($items))) . '</span></h2>';
-        echo '<p>' . esc_html(__('Niche Clever Interactive serves one carefully bounded public profile. It does not expose provider details.', 'niche-clever-interactive')) . '</p>';
+        echo '<section class="ncli-admin__get-started"><h2><span>'
+            . esc_html(__('Get started', 'niche-clever-interactive'))
+            . '</span><span class="ncli-admin__get-started-count">'
+            /* translators: 1: completed setup steps, 2: total setup steps. */
+            . esc_html(sprintf(__('%1$d of %2$d complete', 'niche-clever-interactive'), $done, count($items)))
+            . '</span></h2>';
+        echo '<p>'
+            . esc_html(__('Niche Clever Interactive serves one carefully bounded public profile. It does not expose provider details.', 'niche-clever-interactive'))
+            . '</p>';
         echo '<ol class="ncli-admin__checklist">';
         foreach ($items as $item) {
             $this->checklistItem($item[0], $item[1], $item[2], $item[3]);
@@ -310,7 +354,17 @@ final class SettingsPage
         $state = $complete ? __('Complete', 'niche-clever-interactive') : __('Needs attention', 'niche-clever-interactive');
         $symbol = $complete ? '✓' : '✕';
         $class = $complete ? 'complete' : 'incomplete';
-        echo '<li class="ncli-admin__checklist-item ncli-admin__checklist-item--' . esc_attr($class) . '"><span class="ncli-admin__check ncli-admin__check--' . esc_attr($class) . '"><span aria-hidden="true">' . esc_html($symbol) . '</span><span class="screen-reader-text">' . esc_html($state) . '</span></span><div class="ncli-admin__checklist-copy"><div class="ncli-admin__checklist-heading"><strong>' . esc_html($title) . '</strong>' . ($action !== '' ? '<span class="ncli-admin__checklist-action">' . wp_kses($action, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</span>' : '') . '</div><p>' . wp_kses($description, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols()) . '</p></div></li>';
+        echo '<li class="ncli-admin__checklist-item ncli-admin__checklist-item--' . esc_attr($class)
+            . '"><span class="ncli-admin__check ncli-admin__check--' . esc_attr($class) . '"><span aria-hidden="true">'
+            . esc_html($symbol) . '</span><span class="screen-reader-text">' . esc_html($state)
+            . '</span></span><div class="ncli-admin__checklist-copy"><div class="ncli-admin__checklist-heading"><strong>'
+            . esc_html($title) . '</strong>'
+            . ($action !== '' ? '<span class="ncli-admin__checklist-action">'
+                . wp_kses($action, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols())
+                . '</span>' : '')
+            . '</div><p>'
+            . wp_kses($description, ExtensionMarkupPolicy::allowedHtml(), ExtensionMarkupPolicy::allowedProtocols())
+            . '</p></div></li>';
     }
 
     private function currentNotice(): string

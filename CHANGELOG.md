@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6 — 6 November 2026
+
+WordPress.org resubmission candidate; not published, listed, deployed or submitted. Request-allowance counters (`ncli_core_rate_buckets`) are now deleted once their UTC day is over: a new `RateBucketPurge` runs on Core's existing daily purge event and removes rows for days before yesterday in bounded batches, so the table no longer grows by one row per visitor scope per day indefinitely. The administrator renderers are re-wrapped for legibility: long output chains are broken before their concatenation operators and long field definitions put one argument per line. That change is whitespace only, verified by identical token streams for every runtime PHP file and byte-identical rendered HTML for all Settings and Help screens.
+
 ## 1.0.5 — 3 November 2026
 
 Local WordPress.org resubmission candidate; not published, listed, deployed or submitted. The browser-local `ncli:analytics` custom event no longer includes a page path or any browser URL component. Its bounded payload is limited to validated profile and authored identifiers, question type, live or cached source and a reviewed error category; it still sends nothing, stores nothing and excludes question and answer text. The Help Centre and readme disclose that privacy boundary.

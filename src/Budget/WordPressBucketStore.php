@@ -9,8 +9,24 @@ use RuntimeException;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Daily rate reservations require uncached, row-locked InnoDB transactions; each value is prepared and the table name is derived solely from $wpdb->prefix.
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- PHPCS cannot track the already prepared SQL value or the safe dynamic table identifier used by the transaction boundary.
 // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter -- Values are passed through $wpdb->prepare(); the identifier is a fixed suffix joined to and SQL-escaped from WordPress's site prefix. Transactions are required to keep the rate limit race-safe.
-final class WordPressBucketStore implements BucketStore
+final class WordPressBucketStore implements BucketStore, PrunableBucketStore
 {
+    public function pruneBefore(string $periodStart, int $limit): int
+    {
+        global $wpdb;
+        if (!isset($wpdb) || !is_object($wpdb) || !isset($wpdb->prefix)) {
+            throw new RuntimeException('Rate storage is unavailable.');
+        }
+        $table = esc_sql($wpdb->prefix . 'ncli_core_rate_buckets');
+        // Past periods are never reserved against again, so no transaction or row lock is needed.
+        $deleted = $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE period_start < %s LIMIT %d", $periodStart, $limit));
+        if ($deleted === false) {
+            throw new RuntimeException('Rate counter pruning failed.');
+        }
+
+        return (int) $deleted;
+    }
+
     public function reserve(string $kind, string $scopeHash, string $periodStart, int $limit): bool
     {
         global $wpdb;

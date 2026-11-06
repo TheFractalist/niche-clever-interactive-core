@@ -1,5 +1,99 @@
 # Progress
 
+## 6 November 2026 — Core 1.0.6 r4: clean install, accessibility check, release
+
+**Clean-install test** on Test-Site, at Jacob's direction instead of the Docker fixture (Docker Desktop is down):
+- **Preparation:** `WP_DEBUG` and `WP_DEBUG_LOG` were on, the owner's "Delete data on uninstall" was ticked, and a backup was taken at `C:\xampp\backups\Test-Site\nci-core-1.0.6-r3-clean-install-test-20261106-175145`.
+- **Uninstall:** `wp plugin uninstall` deleted the files, all four `ncli_core_` options (including `ncli_core_profile_tests`), both tables and the daily cron job.
+- **Fresh install:** the r3 ZIP went in through WordPress's installer (`wp plugin install … --activate`). The files match the manifest. Activation created both tables, default settings (not autoloaded) and the schema option, and scheduled the daily event with both purge callbacks.
+- **Results:** the block and shortcode each render the panel, and the home and `/ask/` pages return 200. Plugin Check reports no errors. With debug logging on, every admin screen and both public pages loaded and no `debug.log` was written.
+
+**Accessibility check** (axe-core could not be loaded from a CDN in the browser, so equivalent checks ran in-page, with real keyboard input):
+- **Public panel:**
+  - It is a labelled `section` with an `h2`, every control has an accessible name, and there are polite live regions.
+  - All text meets WCAG AA contrast, and the placeholder is 7.46:1.
+  - Tab order runs question box, then submit button, then Reset, each with a 3px visible focus outline, and Enter submits.
+  - The question, the processing message, the answer and the completion message are announced, and focus returns to the question box.
+  - Reset and error states are announced, and the question is restored after an error.
+  - At 375px there is no overflow and the touch targets are 48×48. At 200% text size there is no horizontal scroll. A reduced-motion rule is present.
+- **Admin:** across 12 screens there were no unnamed controls, images without `alt`, broken ARIA references or duplicate IDs.
+  - Help toggles work by keyboard: Enter opens with `aria-expanded`, Escape closes and keeps focus, and the 24×24 target shows a 3px `:focus-visible` outline.
+  - **One real finding, fixed in `d1c330b`:** the Conversation tab's section heading skipped from h1 to h3. Section headings are now h2, with identical appearance.
+  - Other reported items were tool false positives: a logo link named by its `alt`, a translucent code background, and the extension-only settings page.
+
+**Candidate r4:** `2026-11-06-release-1.0.6-r4`, SHA-256 `f8e0a9881ff922c858f2c844ffef9f8af08e50af5e0e603bd993dbb72810817c`, 119 files, source `d1c330b`. It was installed over r3 through WordPress's installer, and the manifest matches. Plugin Check reports no errors, all screens load with HTTP 200, and no debug log was written. 37 PHP tests pass on 8.1 and 8.2, and WPCS is clean. r3 is superseded.
+
+**Restoration:** Test-Site's four NCI options were restored and are byte-identical to the backup. `wp-config.php` is identical to its backup, with `WP_DEBUG` off.
+
+**Still open:**
+- Test connection plus one live question (provider calls not made).
+- The visual check of the support page (Jacob).
+- The 1.0.6 reply draft.
+- Jacob's independent review.
+- Upload.
+
+## 6 November 2026 — Core 1.0.6 r3: fixes from the WordPress.org review cross-check
+
+**Cross-check:** 1.0.6 was checked issue by issue against the verbatim T1, T2 and T3 reviews in the NCI pack (`2026-10-25-NCI-WPORG-T1-T3-REVIEW-CORRESPONDENCE-SOURCE-v1.md`).
+- **Closed in source:** naming and slug; GPL; no locked features; external-services disclosure; prefixes; contributors; literal gettext; nonce plus capability on all eight POST handlers; `AdminRequest` sanitising; direct escaping and `wp_kses` in the administrator screens; direct-access guards; the `$_SERVER` to `RequestEnvironment` reduction.
+- **Three defects found and fixed** in `c8a3fd3`:
+  1. **The block rendered nothing.** `blocks/interactive/render.php` returned the panel, and WordPress discards a render file's return value. The block now registers the shortcode's renderer as its `render_callback`, `render.php` is removed, and the title default is empty so the owner's configured title applies instead of "Ask Niche Clever".
+  2. **Private escaping wrappers remained** in `InteractivePanel` (19 sinks) and the privacy text in `Plugin` (4 sinks). This is the pattern T2 and T3 flagged. All 23 now call `esc_html()`/`esc_attr()` directly.
+  3. **Uninstall missed `ncli_core_profile_tests`.**
+- **Regression test:** `tests/wporg-review-regressions.php` guards all three, and fails on `a5d810e`.
+
+**Evidence:**
+- 37 PHP tests pass under PHP 8.1 and 8.2. WPCS and the escape and i18n sniffs are clean.
+- **r3:** `2026-11-06-release-1.0.6-r3`, SHA-256 `4afa290075923d75b81d7998b689dad426b5be873adba0973002db1049541574`, 119 files with no `render.php`. Its manifest matches, PHP 8.1 lint and WPCS pass, and the POT was regenerated.
+- **Test-Site:**
+  - Plugin Check reports no errors.
+  - Rendered through WordPress, the panel HTML is byte-identical to r2 for the default and title attributes, the hostile profile attribute, the `default` profile, the limit notice and the shortcode.
+  - The block now outputs the same 1,319-byte panel as the shortcode; it previously output 0 bytes.
+- r2 is superseded.
+
+**Reply points** (not code): T1's suggestion to use the WordPress AI Client was advisory. Core uses OpenAI File Search against the owner's existing vector store, and the AI Client remains roadmap work. The public chat route's `__return_true` permission is deliberate for a visitor-facing endpoint that validates every request itself.
+
+**Still open:**
+- The Docker WP 6.5 / PHP 8.1 fixture (Docker is down).
+- Test connection on Test-Site, plus one live question.
+- A manual browser and accessibility review.
+- The visual check of the support page.
+- Updating the reply draft for 1.0.6.
+- Jacob's independent review.
+
+## 6 November 2026 — Core 1.0.6 candidate: counter pruning and administrator legibility (branch, not pushed)
+
+**Scope:** Jacob asked for both fixes from a reviewer-oriented code review: never-pruned request-allowance counters, and the very long administrator output lines. Work is on branch `feat/core-261106-legibility-and-bucket-purge`, starting from `main` `2217133` (1.0.5). Commits:
+- `ca3a9fb`: counter pruning.
+- `5964ddc`: re-wrap.
+- `538c5cb`: version 1.0.6.
+- `d12f575`: translator-comment placement.
+
+**Counter pruning:** `RateBucketPurge` runs on Core's existing daily purge event.
+- It deletes `ncli_core_rate_buckets` rows for UTC days before yesterday, 500 rows per batch and at most 20 batches a run. Limits only read today's row; yesterday's row is kept so a request spanning midnight can still settle.
+- `WordPressBucketStore` implements the new `PrunableBucketStore`, with one prepared, bounded `DELETE` on Core's own table. `BucketStore` is unchanged.
+- `tests/c4-rate-bucket-purge.php` covers the cutoff, batching, the batch ceiling, error containment and the exact SQL. The occurrence register classifies the new hook (1) and query references (31 to 39).
+- On Test-Site the hook carries two callbacks (conversation and counter purge), and one real run removed all 14 stale rows (12 October to 4 November).
+
+**Legibility:** long single-line output chains in the administrator renderers are broken before their concatenation operators, and long field-definition calls put one argument per line.
+- Lines over 300 characters fell from 126 to 48. Of the rest, 38 are single translatable sentences and 10 are line-scoped `phpcs:ignore` rationales or data lists.
+- Plugin Check then flagged four `MissingTranslatorsComment` errors, because the re-wrap had separated `/* translators: */` comments from their calls. `d12f575` moved each comment onto the line directly above its call.
+- **Proof of no behavioural change:** ignoring comments and whitespace, all 98 untouched runtime files have the same code as 1.0.5. The rendered HTML of all ten Settings and Help screens is byte-identical to 1.0.5 once asset cache-busting numbers are normalised.
+
+**Candidate:** `C:\Software Dev\NCI Core Candidate Artifacts\2026-11-06-release-1.0.6-r2\niche-clever-interactive-1.0.6.zip`, SHA-256 `909aed330cf09ed7828654574a7a85e46318512be308aa1405753665ebd8224f`, 120 files. r1 (`df6f020f…e2c8`) is superseded by the translator-comment fix.
+
+**Verification:**
+- 36 PHP tests pass under PHP 8.1.33 and 8.2.12, and both JS tests pass.
+- WPCS (`phpcs.xml.dist`) and the `WordPress.WP.I18n` sniff are clean on the source and on the expanded archive.
+- The expanded archive matches its manifest and lints under PHP 8.1. The POT has 561 strings.
+- Test-Site (backup `C:\xampp\backups\Test-Site\nci-core-1.0.5-r1-preinstall-20261106-171531`, with a database dump): the install matches the manifest and Plugin Check 2.1.0 reports **no errors found**.
+
+**Not verified:**
+- The WordPress 6.5 / PHP 8.1 Docker fixture: Docker Desktop crashed on startup.
+- Test-Site's public panel now needs the administrator connection test, because the version is part of the fingerprint. No provider call was made.
+- The branch is not pushed or tagged, and nothing was uploaded to WordPress.org.
+- The draft Privacy Notice can now state that counters are deleted within about two days. That is a separate legal-copy decision.
+
 ## 4 November 2026 — Core 1.0.5 local WordPress.org readiness correction (implemented; local commit pending)
 
 Core is now version `1.0.5` locally. The browser-local `ncli:analytics` contract no longer carries `page_path` or any URL component; its regression coverage rejects pathname/query/URL, question/answer text, browser identity, storage and network forwarding. The concise `readme.txt` is 5,484 bytes, points to the intended support URL and links only to the live NCI Premium information page without commercial or availability claims. The changelog, Help Centre and readiness record document the privacy decision. The historical 1.0.4 reviewer-reply draft is explicitly superseded; the new record corrects the HTTP and scoped-suppression wording.

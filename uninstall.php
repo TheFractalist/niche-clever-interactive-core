@@ -39,6 +39,7 @@ function ncli_core_uninstall_current_site() {
 	delete_option( 'ncli_core_settings' );
 	delete_option( 'ncli_core_schema_version' );
 	delete_option( 'ncli_core_last_failure' );
+	delete_option( 'ncli_core_profile_tests' );
 }
 
 if ( is_multisite() ) {
