@@ -1,5 +1,34 @@
 # Progress
 
+## 6 November 2026 — Core 1.0.6 r3: fixes from the WordPress.org review cross-check
+
+**Cross-check:** 1.0.6 was checked issue by issue against the verbatim T1, T2 and T3 reviews in the NCI pack (`2026-10-25-NCI-WPORG-T1-T3-REVIEW-CORRESPONDENCE-SOURCE-v1.md`).
+- **Closed in source:** naming and slug; GPL; no locked features; external-services disclosure; prefixes; contributors; literal gettext; nonce plus capability on all eight POST handlers; `AdminRequest` sanitising; direct escaping and `wp_kses` in the administrator screens; direct-access guards; the `$_SERVER` to `RequestEnvironment` reduction.
+- **Three defects found and fixed** in `c8a3fd3`:
+  1. **The block rendered nothing.** `blocks/interactive/render.php` returned the panel, and WordPress discards a render file's return value. The block now registers the shortcode's renderer as its `render_callback`, `render.php` is removed, and the title default is empty so the owner's configured title applies instead of "Ask Niche Clever".
+  2. **Private escaping wrappers remained** in `InteractivePanel` (19 sinks) and the privacy text in `Plugin` (4 sinks). This is the pattern T2 and T3 flagged. All 23 now call `esc_html()`/`esc_attr()` directly.
+  3. **Uninstall missed `ncli_core_profile_tests`.**
+- **Regression test:** `tests/wporg-review-regressions.php` guards all three, and fails on `a5d810e`.
+
+**Evidence:**
+- 37 PHP tests pass under PHP 8.1 and 8.2. WPCS and the escape and i18n sniffs are clean.
+- **r3:** `2026-11-06-release-1.0.6-r3`, SHA-256 `4afa290075923d75b81d7998b689dad426b5be873adba0973002db1049541574`, 119 files with no `render.php`. Its manifest matches, PHP 8.1 lint and WPCS pass, and the POT was regenerated.
+- **Test-Site:**
+  - Plugin Check reports no errors.
+  - Rendered through WordPress, the panel HTML is byte-identical to r2 for the default and title attributes, the hostile profile attribute, the `default` profile, the limit notice and the shortcode.
+  - The block now outputs the same 1,319-byte panel as the shortcode; it previously output 0 bytes.
+- r2 is superseded.
+
+**Reply points** (not code): T1's suggestion to use the WordPress AI Client was advisory. Core uses OpenAI File Search against the owner's existing vector store, and the AI Client remains roadmap work. The public chat route's `__return_true` permission is deliberate for a visitor-facing endpoint that validates every request itself.
+
+**Still open:**
+- The Docker WP 6.5 / PHP 8.1 fixture (Docker is down).
+- Test connection on Test-Site, plus one live question.
+- A manual browser and accessibility review.
+- The visual check of the support page.
+- Updating the reply draft for 1.0.6.
+- Jacob's independent review.
+
 ## 6 November 2026 — Core 1.0.6 candidate: counter pruning and administrator legibility (branch, not pushed)
 
 **Scope:** Jacob asked for both fixes from a reviewer-oriented code review: never-pruned request-allowance counters, and the very long administrator output lines. Work is on branch `feat/core-261106-legibility-and-bucket-purge`, starting from `main` `2217133` (1.0.5). Commits:
