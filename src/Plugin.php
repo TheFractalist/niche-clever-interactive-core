@@ -30,6 +30,7 @@ use NicheCleverInteractive\Core\AI\Transport\ResponseTransport;
 use NicheCleverInteractive\Core\AI\Transport\UnavailableTransport;
 use NicheCleverInteractive\Core\Rest\ChatRoute;
 use NicheCleverInteractive\Core\Budget\BudgetGate;
+use NicheCleverInteractive\Core\Budget\RateBucketPurge;
 use NicheCleverInteractive\Core\Budget\WordPressBucketStore;
 use NicheCleverInteractive\Core\AI\ConnectionTestService;
 
@@ -43,6 +44,7 @@ final class Plugin
     private ChatRoute $chatRoute;
     private ConversationsPage $conversationsPage;
     private ConversationPurge $conversationPurge;
+    private RateBucketPurge $rateBucketPurge;
     private ExtensionScreens $extensionScreens;
     private ProfileDirectory $profiles;
     private WordPressConversationStore $conversationStore;
@@ -59,7 +61,9 @@ final class Plugin
         $this->profiles = $profiles;
         $this->interactivePanel = new InteractivePanel($profiles);
         $transport = $this->transport();
-        $budget = new BudgetGate(new WordPressBucketStore());
+        $bucketStore = new WordPressBucketStore();
+        $budget = new BudgetGate($bucketStore);
+        $this->rateBucketPurge = new RateBucketPurge($bucketStore);
         $failureLog = new OptionFailureLog();
         $connectionTest = new ConnectionTestService($transport, $this->secrets, $budget, null, TransportMode::current(), $failureLog);
         $this->profileTest = new ProfileConnectionTest($profiles, $connectionTest);
@@ -104,6 +108,7 @@ final class Plugin
         $this->profileTest->register();
         $this->profileHub->register();
         $this->conversationPurge->register();
+        $this->rateBucketPurge->register();
         $this->interactivePanel->register();
         $this->chatRoute->register();
 
