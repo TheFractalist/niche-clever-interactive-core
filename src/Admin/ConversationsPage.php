@@ -287,8 +287,8 @@ final class ConversationsPage
         $total = $this->store->countConversations();
         echo '<section class="ncli-admin__tab-panel ncli-admin__conversations"><h2>'
             . esc_html(__('Delete all conversations', 'niche-clever-interactive')) . '</h2>';
-        /* translators: %d: number of stored conversations that will be deleted. */
         echo '<p>'
+            /* translators: %d: number of stored conversations that will be deleted. */
             . esc_html(sprintf(__('This permanently deletes all %d stored conversations. It cannot be undone, although an older database backup may still contain them.', 'niche-clever-interactive'), $total))
             . '</p>';
         echo '<form method="post" action="' . esc_attr($this->postUrl()) . '">';
@@ -313,8 +313,8 @@ final class ConversationsPage
             return;
         }
 
-        /* translators: 1: current page number, 2: total pages, 3: total stored conversations. */
         echo '<p class="ncli-admin__pagination">'
+            /* translators: 1: current page number, 2: total pages, 3: total stored conversations. */
             . esc_html(sprintf(__('Page %1$d of %2$d (%3$d conversations)', 'niche-clever-interactive'), $page, $pages, $total))
             . ' ';
         if ($page > 1) {

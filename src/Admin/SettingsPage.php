@@ -333,10 +333,10 @@ final class SettingsPage
         ];
 
         $done = count(array_filter($items, static fn (array $item): bool => $item[2]));
-        /* translators: 1: completed setup steps, 2: total setup steps. */
         echo '<section class="ncli-admin__get-started"><h2><span>'
             . esc_html(__('Get started', 'niche-clever-interactive'))
             . '</span><span class="ncli-admin__get-started-count">'
+            /* translators: 1: completed setup steps, 2: total setup steps. */
             . esc_html(sprintf(__('%1$d of %2$d complete', 'niche-clever-interactive'), $done, count($items)))
             . '</span></h2>';
         echo '<p>'

@@ -524,10 +524,10 @@ final class ProfileHub
             [__('Place this profile', 'niche-clever-interactive'), $placementReady ? __('A matching placement was found on a published page.', 'niche-clever-interactive') : __('Add this profile’s block or shortcode to a published page.', 'niche-clever-interactive'), $placementReady, ''],
         ];
         $done = count(array_filter($items, static fn (array $item): bool => $item[2]));
-        /* translators: 1: completed setup steps, 2: total setup steps. */
         echo '<section class="ncli-admin__get-started"><h2><span>'
             . esc_html(__('Get started', 'niche-clever-interactive'))
             . '</span><span class="ncli-admin__get-started-count">'
+            /* translators: 1: completed setup steps, 2: total setup steps. */
             . esc_html(sprintf(__('%1$d of %2$d complete', 'niche-clever-interactive'), $done, count($items)))
             . '</span></h2><ol class="ncli-admin__checklist">';
         foreach ($items as $item) {
