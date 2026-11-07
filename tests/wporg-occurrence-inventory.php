@@ -23,6 +23,7 @@ $categories = [
             'src/Admin/ProfileFieldRenderer.php' => 15,
             'src/Admin/ProfileHub.php' => 80,
             'src/Admin/SettingsPage.php' => 34,
+            'src/Admin/SetupGuidance.php' => 1,
             'src/Admin/SiteSettingsPage.php' => 14,
             'src/Rest/EventStream.php' => 1,
         ],

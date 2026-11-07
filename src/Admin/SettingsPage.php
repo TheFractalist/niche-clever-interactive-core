@@ -147,10 +147,23 @@ final class SettingsPage
                 'saved' => __('Settings saved.', 'niche-clever-interactive'),
                 'invalid' => __('Settings could not be saved. Review the field values and try again.', 'niche-clever-interactive'),
                 'connection-passed' => __('Connection test passed. Public chat can become ready when the other requirements are met.', 'niche-clever-interactive'),
-                'connection-failed' => __('Connection test did not complete. Check server configuration and try again without exposing provider details here.', 'niche-clever-interactive'),
+                'connection-failed' => __('Connection test did not pass. The reason is shown in Diagnostics.', 'niche-clever-interactive'),
             ];
             $success = in_array($notice, ['saved', 'connection-passed'], true);
-            echo '<div class="notice ' . ($success ? 'notice-success' : 'notice-error') . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
+            echo '<div class="notice ' . ($success ? 'notice-success' : 'notice-error') . '"><p>' . esc_html($messages[$notice])
+                . ($notice === 'connection-failed' ? ' <a href="' . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'diagnostics'])) . '">'
+                    . esc_html(__('Open Diagnostics', 'niche-clever-interactive')) . '</a>' : '')
+                . '</p></div>';
+        }
+
+        // After a change that invalidates the last test, send the owner back to Setup to run a new one.
+        if ($tab !== 'setup' && $tab !== 'help') {
+            SetupGuidance::renderRetestNotice(
+                $readiness->state(),
+                $settings->connectionTestStatus(),
+                $this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'setup']),
+                $this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'diagnostics'])
+            );
         }
 
         // The default profile uses the same optional General/sub-tab layout as named profiles.
@@ -302,10 +315,20 @@ final class SettingsPage
         $secrets = new SecretResolver();
         $keyReady = $secrets->isAvailable();
         $keyState = $keyReady ? __('The server-side constant is available.', 'niche-clever-interactive') : __('Add the constant to the server configuration before testing.', 'niche-clever-interactive');
-        $corpusReady = $settings->vectorStoreReference() !== '' && $settings->corpusVersion() !== '';
-        $corpusState = $corpusReady
-            ? __('A vector-store reference and corpus version are saved.', 'niche-clever-interactive')
-            : __('Save the vector-store reference in AI & Corpus and the corpus version in Profile.', 'niche-clever-interactive');
+        $hasReference = $settings->vectorStoreReference() !== '';
+        $hasCorpusVersion = $settings->corpusVersion() !== '';
+        $corpusReady = $hasReference && $hasCorpusVersion;
+        $corpusState = SetupGuidance::vectorStoreMessage($hasReference, $hasCorpusVersion);
+        // Link to the tab that holds whatever is still missing; when both are saved, to the one most often revisited.
+        $corpusLinks = '';
+        if (!$hasReference || $corpusReady) {
+            $corpusLinks .= ' <a href="' . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">'
+                . esc_html(__('Open AI & Corpus', 'niche-clever-interactive')) . '</a>';
+        }
+        if (!$hasCorpusVersion) {
+            $corpusLinks .= ' <a href="' . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'profile'])) . '">'
+                . esc_html(__('Open Profile', 'niche-clever-interactive')) . '</a>';
+        }
         $testReady = $settings->connectionTestStatus() === 'passed' && $readiness->isReady();
         $testState = $testReady
             ? __('The current configuration passed its File Search connection test.', 'niche-clever-interactive')
@@ -322,9 +345,7 @@ final class SettingsPage
                 . esc_html(__('Configure', 'niche-clever-interactive')) . ' <code>NCLI_OPENAI_API_KEY_DEFAULT</code> '
                 . esc_html(__('in server configuration only, for example', 'niche-clever-interactive'))
                 . ' <code>define(\'NCLI_OPENAI_API_KEY_DEFAULT\', \'…\');</code>.', $keyReady, ''],
-            [__('Choose your vector store', 'niche-clever-interactive'), esc_html($corpusState) . ' <a href="'
-                . esc_attr($this->adminUrl(['page' => self::PAGE_SLUG, 'tab' => 'ai-corpus'])) . '">'
-                . esc_html(__('Open AI & Corpus', 'niche-clever-interactive')) . '</a>.', $corpusReady, ''],
+            [SetupGuidance::vectorStoreTitle(), esc_html($corpusState) . $corpusLinks, $corpusReady, ''],
             [__('Test your connection', 'niche-clever-interactive'), esc_html($testState), $testReady, '<button type="submit" class="button button-secondary" form="ncli-connection-test">'
                 . esc_html(__('Test connection', 'niche-clever-interactive')) . '</button>'],
             [__('Place your conversation', 'niche-clever-interactive'), $placementState . ' <a href="'
