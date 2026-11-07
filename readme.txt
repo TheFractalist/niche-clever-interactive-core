@@ -4,7 +4,7 @@ Tags: question and answer, openai, file search, knowledge base, interactive
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,12 @@ Support information is at https://nicheclever.co.uk/plugin-support/. Do not incl
 4. Appearance & Limits tab with panel style, width, credit and daily limits.
 
 == Changelog ==
+
+= 1.0.7 =
+
+* The Setup checklist now says exactly which vector-store setting is missing, and where to save it.
+* After a change that makes the last connection test out of date, every administrator tab now warns you to run a new test, with a link to Setup.
+* A failed connection test points to Diagnostics for the reason.
 
 = 1.0.6 =
 

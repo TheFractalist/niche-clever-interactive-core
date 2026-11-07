@@ -13,8 +13,8 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $assert(str_contains($bootstrap, "Plugin Name: Niche Clever Interactive"), 'The plugin header must use the public Niche Clever Interactive name.');
-$assert(str_contains($bootstrap, "Version: 1.0.6"), 'The plugin header must identify the current recovery-candidate version.');
-$assert(str_contains($bootstrap, "NCLI_CORE_VERSION = '1.0.6'"), 'The runtime version must match the plugin header.');
+$assert(str_contains($bootstrap, "Version: 1.0.7"), 'The plugin header must identify the current recovery-candidate version.');
+$assert(str_contains($bootstrap, "NCLI_CORE_VERSION = '1.0.7'"), 'The runtime version must match the plugin header.');
 $assert(str_contains($bootstrap, "Text Domain: niche-clever-interactive"), 'The plugin header must use the planned public text domain.');
 $assert(is_file($root . '/CHANGELOG.md'), 'The candidate must provide a changelog.');
 $assert(is_file($root . '/readme.txt'), 'The candidate must provide WordPress package metadata.');
@@ -22,7 +22,7 @@ $readme = is_file($root . '/readme.txt') ? (string) file_get_contents($root . '/
 $assert(str_contains($readme, 'Tested up to: 7.1'), 'The package readme must record the current tested WordPress series.');
 $assert(str_contains($readme, 'License: GPLv2 or later'), 'The package readme must declare its GPL-compatible licence.');
 $assert(str_contains($readme, '=== Niche Clever Interactive ==='), 'The package readme must use the public plugin name.');
-$assert(str_contains($readme, 'Stable tag: 1.0.6'), 'The readme must name the frozen numeric release as the stable tag.');
+$assert(str_contains($readme, 'Stable tag: 1.0.7'), 'The readme must name the frozen numeric release as the stable tag.');
 $assert(strlen($readme) < 10000, 'The WordPress.org readme must remain below the 10 KB parser-risk threshold.');
 $assert(str_contains($readme, 'NCI Premium is a separate informational companion.') && str_contains($readme, 'contains no Premium code') && str_contains($readme, 'no purchase, download, pricing or availability promise'), 'The readme must present NCI Premium as informational only, with no delivery or availability claim.');
 $assert(is_file($root . '/phpcs.xml.dist'), 'The candidate source must provide its deterministic WPCS configuration.');
