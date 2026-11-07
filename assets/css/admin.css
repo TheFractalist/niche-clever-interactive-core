@@ -9,6 +9,7 @@
 .ncli-admin .notice { margin: 14px 0; padding: 12px 16px; border: 1px solid #b7d9c2; border-left: 5px solid #1a7f37; border-radius: 6px; background: #ecf8f0; color: #10311b; font-size: 14px; font-weight: 500; }
 .ncli-admin .notice p { margin: 0; color: inherit; }
 .ncli-admin .notice-error { border-color: #e4b8b9; border-left-color: #b32d2e; background: #fcf0f0; color: #4a1011; }
+.ncli-admin .notice-warning { border-color: #e6cf9b; border-left-color: #b26a00; background: #fff8e5; color: #4a3200; }
 .ncli-admin__workspace, .ncli-admin__tab-panel { box-sizing: border-box; margin: 0; padding: 12px 28px 20px; border: 1px solid #d5dbe0; border-top: 0; border-radius: 0 0 10px 10px; background: #fff; }
 .ncli-admin__tab-panel h2 { margin: 8px 0 10px; color: #123b5a; font-size: 20px; }
 .ncli-admin__form-table { max-width: 100%; margin: 4px 0 0; }
