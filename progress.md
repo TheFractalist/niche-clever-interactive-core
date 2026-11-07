@@ -27,7 +27,9 @@
 - **Test-Site:** installed through WordPress's installer. The manifest matches, Plugin Check reports no errors and both pages return 200.
 - **Browser:** the warning appears on six tabs and not on Setup or Help, and the Setup step shows the new title. No provider call was made by the plugin.
 
-**Not done:** merge, tag, upload; a passing connection test on Test-Site (needs a model choice); the live-site model check. 1.0.7 supersedes 1.0.6 r4 as the candidate only if Jacob adopts it.
+**Model and test (7 November, later):** Jacob chose `gpt-6-luna`, and it was saved through WordPress after Core’s parser validated it. The connection test, run through Core’s own service exactly as the button runs it, then **failed with `http_429`** in 2.8 s. The vector store and model are now accepted. One tiny diagnostic request showed `insufficient_quota` / `credit_balance_exhausted`: **the OpenAI account has no credits remaining.** It is a billing state, not a rate limit and not a plugin fault. Adding credits is Jacob’s action; then re-run Test connection. If live uses the same account or project, **live Ask is failing now for the same reason**, independent of the `gpt-5.6` model question.
+
+**Not done:** merge, tag, upload; a passing connection test on Test-Site (blocked by the account credit balance); the live-site check of both credits and the saved model. 1.0.7 supersedes 1.0.6 r4 as the candidate only if Jacob adopts it.
 
 ## 6 November 2026 — Core 1.0.6 r4: clean install, accessibility check, release
 
