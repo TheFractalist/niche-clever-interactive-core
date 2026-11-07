@@ -88,6 +88,7 @@ Support information is at https://nicheclever.co.uk/plugin-support/. Do not incl
 * The Setup checklist now says exactly which vector-store setting is missing, and where to save it.
 * After a change that makes the last connection test out of date, every administrator tab now warns you to run a new test, with a link to Setup.
 * A failed connection test points to Diagnostics for the reason.
+* Answers on the public panel now use the full panel width, with tighter spacing and a thin rule under larger headings.
 
 = 1.0.6 =
 

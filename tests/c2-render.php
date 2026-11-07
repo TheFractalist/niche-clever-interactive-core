@@ -37,6 +37,9 @@ $assert(str_contains($output, 'aria-live="polite"'), 'Panel should contain an ac
 $assert(str_contains($output, 'ncli-panel__frame'), 'Panel should render the NCI frame.');
 $assert(strpos($output, 'ncli-panel__transcript') < strpos($output, '<form') && strpos($output, '<form') < strpos($output, 'ncli-panel__reset') && strpos($output, 'ncli-panel__reset') < strpos($output, '<footer'), 'The thread must come first, then the question input, the reset control and the footer.');
 $assert(str_contains($publicCss, '.ncli-panel__question {') && str_contains($publicCss, 'background: var(--ncli-q-bg, var(--ncli-surface))') && str_contains($publicCss, '.ncli-panel__answer {') && str_contains($publicCss, '.ncli-panel__transcript:empty'), 'Questions must be shaded blocks and answers separate bordered blocks, with no empty gaps.');
+$assert(!str_contains($publicCss, '68ch'), 'Answer text must fill the panel width, with no character-width cap.');
+$assert(str_contains($publicCss, '.ncli-panel .ncli-panel__answer h4') && str_contains($publicCss, 'border-bottom: 1px solid var(--ncli-a-rule, var(--ncli-rule))'), 'Answer headings must carry a rule and scoped margins that a host theme cannot override.');
+$assert(1 === preg_match('/\.ncli-panel \.ncli-panel__answer h3[^{]*\{[^}]*margin: 1\.1rem/', $publicCss), 'Answer heading margins must be scoped inside the panel so the host theme is unaffected.');
 $panelSource = (string) file_get_contents(dirname(__DIR__) . '/src/Frontend/InteractivePanel.php');
 $assert(str_contains($panelSource, "'questionLabel' => __('Question:', 'niche-clever-interactive')") && str_contains($panelSource, "'answerLabel' => __('Answer:', 'niche-clever-interactive')"), 'The panel must supply translatable hidden labels for question and answer blocks.');
 $assert(str_contains($output, 'ncli-panel__reset'), 'Panel should render the session-only reset control.');
