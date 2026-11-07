@@ -400,6 +400,15 @@ final class ProfileHub
         }
         echo '</nav>';
         $this->notice();
+        if ($tab !== 'setup') {
+            $status = $this->profiles->status($id, call_user_func($this->settings), $edit->isEnabled());
+            SetupGuidance::renderRetestNotice(
+                $status['state'],
+                $status['status'],
+                $this->adminUrl(['profile' => $id, 'tab' => 'setup']),
+                $this->adminUrl(['profile' => $id, 'tab' => 'diagnostics'])
+            );
+        }
 
         // A form tab with separately presented extension sections splits into General and one sub-tab
         // per section. Inline sections remain with General, so closely related controls stay together.
@@ -519,7 +528,7 @@ final class ProfileHub
             : ($tested ? __('The current configuration passed its File Search connection test.', 'niche-clever-interactive') : __('Run a new test after changing the vector store, corpus version, guidance, preset or any model setting.', 'niche-clever-interactive'));
         $items = [
             [__('Add your API key', 'niche-clever-interactive'), $keyReady ? __('The server-side constant is available.', 'niche-clever-interactive') : __('Add the server-side constant before testing.', 'niche-clever-interactive'), $keyReady, ''],
-            [__('Choose your vector store', 'niche-clever-interactive'), $corpusReady ? __('A vector-store reference and corpus version are saved for this profile.', 'niche-clever-interactive') : __('Save the vector store in AI & Corpus and the corpus version in Profile.', 'niche-clever-interactive'), $corpusReady, ''],
+            [SetupGuidance::vectorStoreTitle(), SetupGuidance::vectorStoreMessage((bool) $values['reference_saved'], $values['corpus_version'] !== '', true), $corpusReady, ''],
             [__('Test the connection', 'niche-clever-interactive'), $testState, $tested, $test],
             [__('Place this profile', 'niche-clever-interactive'), $placementReady ? __('A matching placement was found on a published page.', 'niche-clever-interactive') : __('Add this profile’s block or shortcode to a published page.', 'niche-clever-interactive'), $placementReady, ''],
         ];

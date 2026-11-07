@@ -1,5 +1,36 @@
 # Progress
 
+## 7 November 2026 — Core 1.0.7 candidate: clearer Setup, retest warning; Test-Site settings repaired (branch, not merged)
+
+**Trigger:** Jacob reported that on Test-Site the Setup tab still showed the vector-store step as required after a vector store was selected, and that the test still failed after entering corpus version `10.4`. He asked for the Setup step to name the exact missing item, an on-screen alert whenever a change makes a new test necessary, and a check of the current status.
+
+**What was wrong on Test-Site (not a plugin defect), and my part in it:**
+- **My mistake:** after the 6 November clean-install test I restored Test-Site's four `ncli_core_` options through PowerShell's text pipeline. That altered the serialized `ncli_core_settings` (1,526 bytes against 1,518), so WordPress could not read it and Core fell back to defaults. The Setup tab then showed everything as missing. My "identical to backup" check used the same pipeline on both sides, so it could not detect the damage.
+- **Consequence:** Jacob re-entered a vector store, but a different one, which OpenAI reports as `HTTP 404, No valid vector store found`. He also entered corpus `10.4`, and the connection test recorded `http_4xx`.
+- **Evidence:**
+  - The 3 Nov, 4 Nov, 6 Nov 17:15 and 6 Nov 17:51 backups all held a 35-character reference and a 3-character corpus version.
+  - That reference returns `HTTP 200`, `completed`, 205 files for the Test-Site key.
+  - A read-only lookup of the model saved there, `gpt-5.6`, returned `404 model_not_found`. `gpt-6-luna`, `gpt-6.1-sol` and `gpt-6-astra` returned 200.
+- **Repair:** a safety copy of the current options is `…\ncli-options-BEFORE-REPAIR-20261107-124021.sql`. The original settings were reloaded with `cmd` redirection and `--default-character-set=utf8mb4`, which unserializes correctly. The owner's `10.4` corpus version and enabled profile were re-applied and saved through `update_option`, and the original reference was restored. Readiness is now `stale_connection_test`, as expected.
+- **Open:** the saved model `gpt-5.6` is not offered by OpenAI, so a new test will fail until a current model is chosen on AI & Corpus. `nicheclever.test`, which mirrors live, also saves `gpt-5.6`. **Live Ask may be failing and has not been checked.**
+
+**1.0.7 changes (`215a1c4`, `c05c2ac`, `aff5083`):**
+- **Setup checklist:** the step is now "Choose your vector store and corpus version". It says exactly which value is missing and links to the tab that holds it: AI & Corpus for the reference, Profile for the corpus version. Named profiles share the wording through the new `SetupGuidance`.
+- **Retest warning:** when the only thing keeping visitors out is a connection test, every administrator tab except Setup and Help shows an amber warning linking to Setup, plus a link to Diagnostics if the last test failed. It applies to the default and named profiles.
+- **Failure notice:** a failed connection test links to Diagnostics.
+- **Styling:** the plugin stylesheet made every `.notice` green, so an amber warning style was added (text 11.3:1, link 6.5:1).
+- **Tests:** `tests/c9-setup-guidance.php` covers the wording, the states and tabs where the warning appears, escaping, and the real Settings screens. It fails on five deliberate mutations. The occurrence register classifies the one new `echo`.
+
+**Evidence:**
+- **Source and archive checks:** 38 PHP tests pass under PHP 8.1 and 8.2, and the JS tests pass. WPCS is clean and `git diff --check` is clean. The archive matches its manifest, lints and is WPCS-clean, and the POT has 570 strings.
+- **Candidate:** `2026-11-07-release-1.0.7-r2`, SHA-256 `556e85e765e56ced667fcee337653286468cb15d8fbfa8ca88813bf3a1b38411`, 120 files. r1 is superseded by the colour fix.
+- **Test-Site:** installed through WordPress's installer. The manifest matches, Plugin Check reports no errors and both pages return 200.
+- **Browser:** the warning appears on six tabs and not on Setup or Help, and the Setup step shows the new title. No provider call was made by the plugin.
+
+**Model and test (7 November, later):** Jacob chose `gpt-6-luna`, and it was saved through WordPress after Core’s parser validated it. The connection test, run through Core’s own service exactly as the button runs it, then **failed with `http_429`** in 2.8 s. The vector store and model are now accepted. One tiny diagnostic request showed `insufficient_quota` / `credit_balance_exhausted`: **the OpenAI account has no credits remaining.** It is a billing state, not a rate limit and not a plugin fault. Adding credits is Jacob’s action; then re-run Test connection. If live uses the same account or project, **live Ask is failing now for the same reason**, independent of the `gpt-5.6` model question.
+
+**Not done:** merge, tag, upload; a passing connection test on Test-Site (blocked by the account credit balance); the live-site check of both credits and the saved model. 1.0.7 supersedes 1.0.6 r4 as the candidate only if Jacob adopts it.
+
 ## 6 November 2026 — Core 1.0.6 r4: clean install, accessibility check, release
 
 **Clean-install test** on Test-Site, at Jacob's direction instead of the Docker fixture (Docker Desktop is down):
